@@ -1,0 +1,71 @@
+\documentclass[12pt,oneside]{article}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                                                 %
+% The mathematical style of these documents follows                                               %
+%                                                                                                 %
+% A. Thompson and B.N. Taylor. The NIST Guide for the Use of the International System of Units.   %
+%    NIST Special Publication 881, 2008.                                                          %
+%                                                                                                 %
+% http://www.nist.gov/pml/pubs/sp811/index.cfm                                                    %
+%                                                                                                 %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\input{../Bibliography/commoncommands}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\lhead{}
+\rhead{}
+\chead{}
+\renewcommand{\headrulewidth}{0pt}
+
+\begin{document}
+
+\title{Vulnerability Model Summary - October 1 2014}
+\author{DK Ezekoye}
+
+\maketitle
+
+We discussed a simple model for a year one deliverable to exercise the vulnerability framework. The steps that we agreed upon are outlined below.
+
+\section{Target Jurisdiction}
+
+Because of readily available fire data on Arlington, we chose the city/county(?)  of Arlington, VA as our testbed. 
+
+\subsection{Required Data}
+
+We will request fire incident data directly from Arlington and also through NFIRS. Having both data sets will be useful in exploring any differences between the local and national data. We also will need census data for demographic data at the tract level.  Housing inventroy data will also be needed at the census tract level.
+
+\section{Ignition Model}
+
+We recognize that fire ignition may or may not trigger fire department response. We choose to analyze the fraction of ignition events that trigger firefighter response. The model to be built on fire ignition will be derived directly from fire incident data sets fit to census tract demograhic and building explanatory variables.  The use of a model form as compared to direct draws from the existing data is motivated by the need to exercise the ignition model under conditions in which the underlying census parameters change in time.  A similar incident ignition model was derived for Austin, TX and was presented to the group.
+
+\section{Fire Model}
+
+A simple fire model of form shown below will be used to drive the fire growth process.  The model is required to include the effects of delays in firefighter response or inadequate firefighter response on increased property loss and damage.  The model is intended to be a simple modification to existing flame spread models that are parameterized using a pyrolysis length. In this case, a pyrolysis area, $A_p$  and burned out area, $A_b$  are to be used.  Sprinkler effects will be modeled into the system as well as firefighter suppression effects.
+
+\begin{equation}
+\frac{dA_p}{dt} = \frac{A_f-A_p}{\tau_{ign}} - f(SP,FF,etc.) 
+\label{eq_AP}
+\end{equation} 
+
+In the above, the flame area is defined in terms of the difference between the pyrolysis area and the burnout area. An equation is required for the burnout area.Note that modeling of the effects of sprinklers and FF responses are included.  
+
+\begin{equation}
+\frac{dA_b}{dt} = \frac{A_p-A_b}{\tau_{bo}}
+\label{eq_AB}
+\end{equation} 
+ 
+In both equations, several calibration parameters are included that will be calibrated using a calibration data set.
+
+\section{FF Response Model}
+
+The efforts of the past study teams in measuring firefighter response times will be used in this model.  We recognize that there are times associated with fire detection, alarm, deployment, travel, and initiation of suppression activities. Some of these times will be held fixed while others, such as travel time will be determined by direct computation of the distance between the specific structure drawn from the population of census tract structures and a responding fire station.  Noise will be added to the travel time to simulate effects of traffic. 
+
+
+\section{Fire Loss}
+
+The response behavior coupled to the fire model provides a damage area estimate for a particular structure.  By smapling over a sufficiently large number of incidents, we will build a histogram/pdf of damage area for the census tract and then for the jurisdiction.  This will be compared to available fire incident data as validation of the model.
+
+\end{document}
