@@ -1,0 +1,184 @@
+\documentclass[12pt,letterpaper]{article}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{pdfsync}
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage{microtype}
+\usepackage{siunitx}
+\frenchspacing
+\hypersetup{colorlinks=true, urlcolor=blue, citecolor=black, linkcolor=black}
+\urlstyle{same}
+
+\renewcommand{\d}{\mathrm{d}}
+
+\title{Year 7 AFG Application}
+
+\begin{document}
+
+\maketitle
+
+\section{Vulnerability Statement}
+\label{sec:vuln}
+
+National/State/Regional Programs \& Studies Project. Target population for project is U.S. FDs. There are $\approx$ 30,100 FDs in the U.S. - 2,610 depts are career, 1,995 mostly career, 5,445 mostly vol. \& 20,050 all vol. (NFPA 2012). Communities surrounding depts are experiencing geographic expansion, annexation, \& regionalization, while others struggle in a sustained economic decline. These situations are causing decision makers to alter FD resources faster than FD leaders can evaluate their impact. Fire chiefs are often faced with public officials who work to balance community expectations and finite budget resources without a solid technical foundation for evaluating impact of staffing \& deployment decisions on the safety of the public \& FFs. Hasty decisions can leave a community without sufficient resources to respond to emergency calls safely, efficiently, \& effectively. Effectively managing challenges requires basic understanding of how changes in levels of FD resources deployed affect outcomes from emergencies. Failing to manage these challenges can leave individuals, FDs \& communities vulnerable to unacceptable consequences. 
+
+Community risk assessment begins with identification of type \& number of hazards in the community \& creation of summary hazard measures. Fire chiefs must assess an array of hazards, their associated risk level, \& resources needed to respond to incidents. Once the details of risks/hazards are known for a community, the FD can plan \& deploy resources to manage the known risks or respond \& mitigate an emergency. Given that a particular hazard exists in a community, the consequences of an emergency are affected by the mitigation efforts. Consequences are a result of combination of the duration \& nature of event, property loss, personal injury or loss of life, economic loss, interruption of business \& related operation, \& damage to the environment. Consequences are grouped into 4 categories; Human impacts (civilian \& FF injury \& death), Economic impacts (property loss- direct \& indirect), Psychological impact (public confidence), \& Functional impact (continuity of operations). 
+
+Prior to an incident, appropriate resources should be made available to respond to emergency events. Cost effective resource decisions require detailed information on cost/benefit profile of resource investments. This includes the number /location of fire stations, number, type, \& location of fire apparatus, crew size \& pre-planned alarm assignments. Resource allocation may also address community infrastructure such as fire hydrants \& building inspections.  FD response capability \& capacity is a function of the community’s resource allocation \& affects the degree of vulnerability of a community to fires \& other emergencies. One could expect that a community with a sizeable \& effective firefighting force would be less vulnerable to large negative consequences of fire than would a community with fewer resources allocated. Recognizing this notion, {\bf the goal of this project is to develop a tool that fire chiefs \& decision makers can use to assist them in matching the allocation of FD resources to the risk profile of the community; thereby minimizing the consequences of fires \& other emergencies.}
+
+Considering potential for negative outcomes if FD resources do not match the needs in the community \& the lack of tools available for assessing this match, this project is {\bf necessary} to provide decision makers a tool to assess how well resources deployed match community risk thereby decreasing vulnerability to bad outcomes from fire \& other emergencies.
+
+There are groups including NIST, CFAI, IAFF, IAFC, Metro Fire Chiefs, \& ISO working to enhance FDs' capability to match resources to risks. These groups are engaged as partners \& stakeholders in this project to develop a basic community vulnerability assessment tool that can be used regardless of size of community.
+
+It is possible to develop a community vulnerability assessment tool that is easy to use, encourages accurate \& timely risk \& resource assessment, \& provides much needed information to fire chiefs \& political decision makers allowing them to better plan for the safety of the public \& the FFs. The result of the project will provide local administrators with the tool they need to measure community vulnerability thereby providing necessary information for decision making \& budget allocation. Additionally, the project will provide the NFPA 1710 Tech. Cmt and the CFAI Accreditation Program with a predictive formula for assessing risk/resource deployment. The tool will also benefit NFPA 1600 {\em Standard on Disaster/Emergency Management \& Business Continuity Programs} (National Preparedness Standard) that is widely used by public, not-for-profit, nongovernmental, \& private entities on a local/regional/national/international \& global basis.  Results will also provide ISO with additional measures for assessing risk \& FD response capability for property insurance valuation purposes.
+
+
+\section{Implemenation PLan}
+\label{sec:imp_plan}
+
+The implementation plan involves a sequence of carefully developed tasks \& methodologies to explore, create, \& document both a community specific risk profile \& FD specific readiness profile. The results can be compared to maximize insights into the level of correspondence between the documented community risk \& FD resource readiness/deployment. A community specific “vulnerability assessment score” can be determined based on how well resources deployed match the risk level of community in which FFs respond.  
+
+The objective is to design a mathematical tool that reflects the vulnerability of a community based on how well FD resources match the hazards/risk in the community.  This work will leverage the expertise \& previous work by this coalition including the Residential Fireground Report (NIST Technical Note 1661) \& the High-Rise Fireground Report (NIST Technical Note 1797).  
+
+There are 10 primary tasks in the project
+\begin{enumerate}
+	\item Identify existing community risk assessment programs
+	\begin{enumerate}
+		\item Compile/evaluate new and existing risk assessment programs 
+		\item Identify best practices
+	\end{enumerate}
+	\item Identify and define community hazards and associated risks
+	\begin{enumerate}
+		\item Compile list of recognized community hazards
+		\item Categorize community hazards into recognized areas
+			\begin{enumerate}
+				\item Property
+				\item Life Hazard
+				\item Critical Infrastructure
+				\item Environment
+			\end{enumerate}
+		\item Assign a weighted score to each hazard
+			\begin{enumerate}
+				\item Score based on potential consequences associated with the occurrence of an adverse risk event
+			\end{enumerate}
+	\end{enumerate}
+	\item Establish scores associated with matching various levels of risk to FD resources.
+	\begin{enumerate}
+		\item Review results of NIST Residential (TN 1661) and High-Rise (TN 1797) Fireground Experiments
+		\item Compare results to recognized hazards, matching appropriate FD resources deployed to best outcome noted in the studies
+	\end{enumerate}
+	\item Use computer models similar to high-rise experiment to determine risk level of other community hazards
+	\item Develop a first order, alpha version of a prototype risk tool using the foundation developed from prior tasks to predict a `vulnerability' score
+	\begin{enumerate}
+		\item Establish definitions for vulnerability scores based on how well FD resources deployed match the hazards/risks in the community
+	\end{enumerate}
+	\item Use current and historical data to build assessment profile of alpha version of risk tool
+	\begin{enumerate}
+		\item Quantify uncertainty level of risk score and limitation of tool
+	\end{enumerate}
+		\item Construct initial documentation. 
+	\begin{enumerate}
+		\item Include list of necessary input data
+		\item Define limitations
+		\item Describe how to interpet results
+	\end{enumerate}
+	\item Develop an electronic prototype version of a vulnerability assessment tool 
+	\begin{enumerate}
+		\item Apply the tool using FD data available from previous NIST Residential and High-Rise Study participants 
+		\item Revise tool as necessary based on field tests
+	\end{enumerate}
+	\item Post a beta prototype tool on coalition study website \href{www.firereporting.org}{firereporting.org} for additional feedback and input
+	\begin{enumerate}
+		\item Disseminate the tool to the fire service and local communities for beta testing
+	\end{enumerate}	
+	\item Prepare report including description of the tool and appropriate use 
+	\begin{enumerate}
+		\item Demonstrate the tool at industry conferences 
+		\item Link the tool to Partner / Stakeholder Websites 
+		\item Publish articles about the tool in industry publications including International Fire Fighter Magazine, Fire House Magazine, Fire Rescue Magazine, NFPA Journal, and Fire Engineering Magazine.
+	\end{enumerate}
+\end{enumerate}
+
+The proposed project will enhance FF safety by using results from previously funded projects to develop a tool to assess how well FDs match resources deployed to risk levels to which FFs respond. Primary aspects of the vulnerability assessment tool will be included in presentations and written reports and will be disseminated via industry conferences, industry journals, and partner websites to FDs throughout the U.S. The materials will be relevant to both career and vol. depts as they struggle to provide answers and justification of resources in light of available funds.
+
+A primary objective is to maximize both the long-term impact and distribution of the preliminary tool as widely as possible. Therefore, in addition to presentation materials, scientific papers will be prepared for publication in archival literature assuring their future availability. Modes of publication include scientific, peer-reviewed journals, industry journals for the fire service and public officials, and website publication of documents on partner websites (CFAI, IAFC, IAFF, NIST, Metro Chiefs, ISO, UT, and WPI).  Notice of the tool's development and availability will also be messaged via blogs, twitter and Facebook feeds from partner organizations.  Fire service industry journals like Fire Engineering (circulation 57,351), Fire Rescue (circulation 54,000) and the International Fire Fighter (circulation 327,000) will be of particular focus to assure the information is distributed as widely as possible.  Additionally, materials will be promoted on popular websites like \href{www.firehouse.com}{firehouse.com} (Annual Total Visits: 1,602,722) and \href{http://www.fireengineering.com/index.html}{fireengineering.com} (Annual Total Visits: 1,476, 345). 
+
+
+
+\section{Evaluation Plan}
+\label{sec:eval}
+The evaluation plan is based on measurable project outcomes. The project will quantify the appropriate match of FD resources to community risks and deliver a beta version of user friendly tool to FD leaders and political decision makers.  The project will also provide additional insight to existing industry standards including NFPA 1710 and 1600.  
+
+We expect that local FDs, city managers, mayors, and others will use the tool to assist with decision making regarding the most efficient, effective, and safe level of fire dept resources appropriate for their community.  We will measure the project's impact on fire dept. deployment in the final months of the project.  Specifically, tool distribution and use will be tracked by recipient and jurisdiction.  The distribution goal is 2,500 website downloads and/or phone/email requests. 
+
+
+\section{Cost-Benefit}
+\label{sec:cost}
+The project impact has long term benefits for local FDs \& will likely affect current deployment practices. As FD leaders have scientific evidence to substantiate their decisions, they will see immediate increase in credibility with decision makers.  Additionally, decision makers will have evidence for making sound choices about funding adequate resources \& this alone can have an immediate positive impact on FF safety.
+
+This project brings together a PARTNERSHIP- IAFC, IAFF, NIST, Urban Institute (UI), CFAI, ISO, Metro Chiefs, University of Texas/Austin (UT), \& Worcester Polytech (WPI). The partners have a track record of successful scientific collaboration on other projects including the Residential Fireground Field Experiments (NIST Tech Note 1661) \& High-Rise Fireground Field Experiments (NIST Tech Note 1797).  The partners have been accountable in their performance to deliver projects that impact individual FFs, officers \& FDs overall.  
+
+Benefits gained from this project justify costs incurred.  NIST, UI \& IAFF will each supply a project lead. The project leads will participate in project direction, vulnerability tool development \& writing reports. CFAI-Risk will do grant admin \& ISO, UT, WPI, IAFC \& Metro Chiefs will provide subject matter experts.  CFAI, IAFF, IAFC, Metro Chiefs, \& ISO will distribute product to the fire service along with the study coalition website \href{www.firereporting.org}{firereporting.org}. 
+
+Benefits of disseminating the prototype vulnerability tool developed are far reaching \& have potential to produce credible science-based evidence for use by every FD, career or volunteer. Communities \& FD personnel will directly benefit from more effective \& efficient resource allocation decisions as a result of using science-based methods to estimate impacts of resource changes to fires \& other emergencies.
+
+Cost assessment indicates that cost-benefit for this project is approximately 16 dollars per dept (estimated 4,605 career \& mostly career depts with medium \& high risk demographics \& 25,496 volunteer \& mostly volunteer depts with medium \& low risk demographics based on NFPA FD Profile, 2012). These depts \& FFs are associated with more than 30,000 local government decision makers who will also benefit from the project.  Because a single serious injury to a FF may cost several hundred thousand dollars in lost work-time, medical expenses, \& secondary costs, it is expected that the benefits will significantly exceed the costs for this project.
+
+
+\section{Sustainability}
+\label{sec:sustain}
+Project will be sustained through the uninhibited access that decision makers, chiefs, FFs, \& others leaders have to the vulnerability assessment tool. As with all tools previously generated by this partnership, the results will be available from partner organizations \& on the project website \href{www.firereporting.org}{firereporting.org} \& will be passed from many depts to neighboring jurisdictions or colleagues for use.  The project will also be sustained through use of a flexible modular development platform that allows for updating both in structure \& content for years to come.
+
+
+The PARTNER organizations bring together the best of fire service labor \& management, a national measurement lab, an independent scientific research agency, a private risk assessment agency \& the academic community, all of which are necessary to facilitate \& sustain change in the industry. Each partner will assure that the results are distributed for use at the local government level. Further, citing the project \& results in standards such as NFPA 1710 \& NFPA 1600 will enhance sustainability of results.
+
+
+\section{Financial Need}
+\label{sec:money}
+The proposing grantee \& associated partners fully support the effort \& considered jointly funding the project but could not commit financially to fully fund a project of this magnitude without compromising other critical functions of the organizations. As with similar projects conducted by this same coalition, grant funds are necessary to complete the vital work that will provide scientific-based community vulnerability assessment tool to local fire depts.  Partners/Contractors will be used to complete the tasks as described. The operating budget reflects the participation of each organization as described below.
+
+CFAI - Risk - grant administration \& subject matter experts
+
+UI - The Urban Institute will provide statistical design \& analysis support to develop the Community Vulnerability Assessment Tool.  UI will provide technical support to develop community level risk factors based on data acquired from FDs \& constituent communities. UI will conduct analyses of community level data to establish a predictive model of risk. UI will assist with the writing of the technical documentation of the methods \& findings of the research conducted in earlier tasks. UI work includes a senior methodologist, a senior analyst \& a research assistant providing a combined 24\% of a FTE. 
+
+NIST - NIST will be responsible for variable weighting \& statistical design of the tool along with metrics to assess the performance of the tool. To complete this work, NIST will supply project lead, a IT modeling expert \& an applied economist who will expend a combined 75\% of a FTE \& 7\% clerical.
+
+IAFF - IAFF will provide technical support to develop community level risk factors based on data acquired from FDs \& constituent communities.  IAFF will be responsible for securing community hazard/risk data \& FD deployment data for testing the tool.  IAFF will also conduct GIS modeling as necessary \& secure the software developer for programming the tool.  IAFF will also provide video \& graphic development for tool programming \& graphic design for the report.  IAFF will supply a project lead who will expend 25\% of a FTE, one data specialist who will expend 15\%, \& four field assistants at 10\% FTE each \& a clerical at 5\% FTE. 
+
+UT - UT will contribute to the data collection \& statistical data analysis portions of the project. Early in the project, the UT subject matter experts will utilize existing literature, FD surveys, \& governmental data to develop statistical generalized linear models parameterized with community \& FD characteristics to better understand community hazard losses \& frequencies. When a community (civilians, construction, age of housing, geographic location, weather, socio-economic factors, public safety etc.) is viewed as a complex ecosystem, it becomes clear that hazard consequences \& frequencies are strongly tied to the interactions \& interplay between the ``environmental" factors, agents (civilians, managers, public safety etc.), \& climate (economic, physical, etc.). Generalized linear models will help the project team better understand the most critical variables required to accurately cluster/bin FDs \& communities, as well as understand the dominant factors affecting hazard consequences \& frequency. UT will expend 50\% of a fire-statistical analyst graduate student researcher's time \& 0.5 \% of a senior researcher's time.
+
+WPI - WPI will provide technical support to develop community level risk factors based on data acquired from FDs \& the constituent communities. WPI will supply a project subject matter expert who will expend 10\% of a FTE \& a graduate student who will provide 75\% of a FTE.
+
+
+\section{Experience and Expertise}
+\label{sec:exp}
+Project leads have experience \& ability to conduct the proposed activity as was demonstrated in related projects assessing resource deployment in both the low hazard residential \& high-rise/high-hazard structural environment.  The low hazard residential experiments \& the high-rise field experiments were conducted as part of the Multiphase Study on Firefighter Safety \& the Deployment of Resources.  The resultant reports have come to be known as the NIST Studies – Residential Fireground Experiments (Tech Note 1661) \& High-Rise Fireground Experiments (Tech Note 1797).
+
+
+
+\section{Performance}
+\label{sec:perform}
+Applicant, project leads \& partner organizations have proven track records for timely \& quality project completion in similar projects including other AFG awards. Additionally, project leads have the experience \& ability to execute proposed tasks.  Project leads served as DHS Principle Investigators on the Multiphase Study on Firefighter Safety \& Deployment of Resources. (FY 2005, FY 2006, FY 2008, FY 2009, FY 2010, \& FY 2011)- 2 grants awarded under AFG (R\&D) \& 4 grants under AFG (FP\&S). 
+
+One lead also served as PI on 2 USFA cooperative agreements to assess FF LOD death \& injury \& develop fire service risk management models, \& managed multiple years of cooperative agreements with the USFA regarding fire-based EMS.  Another lead heads a research group with an annual budget in excess of \$3M.
+
+\section{Funding Priorities}
+\label{sec:fund}
+This project meets the funding priority of Fire Prevention and Safety Activity as it is designed to have an impact on all communities \& population groups including high-risk target groups.  Further, the project is designed to help FD leaders \& community decision makers better mitigate the incidence of FF \& civilian death \& injuries caused by fire \& other hazards. 
+
+\section{Meeting the Needs of People with Disabilities}
+\label{sec:dis}
+In today fast changing economy, local government decision makers often alter FD resources faster than fire service leaders can evaluate the potential impact. These whirlwind decisions can leave a community without sufficient resources to respond to emergency calls safely, efficiently, \& effectively.  The effects of poor decision making can have even greater impact on vulnerable populations including the elderly, young children, \& people with disabilities.  The results of this project will not only ensure efficient expenditure of public resources but also raise the bar for the technical discussion of community impact of changes to FD resource levels.  
+
+\section{Conclusion}
+\label{sec:conclusions}
+The intent of the project is to improve FF safety \& effectiveness by developing a community vulnerability assessment tool for use by local FDs to evaluate whether FD resources (both responding apparatus \& personnel) are deployed to match the risk levels inherent to hazards in the community.  If community vulnerability scores are low, it is expected that outcomes in the incidence of FF injury \& death, civilian injury \& death, \& property loss will likely be positive. Likewise, failure to match FD resources deployed to the level of the risk events to which FFs respond will likely result in negative community outcomes. 
+
+Additionally, the project will assist FD leaders, city/county managers, \& other public officials in making sound decisions regarding optimal FD resource allocation based upon scientifically-based community risk assessment, strategic emergency response system design \& the local government’s service commitment to the community.  
+
+
+\bibliographystyle{plain}
+\bibliography{references}
+\end{document}
