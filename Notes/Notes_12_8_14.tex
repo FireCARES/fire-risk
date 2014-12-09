@@ -1,0 +1,130 @@
+% !TEX TS-program = pdflatex
+% !TEX encoding = UTF-8 Unicode
+
+% This is a simple template for a LaTeX document using the "article" class.
+% See "book", "report", "letter" for other types of document.
+
+\documentclass[11pt]{article} % use larger type; default would be 10pt
+
+\usepackage[utf8]{inputenc} % set input encoding (not needed with XeLaTeX)
+
+%%% Examples of Article customizations
+% These packages are optional, depending whether you want the features they provide.
+% See the LaTeX Companion or other references for full information.
+
+%%% PAGE DIMENSIONS
+\usepackage{geometry} % to change the page dimensions
+\geometry{a4paper} % or letterpaper (US) or a5paper or....
+% \geometry{margin=2in} % for example, change the margins to 2 inches all round
+% \geometry{landscape} % set up the page for landscape
+%   read geometry.pdf for detailed page layout information
+
+\usepackage{graphicx} % support the \includegraphics command and options
+
+% \usepackage[parfill]{parskip} % Activate to begin paragraphs with an empty line rather than an indent
+
+%%% PACKAGES
+\usepackage{booktabs} % for much better looking tables
+\usepackage{array} % for better arrays (eg matrices) in maths
+\usepackage{paralist} % very flexible & customisable lists (eg. enumerate/itemize, etc.)
+\usepackage{verbatim} % adds environment for commenting out blocks of text & for better verbatim
+\usepackage{subfig} % make it possible to include more than one captioned figure/table in a single float
+% These packages are all incorporated in the memoir class to one degree or another...
+
+%%% HEADERS & FOOTERS
+\usepackage{fancyhdr} % This should be set AFTER setting up the page geometry
+\pagestyle{fancy} % options: empty , plain , fancy
+\renewcommand{\headrulewidth}{0pt} % customise the layout...
+\lhead{}\chead{}\rhead{}
+\lfoot{}\cfoot{\thepage}\rfoot{}
+
+%%% SECTION TITLE APPEARANCE
+\usepackage{sectsty}
+\allsectionsfont{\sffamily\mdseries\upshape} % (See the fntguide.pdf for font help)
+% (This matches ConTeXt defaults)
+
+%%% ToC (table of contents) APPEARANCE
+\usepackage[nottoc,notlof,notlot]{tocbibind} % Put the bibliography in the ToC
+\usepackage[titles,subfigure]{tocloft} % Alter the style of the Table of Contents
+\renewcommand{\cftsecfont}{\rmfamily\mdseries\upshape}
+\renewcommand{\cftsecpagefont}{\rmfamily\mdseries\upshape} % No bold!
+
+%%% END Article customizations
+
+%%% The "real" document content comes below...
+
+\title{Vulnerablility  Tool  Summary}
+\author{DK Ezekoye}
+%\date{} % Activate to display a given date or no date (if empty),
+         % otherwise the current date is printed 
+
+\begin{document}
+\maketitle
+
+This is the latest summary of our ongoing progress on the Community Vulnerability Tool. This summary reflects additional discussion in Washington DC at IAFF on Monday, December 8, 2014.  We continued discussing a  tool comprised of a set of simple models to meet a one year deliverable to exercise the vulnerability framework. The steps that we agreed upon are outlined below.
+
+\section{Target Jurisdiction}
+
+Because of readily available fire data on Arlington, we chose the city/county(?)  of Arlington, VA as our testbed. 
+We noted that we still need response side information (e.g., what stations, geographic layers (buidings, other risks and hazards).
+
+
+\subsection{Required Data}
+
+We will request fire incident data directly from Arlington and also through NFIRS. Having both data sets will be useful in exploring any differences between the local and national data. We also will need census data for demographic data at the tract level.  Housing inventroy data will also be needed at the census tract level.
+
+Lori is responsible for getting remaining data.
+
+Need to compare routing times versus NFIRS reported response times (Austin will process the NFIRS  data, create a column for Craig . Lori \& Tyler will run a routing program using polygons(?) or using direct routing calculations(?).  
+
+\section{Ignition Model}
+
+We recognize that fire ignition may or may not trigger fire department response. We choose to analyze the fraction of ignition events that trigger firefighter response. The model to be built on fire ignition will be derived directly from fire incident data sets fit to census tract demograhic and building explanatory variables.  The use of a model form as compared to direct draws from the existing data is motivated by the need to exercise the ignition model under conditions in which the underlying census parameters change in time.  A similar incident ignition model was derived for Austin, TX and was presented to the group.
+
+Currently, we have fire frequency at the census tract level.  We need to identify specific properties to ignite.  We will perform a regression analysis to identify the counts of fires for a given census tract.  The characteristics of buildings in the census tract need to be identified. What building characteristics are aggregated to identify the meaningful characteristics?  ACS five year estimates will likely work.  The probability of fire occuring in particular types of buildings will be found.  A draw is performed to determine which type of building will ignite and another random draw (uniform) is performed within the building population to identify the particular address.  
+
+Census tract and building classification/properties will be explicitly identified in the csv file.  
+
+Craig and Austin will be looking at the mulitple layer top down and bottom up modeling.
+
+Rob and Doug will follow up behind Craig and Austin to verify and provide advice on their modeling effort.
+
+\section{Fire Model}
+
+We will explore various forms of fire modeling. We made a significant change in the form of the fire model.  We decided to use a very simple power-law model  t-alpha model for the fire.  The model will be of form:
+
+\begin{equation}
+\dot{Q}=At^{\alpha}
+\label{eq_qdot}
+\end{equation} 
+
+The parameters $\alpha$  and $A$  will be a random variables that contain all sorts of uncertainties about the fire. The pdfs of $\alpha$ and $A$ designated as $n(\alpha)$ and $m(A)$ will be chosen to fit the observables associated with overall fire spread (i.e., room of origin, floor of origin, structure).    The decay of $\alpha$ will be correlated to the firefighter response.  Flashover will be the trigger to identify a fire extending beyond the room of origin.  An explicit calibration step will be used to parameterize the $n(\alpha)$ distribution.
+
+Craig and DK will add to this model.
+
+
+\section{FF Response Model}
+
+The efforts of the past study teams in measuring firefighter response times will be used in this model.  We recognize that there are times associated with fire detection, alarm, deployment, travel, and initiation of suppression activities. Some of these times will be held fixed while others, such as travel time will be determined by direct computation of the distance between the specific structure drawn from the population of census tract structures and a responding fire station.  Noise will be added to the travel time to simulate effects of traffic. 
+
+Action items will be to get response time to the address that is randomly chosen.  An earlier action item was to compare NFIRS response time to the calculated response time (Lori, Luke, and Tyler will be responsible for it).
+
+
+\section{Fire Loss}
+
+The response behavior coupled to the fire model provides a damage area estimate for a particular structure.  By smapling over a sufficiently large number of incidents, we will build a histogram/pdf of damage area for the census tract and then for the jurisdiction.  This will be compared to available fire incident data as validation of the model.
+
+Three possible bins for this are 
+
+\section{Risk Hazards}
+If we imagine that there will be an effect of firefighter response on losses, we must then ask what will be the probability of loss, casualty, death will change associated with responses.  Kathy and Ray will begin to look at the risk implications of the fire within this project.  The mismatch between the resources and rsk hazards will likely affect the probabilities of losses.  Kathy and ray need to 
+
+
+How would metro chiefs rank the top departments?  What criteria would be used to determine what is a good fire department?  
+
+\section{Visualization}
+
+Put on streetcred the ability to load previous incidents and show a red, yellow, green index with fire spread characteristics.
+
+
+\end{document}
