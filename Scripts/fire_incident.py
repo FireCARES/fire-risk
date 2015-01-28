@@ -24,7 +24,7 @@ for num in range(0,fire_call_year):
 	rand = random.randrange(1,len(incident['incident_class_code']),1)
 	if incident['incident_class_code'][rand] == 1:
 	 	ignition[num] = True
-print sum(ignition), 'total fires' #prints number of fires per year
+print sum(ignition), 'projected fires' #prints number of fires per year
 
 #determine location of fire and structure type
 
