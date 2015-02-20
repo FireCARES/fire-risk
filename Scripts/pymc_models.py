@@ -3,30 +3,19 @@
 """ Module for setting up statistical models"""
 
 from __future__ import division
-import pandas as pd
 import pymc as mc
 import numpy as np
 
 # import pymc_data
 
 
-def response_time_correction():
+def response_time_correction(total_fires):
     """Estimating a time correction for fire department response to fire
     using a fire growth model and estimates of fire fighter response time
     """
 
     # Get NFIRS data - this is a placeholder for now
-    nfirs_bins = np.array([250,62,3])/(250+62+3)
-
-    # Get incident data for total fire calculation
-    incident = pd.read_csv('../Data/arlington_incidents.csv', header=0)
-    total_incidents = len(incident['incident_class_code'])
-    total_fires = 0
-    for i in incident['incident_class_code']:
-        if i == 1:
-           total_fires = total_fires + 1 
-    years_of_data = 6
-    fire_call_year = int(total_incidents/years_of_data)    
+    nfirs_bins = np.array([250,62,3])/(250+62+3)   
 
     # Priors
     correction_time = mc.Uniform('tct', lower=-1000., upper=1000., value=0.)
