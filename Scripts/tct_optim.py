@@ -55,10 +55,9 @@ class tctOptim:
         pred_bins = self.binFun(tct=tct)
         eTot = 0.0
 
-        # Calculate the normalized sum of squared errors
+        # Calculate the sum of squared errors
         for i in range(len(self.true_bins)):
-            eTot += ((self.true_bins[i]-pred_bins[i])/self.true_bins[i])**2
-
+            eTot += (self.true_bins[i]-pred_bins[i])**2
         return eTot
 
     # Golden section search for tct
