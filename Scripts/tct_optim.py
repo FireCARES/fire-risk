@@ -57,7 +57,7 @@ class tctOptim:
 
         # Calculate the normalized sum of squared errors
         for i in range(len(self.true_bins)):
-            eTot = ((self.true_bins[i]-pred_bins[i])/self.true_bins[i])**2
+            eTot += ((self.true_bins[i]-pred_bins[i])/self.true_bins[i])**2
 
         return eTot
 
@@ -121,7 +121,7 @@ class tctOptim:
                     eTotal_H = eTotal_A
                     it_A = it_B
                     eTotal_A = eTotal_B
-
+        
         return it_A
 
 # Read in data and get total fires
