@@ -1,6 +1,6 @@
 from __future__ import division
 import numpy as np
-import matplotlib.pyplot as plt
+from pylab import *
 import pandas as pd
 
 # Optimization class for finding tct
@@ -16,6 +16,7 @@ class tctOptim:
     def sampler(self):
         # Draw n samples from each distribution where n is the total number of fires
         self.alpha = np.random.uniform(0.0029,0.047,size=self.total_fires)
+        self.exp = np.random.uniform(1,2,size=self.total_fires)
         time_to_alarm = np.random.uniform(30,60,size=self.total_fires)
         time_to_dispatch = np.random.uniform(40,80,size=self.total_fires)
         time_to_turnout = np.random.uniform(60,100,size=self.total_fires)
@@ -36,7 +37,7 @@ class tctOptim:
         # Loop through all fires and assign to a bin
         for num in range(0,self.total_fires):
             running_time_cor = self.running_time[num] + tct
-            fire_size[num] = self.alpha[num]*(running_time_cor)**2
+            fire_size[num] = self.alpha[num]*(running_time_cor)**self.exp[num]
 
             # Assesing damage typical resident structure
             if fire_size[num] < 2000:
@@ -124,16 +125,23 @@ class tctOptim:
         return it_A
 
 # Read in data and get total fires
-incident = pd.read_csv('../Data/arlington_incidents.csv', header=0)
-total_incidents = len(incident['incident_class_code'])
-total_fires = 0
-for i in incident['incident_class_code']:
-    if i == 1:
-       total_fires = total_fires + 1 
+data = pd.read_csv('../Data/ArlingtonCensusFire.csv', header=0)
+total_fires = len(data['inc_type'])
+room_origin = 0 
+floor_origin = 0 
+structure = 0
+for i in data['fire_sprd']:
+    if i == 1 or i == 2:
+       room_origin = room_origin + 1 
+    elif i == 3 or i == 4:
+        floor_origin = floor_origin + 1
+    else:
+        structure = structure + 1
 print 'Total fires:',total_fires
 
 # True bins
-bAct = [11,134,170]
+bAct = [room_origin,floor_origin,structure]
+print 'Actual bins:', bAct
 
 # Call optimizer class
 tOpt = tctOptim(total_fires,bAct)
@@ -142,15 +150,13 @@ tOpt = tctOptim(total_fires,bAct)
 tOpt.sampler()
 
 # Print bins of sample
-print tOpt.binFun()
+print 'Single Bin Sample:',tOpt.binFun()
 
 # Single optimization run
 tct = tOpt.goldenSection()
-print tct
-print 'Corrected bins'
-print tOpt.binFun(tct=tct)
-print 'Truth'
-print bAct
+print 'Single correction time:',tct
+print 'Single corrected bin:',tOpt.binFun(tct=tct)
+
 
 # Array of correction times
 n = 1000
@@ -164,8 +170,9 @@ for i in range(n):
     tct[i] = tOpt.goldenSection()
 
 # Plot a histogram of tct
+
 plt.figure()
 plt.hist(tct,bins=20)
 plt.xlabel('t correction (s)',size=18)
 plt.ylabel('Count',size=18)
-plt.show()
+savefig('../Figures/t_correct_histogram.pdf',format='pdf')
