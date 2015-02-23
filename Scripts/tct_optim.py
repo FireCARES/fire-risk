@@ -1,4 +1,6 @@
 from __future__ import division
+import matplotlib
+matplotlib.use('Agg')
 import numpy as np
 from pylab import *
 import pandas as pd
