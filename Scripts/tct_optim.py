@@ -93,7 +93,7 @@ class tctOptim:
             print "%i\t%.2f\t%.2f" %(count, it_A, eTotal_A)
         count += 1
 
-        while abs((it_L-it_H)/it_L)>0.05 and count < 50:
+        while abs(it_L-it_H)>1.0 and count < 50:
             # Calculate next golden point for comparison
             it_B = it_L + it_H - it_A
             eTotal_B = self.eCalc(it_B)
