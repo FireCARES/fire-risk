@@ -178,3 +178,6 @@ plt.hist(tct,bins=20)
 plt.xlabel('t correction (s)',size=18)
 plt.ylabel('Count',size=18)
 savefig('../Figures/t_correct_histogram.pdf',format='pdf')
+
+# Save tct array
+np.savetxt('../Figures/t_correct_raw.csv',tct,delimiter=',')
