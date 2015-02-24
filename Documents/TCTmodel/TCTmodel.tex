@@ -1,0 +1,69 @@
+\documentclass[letterpaper,11pt]{article}
+\usepackage{amsmath}
+\begin{document}
+\title{$t_{ct}$ model}
+
+\maketitle
+\section{Introduction}
+This document contains an exploration of a potential fire department assessment tool, deemed the $t_{ct}$ model of fire department response. Two approaches have been used in examining this assessment tool. An optimization approach, and a bayesian hierarchical approach.
+\section{$t_{ct}$ model}
+The $t_{ct}$ model of a fire department response to a fire involves the following assumptions:
+\begin{itemize}
+  \item Fires are parametrized as follows: $\dot{Q}=At^\alpha$, where $\dot{Q}$ is the heat release rate of the fire (kW), $A$ is the initial size of the fire, $\alpha$ is the ``growth rate'' of the fire, and $t$ is the growth time of the fire.
+  \item A fire department unit responding to a fire must complete some number of tasks that take up time before they can put water on the fire. For purposes of this model these tasks are  broken up as follows:
+    \begin{itemize}
+      \item Time to alarm - Time required before the fire is noticed, and some form of action is taken.
+      \item Time to dispatch - Time required for dispatch operator to obtain enough information regarding the fire and location to issue a dispatch.
+      \item Time to turnout - Time required for firefighter turnout.
+      \item Time to arrival - Transit time required for engine between station and fire location.
+      \item Time to suppress - Time required for firefighters on-scene to put water onto fire (includes size-up, hose connection, etc.)
+    \end{itemize}
+  \item When water is put onto a fire, the fire is assumed to have reached the peak size that it will ever reach. In other words, growth time for the fire is equivalent to the sum of the tasks the fire department must perform to suppress the fire. 
+    \[t = t_{growth} = t_{alarm}+t_{dispatch}+t_{turnout}+t_{arrival}+t_{suppress} \]
+  \item There exists some mapping between the size of a fire and the extent of its spread. For example, one may assume that a fire that grows beyond 2 MW will, guaranteed, spread beyond its room of origin.
+\end{itemize}
+
+In addition to these assumptions, data are available for a given fire department jurisdiction indicating the extent of fire spread in said jurisdiction's structure fire responses. A single fire response is denoted $X$, and is described as follows:
+\[X = \left\{
+      \begin{array}{ll}
+	0 & \text{Fire contained to room of origin} \\
+	1 & \text{Fire contained to building of origin} \\
+	2 & \text{Fire spreads beyond building of origin}
+      \end{array}
+      \right.
+\]
+Thus, if $X=1$, that means a given fire was contained to the building of origin.
+
+\section{Models}
+This section contains the mathematical assumptions and derivations for the two models explored. The glossary of terms used for both models is contained in Table~\ref{tab:terminology}
+\begin{table}
+  \centering
+  \begin{tabular}{lp{4cm}}
+    $X$ & extent of fire spread \\
+    $x_i$ & individual observation of extent of fire spread \\
+    $t_{al}$ & alarm time \\
+    $t_{di}$ & dispatch time \\
+    $t_{to}$ & turnout time \\
+    $t_{ar}$ & arrival time \\
+    $t_{su}$ & suppression time \\
+    $t_{cor}$ & correction time \\
+    $A$ & Initial fire size \\
+    $t_{gro}$ & Fire growth time \\
+    $\alpha$ & Fire ``growth rate'' \\
+    $\dot{Q}$ & Fire size (kW) \\
+  \end{tabular}
+  \caption{Glossary of terms used in model}
+  \label{tab:terminology}
+\end{table}
+\section{Optimization approach}
+\section{Bayesian approach}
+\subsection{Final expression}
+
+\[P(t_{cor} | t_{al},t_{di},t_{to},t_{ar},t_{su},\alpha,A,x_i) \sim
+  \begin{array}{lr}
+    Unif(-840,689165) & : x_i = 0 \\
+    Unif(-634,3447785) & : x_i = 1 \\
+    Unif(-378.74,\infty) & : x_i = 2 \\
+  \end{array}
+\]
+\end{document}
