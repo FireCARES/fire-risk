@@ -55,8 +55,23 @@ This section contains the mathematical assumptions and derivations for the two m
   \caption{Glossary of terms used in model}
   \label{tab:terminology}
 \end{table}
+
 \section{Optimization approach}
+
+The optimization method seeks to minimize the difference between a random sample from the ideal model and the true population of fires for a given fire department jurisdiction by using the correction time. This is accomplished by first calculating the total number of fires a jurisdiction has seen and randomly sampling this many fires from the growth model. A single value of $t_{cor}$ is then found that minimizes the sum of squared errors between the number of fires in each of the sampled bins and the observed number of fires in each bin. 
+
+The steps are as follows:
+\begin{itemize}
+  \item Sample $n$ times from $A$, $\alpha$, and alarm, dispatch, turnout, arrival, and suppression times
+  \item Use a golden section search for $t_{cor}$ with the objective function 
+  \begin{equation}    
+    min{\sum (N_{i,obs}-N_{i,pre})^2}
+  \end{equation}
+  \item Repeat this process to construct a population of $t_{cor}$ for the given jurisdiction
+\end{itemize}
+
 \section{Bayesian approach}
+
 \subsection{Final expression}
 
 \[P(t_{cor} | t_{al},t_{di},t_{to},t_{ar},t_{su},\alpha,A,x_i) \sim
