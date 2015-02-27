@@ -95,23 +95,28 @@ class tctGibbs:
     def draw_alph(self,Qmin,Qmax,tcor,A):
         lowalph = (pl.log(Qmin)-pl.log(A))/pl.log(max(tcor+self.tfiretasks,0.0001))
         upalph = (pl.log(Qmax)-pl.log(A))/pl.log(max(tcor+self.tfiretasks,0.0001))
+        if(upalph < self.lowalph):
+            upalph = self.lowalph
         return np.random.uniform(max(self.lowalph,lowalph),min(self.upalph,upalph))
     
     #Gibbs sampling function
     def fireGibbs(self,n_iter,burn,thin,Qmin,Qmax,tcor,A,alph):
         print 'fireGibbs called'
-        gibbstcor = np.full(n_iter,-1)
-        gibbsA = np.full(n_iter,-1)
-        gibbsalph = np.full(n_iter,-1)
+        n_store = int(np.ceil((n_iter-burn))/thin+0.00001)
+        gibbstcor = np.full(n_store,-1)
+        gibbsA = np.full(n_store,-1)
+        gibbsalph = np.full(n_store,-1)
+        s = 0
         for i in range(0,n_iter):
             self.draw_tfiretasks()
             tcor = self.draw_tcor(Qmin,Qmax,A,alph)
             A = self.draw_A(Qmin,Qmax,tcor,alph)
             alph = self.draw_alph(Qmin,Qmax,tcor,A)
             if(i >= burn and i%thin==0):
-                gibbstcor[i] = tcor
-                gibbsA[i] = A
-                gibbsalph[i] = alph
+                gibbstcor[s] = tcor
+                gibbsA[s] = A
+                gibbsalph[s] = alph
+                s = s+1
         return(gibbstcor,gibbsA,gibbsalph)
     #output storage function
     def gibbs_store(self,gibbsoutputlist,filenameoutputlist):
@@ -148,4 +153,4 @@ class tctGibbs:
 
 
 test = tctGibbs()
-test.runGibbs(1000000,39,30)
+test.runGibbs(1000000,100,100)

@@ -24,4 +24,8 @@ alphBeyond <- read.csv('alphBeyond.csv',header=FALSE)
 gibbsfire <- cbind(tcorRoom,tcorBldg,tcorBeyond,ARoom,ABldg,ABeyond,alphRoom,alphBldg,alphBeyond)
 
 names(gibbsfire) <- c('tcorRoom','tcorBldg','tcorBeyond','ARoom','ABldg','ABeyond','alphRoom','alphBldg','alphBeyond')
+gibbsfire$avgtcor <- (350/516)*gibbsfire$tcorRoom+(129/516)*gibbsfire$tcorBldg+(37/516)*gibbsfire$tcorBeyond
 
+gibbsfire <- as.mcmc(gibbsfire)
+
+codamenu()
