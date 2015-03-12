@@ -9,23 +9,27 @@ tcorBldg <- read.csv('tcorBldg.csv',header=FALSE)
 
 tcorBeyond <- read.csv('tcorBeyond.csv',header=FALSE)
 
-ARoom <- read.csv('ARoom.csv',header=FALSE)
+AoRoom <- read.csv('AoRoom.csv',header=FALSE)
 
-ABldg <- read.csv('ABldg.csv',header=FALSE)
+AoBldg <- read.csv('AoBldg.csv',header=FALSE)
 
-ABeyond <- read.csv('ABeyond.csv',header=FALSE)
+AoBeyond <- read.csv('AoBeyond.csv',header=FALSE)
 
-alphRoom <- read.csv('alphRoom.csv',header=FALSE)
+thetaRoom <- read.csv('thetaRoom.csv',header=FALSE)
 
-alphBldg <- read.csv('alphBldg.csv',header=FALSE)
+thetaBldg <- read.csv('thetaBldg.csv',header=FALSE)
 
-alphBeyond <- read.csv('alphBeyond.csv',header=FALSE)
+thetaBeyond <- read.csv('thetaBeyond.csv',header=FALSE)
 
-gibbsfire <- cbind(tcorRoom,tcorBldg,tcorBeyond,ARoom,ABldg,ABeyond,alphRoom,alphBldg,alphBeyond)
+gibbsfire <- cbind(tcorRoom,tcorBldg,tcorBeyond,AoRoom,AoBldg,AoBeyond,thetaRoom,thetaBldg,thetaBeyond)
 
-names(gibbsfire) <- c('tcorRoom','tcorBldg','tcorBeyond','ARoom','ABldg','ABeyond','alphRoom','alphBldg','alphBeyond')
-gibbsfire$avgtcor <- (350/516)*gibbsfire$tcorRoom+(129/516)*gibbsfire$tcorBldg+(37/516)*gibbsfire$tcorBeyond
-
+names(gibbsfire) <- c('tcorRoom','tcorBldg','tcorBeyond','AoRoom','AoBldg','AoBeyond','thetaRoom','thetaBldg','thetaBeyond')
+gibbsfire$spreadavgtcor <- (283/395)*gibbsfire$tcorRoom+(103/395)*gibbsfire$tcorBldg+(9/395)*gibbsfire$tcorBeyond
+roomdam <- 283*10314.42
+bldgdam <- 103*63119.22
+beyonddam <- 9*84532.68
+alldam <- roomdam+bldgdam+beyonddam
+gibbsfire$dollaravgtcor <- (roomdam/alldam)*gibbsfire$tcorRoom+(bldgdam/alldam)*gibbsfire$tcorBldg+(beyonddam/alldam)*gibbsfire$tcorBeyond
 gibbsfire <- as.mcmc(gibbsfire)
 
 codamenu()

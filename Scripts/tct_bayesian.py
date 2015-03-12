@@ -6,9 +6,9 @@ import pandas as pd
 class tctGibbs:
     #initialization
     # inputs: 
-    def __init__(self,cro=76,cbu=20,cwo=4,talup=60,tallow=30,
+    def __init__(self,cro=76,cbu=20,cwo=4,talup=120,tallow=90,
                  tdisup=80,tdislow=40,tturup=100,tturlow=60,tarrup=420,
-                 tarrlow=300,tsupup=180,tsuplow=60,sizemin=0.01,sizeroom=2000,
+                 tarrlow=300,tsupup=180,tsuplow=60,sizemin=100,sizeroom=2000,
                  sizebldg=10000,sizemax=3000000,
                  upA=0.047,lowA=0.0029,upalph=2,lowalph=1):
 
@@ -88,8 +88,11 @@ class tctGibbs:
     #Inputs: relevant Qmin and Qmax thresholds and current tcor and alph values 
     def draw_A(self,Qmin,Qmax,tcor,alph):
         lowA = (Qmin)/(max(tcor+self.tfiretasks,0.0001)**(alph))
-        upA = (Qmax)/(max(tcor+self.tfiretasks,0.0001)**(alph))
-        return np.random.uniform(max(lowA,self.lowA),min(upA,self.upA))
+        upA = min((Qmax)/(max(tcor+self.tfiretasks,0.0001)**(alph)),
+                  Qmin/self.tfiretasks**2)
+        #return np.random.uniform(max(lowA,self.lowA),min(upA,self.upA))
+        return np.random.uniform(lowA,upA)
+        
     #Draw the tcor values for room fires
     #Inputs: relevant Qmin and Qmax thresholds and current tcor and A values 
     def draw_alph(self,Qmin,Qmax,tcor,A):
@@ -97,7 +100,10 @@ class tctGibbs:
         upalph = (pl.log(Qmax)-pl.log(A))/pl.log(max(tcor+self.tfiretasks,0.0001))
         if(upalph < self.lowalph):
             upalph = self.lowalph
-        return np.random.uniform(max(self.lowalph,lowalph),min(self.upalph,upalph))
+        #return np.random.uniform(max(self.lowalph,lowalph),min(self.upalph,upalph))
+        #return np.random.uniform(self.lowalph,self.upalph)
+        return self.upalph
+        
     
     #Gibbs sampling function
     def fireGibbs(self,n_iter,burn,thin,Qmin,Qmax,tcor,A,alph):
@@ -109,8 +115,8 @@ class tctGibbs:
         s = 0
         for i in range(0,n_iter):
             self.draw_tfiretasks()
-            tcor = self.draw_tcor(Qmin,Qmax,A,alph)
             A = self.draw_A(Qmin,Qmax,tcor,alph)
+            tcor = self.draw_tcor(Qmin,Qmax,A,alph)
             alph = self.draw_alph(Qmin,Qmax,tcor,A)
             if(i >= burn and i%thin==0):
                 gibbstcor[s] = tcor
@@ -153,4 +159,4 @@ class tctGibbs:
 
 
 test = tctGibbs()
-test.runGibbs(1000000,100,100)
+test.runGibbs(100000,100,10)
