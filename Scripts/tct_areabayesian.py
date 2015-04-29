@@ -32,8 +32,9 @@ class tctGibbs:
         self.tsuplow = tsuplow # lower bound on t_suppression
 
         #specify floor area ranges(sq. ft)
-        self.arearoomlow = arearoomlow
+
         self.arearoomhigh = arearoomhigh
+        self.arearoomlow = arearoomlow
         self.areabldglow = areabldglow
         self.areabldghigh = areabldghigh
         #specify original bounds on Ao and theta
@@ -138,7 +139,7 @@ class tctGibbs:
         #store output
         self.gibbs_store([gibbstcor,gibbsAo,gibbstheta],['tcorRoom.csv',
                       'AoRoom.csv','thetaRoom.csv'])
-         #Run building fires next and output
+        #Run building fires next and output
         gibbstcor,gibbsAo,gibbstheta = self.fireGibbs(n_iter,burn,thin,self.arearoomlow,
                                                self.arearoomhigh,self.areabldglow,
                                                self.areabldghigh,self.tcorBldg,
