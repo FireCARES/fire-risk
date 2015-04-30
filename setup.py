@@ -10,6 +10,7 @@ from setuptools import find_packages
 name = 'fire-risk'
 package = 'fire_risk'
 description = 'Numerical Models for Developing Community Scale Risk Model'
+long_description = open('README.md').read()
 url = 'https://github.com/FireCARES/fire-risk'
 author = 'Austin Anderson, Tyler Garner, Andrew Kurzawski, Craig Weinschenk'
 author_email = 'AustinDAnderson@gmail.com, garnertb@prominentedge.com, AJKurzawski@gmail.com'
@@ -55,6 +56,7 @@ setup(
     url=url,
     license=license,
     description=description,
+    long_description=long_description,
     author=author,
     author_email=author_email,
     packages=find_packages(exclude=["tests.*", "tests"]),
