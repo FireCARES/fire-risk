@@ -60,6 +60,7 @@ class DISTCalculate(object):
         """Draw a new value of alarm time from its uniform distribution
 
         >>> random.seed(1234)
+        >>> test = DISTCalculate()
         >>> test.draw_uniform_alarm_time(20,30)
         >>> print round(test.alarm_time,2)
         29.66
@@ -71,6 +72,7 @@ class DISTCalculate(object):
         """Draw a new value of dispatch time from its uniform distribution
 
         >>> random.seed(1234)
+        >>> test = DISTCalculate()
         >>> test.draw_uniform_dispatch_time(20,30)
         >>> print round(test.dispatch_time,2)
         29.66
@@ -82,6 +84,7 @@ class DISTCalculate(object):
         """Draw a new value of turnout time from its uniform distribution
 
         >>> random.seed(1234)
+        >>> test = DISTCalculate()
         >>> test.draw_uniform_turnout_time(20,30)
         >>> print round(test.turnout_time,2)
         29.66
@@ -93,6 +96,7 @@ class DISTCalculate(object):
         """Draw a new value of arrival time from its uniform distribution
 
         >>> random.seed(1234)
+        >>> test = DISTCalculate()
         >>> test.draw_uniform_arrival_time(20,30)
         >>> print round(test.arrival_time,2)
         29.66
@@ -104,6 +108,7 @@ class DISTCalculate(object):
         """Draw a new value of suppression time from its uniform distribution
 
         >>> random.seed(1234)
+        >>> test = DISTCalculate()
         >>> test.draw_uniform_suppression_time(20,30)
         >>> print round(test.suppression_time,2)
         29.66
@@ -117,6 +122,7 @@ class DISTCalculate(object):
         """Draw a new value of room area from its uniform distribution
 
         >>> random.seed(1234)
+        >>> test = DISTCalculate()
         >>> test.draw_uniform_room_area(20,30)
         >>> print round(test.room_area,2)
         29.66
@@ -131,6 +137,7 @@ class DISTCalculate(object):
         to become valid.
         
         >>> random.seed(1234)
+        >>> test = DISTCalculate()
         >>> test.draw_sampled_room_area(range(1,10))
         >>> print test.room_area
         9
@@ -143,6 +150,7 @@ class DISTCalculate(object):
         """Draw a new value of building area from its uniform distribution
 
         >>> random.seed(1234)
+        >>> test = DISTCalculate()
         >>> test.draw_uniform_bldg_area(20,30)
         >>> print round(test.bldg_area,2)
         29.66
@@ -165,6 +173,7 @@ class DISTCalculate(object):
         """Draw a new value of building area from its uniform distribution
 
         >>> random.seed(1234)
+        >>> test = DISTCalculate()
         >>> test.draw_uniform_floor_area(20,30)
         >>> print round(test.floor_area,2)
         29.66
@@ -182,6 +191,7 @@ class DISTCalculate(object):
         attributes and area attributes. See the doctest.
 
         >>> random.seed(1234)
+        >>> test = DISTCalculate()
         >>> call_list = ['alarm_time','dispatch_time','turnout_time','arrival_time',
         ... 'suppression_time','room_area','bldg_area']
         >>> names = ['draw_uniform_{}'.format(x) for x in call_list]
@@ -208,6 +218,7 @@ class DISTCalculate(object):
         attributes and area attributes. See the doctest.
 
         >>> random.seed(1234)
+        >>> test = DISTCalculate()
         >>> call_list = ['alarm_time','dispatch_time','turnout_time','arrival_time',
         ... 'suppression_time','room_area','floor_area','bldg_area']
         >>> names = ['draw_uniform_{}'.format(x) for x in call_list]
@@ -233,6 +244,7 @@ class DISTCalculate(object):
         attributes and area attributes. See the doctest.
 
         >>> random.seed(1234)
+        >>> test = DISTCalculate()
         >>> call_list = ['alarm_time','dispatch_time','turnout_time','arrival_time',
         ... 'suppression_time','room_area','bldg_area']
         >>> names = ['draw_uniform_{}'.format(x) for x in call_list]
@@ -278,6 +290,7 @@ class DISTCalculate(object):
         building area.
 
         >>> random.seed(1234)
+        >>> test = DISTCalculate()
         >>> call_list = ['alarm_time','dispatch_time','turnout_time','arrival_time',
         ... 'suppression_time','room_area','bldg_area']
         >>> names = ['draw_uniform_{}'.format(x) for x in call_list]

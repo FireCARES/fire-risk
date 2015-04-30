@@ -20,7 +20,7 @@ class DISTImport(object):
 
     def get_firespread_count(self):
         """Return the firespread_count attribute
-
+        >>> test = DISTImport()
         >>> test.get_firespread_count()
         {'bldg': 0, 'object': 0, 'beyond': 0, 'room': 0, 'floor': 0}
         """
@@ -28,7 +28,7 @@ class DISTImport(object):
 
     def get_extent_list(self):
         """Return the extent_list attribute
-
+        >>> test = DISTImport()
         >>> test.get_extent_list()
         ['object', 'room', 'floor', 'bldg', 'beyond']
         """
@@ -75,7 +75,8 @@ class DISTImport(object):
         
     def set_firespread_count(self,list_of_five_values):
         """Manually set the values of firespread_count
-        
+
+        >>> test = DISTImport()
         >>> test.set_firespread_count([300,200,50,100,10])
         >>> test.get_firespread_count()
         {'bldg': 100, 'object': 300, 'beyond': 10, 'room': 200, 'floor': 50}
@@ -86,7 +87,8 @@ class DISTImport(object):
     # Room area distribution import methods
     def room_area_set_uniform_limits(self,lowerbound,upperbound):
         """Set the limits of the uniform room area distribution.
-        
+
+        >>> test = DISTImport()
         >>> test.room_area_set_uniform_limits(20,30)
         
         """
@@ -94,7 +96,8 @@ class DISTImport(object):
 
     def room_area_get_uniform_limits(self):
         """Return the uniform distribution limits of the room areas
-        
+
+        >>> test = DISTImport()
         >>> test.room_area_get_uniform_limits()
         self.room_area_limits is undefined!
 
@@ -125,7 +128,8 @@ class DISTImport(object):
     #and sensible
     def floor_area_set_uniform_limits(self,lowerbound,upperbound):
         """Set the limits of the uniform floor area distribution.
-        
+
+        >>> test = DISTImport()
         >>> test.floor_area_set_uniform_limits(20,30)
         
         """
@@ -133,7 +137,8 @@ class DISTImport(object):
 
     def floor_area_get_uniform_limits(self):
         """Return the uniform distribution limits of the floor areas
-        
+
+        >>> test = DISTImport()
         >>> test.floor_area_get_uniform_limits()
         self.floor_area_limits is undefined!
 
@@ -161,7 +166,7 @@ class DISTImport(object):
     #Building Area distribution import methods
     def bldg_area_set_uniform_limits(self, lowerbound, upperbound):
         """Set the limits of the uniform room area distribution.
-        
+        >>> test = DISTImport()
         >>> test.bldg_area_set_uniform_limits(20,30)
         
         """
@@ -169,7 +174,8 @@ class DISTImport(object):
 
     def bldg_area_get_uniform_limits(self):
         """Return the uniform distribution limits of the bldg areas
-        
+
+        >>> test = DISTImport()
         >>> test.bldg_area_get_uniform_limits()
         self.bldg_area_limits is undefined!
 
@@ -217,7 +223,7 @@ class DISTImport(object):
     #Time input methods
     def alarm_time_set_uniform_limits(self,lowerbound,upperbound):
         """Set the limits of the alarm time uniform distribution
-
+        >>> test = DISTImport()
         >>> test.alarm_time_set_uniform_limits(20,30)
 
         """
@@ -225,6 +231,7 @@ class DISTImport(object):
     def alarm_time_get_uniform_limits(self):
         """Return the uniform distribution limits of the alarm time
 
+        >>> test = DISTImport()
         >>> test.alarm_time_get_uniform_limits()
         self.alarm_time_limits is undefined!
 
@@ -240,7 +247,7 @@ class DISTImport(object):
 
     def dispatch_time_set_uniform_limits(self,lowerbound,upperbound):
         """Set the limits of the dispatch time uniform distribution
-
+        >>> test = DISTImport()
         >>> test.dispatch_time_set_uniform_limits(20,30)
 
         """
@@ -248,6 +255,7 @@ class DISTImport(object):
     def dispatch_time_get_uniform_limits(self):
         """Return the uniform distribution limits of the dispatch time
 
+        >>> test = DISTImport()
         >>> test.dispatch_time_get_uniform_limits()
         self.dispatch_time_limits is undefined!
 
@@ -264,13 +272,16 @@ class DISTImport(object):
     def turnout_time_set_uniform_limits(self,lowerbound,upperbound):
         """Set the limits of the turnout time uniform distribution
 
+        >>> test = DISTImport()
         >>> test.turnout_time_set_uniform_limits(20,30)
 
         """
         self.turnout_time_limits = (lowerbound,upperbound)
+
     def turnout_time_get_uniform_limits(self):
         """Return the uniform distribution limits of the turnout time
 
+        >>> test = DISTImport()
         >>> test.turnout_time_get_uniform_limits()
         self.turnout_time_limits is undefined!
 
@@ -287,6 +298,7 @@ class DISTImport(object):
     def arrival_time_set_uniform_limits(self,lowerbound,upperbound):
         """Set the limits of the arrival time uniform distribution
 
+        >>> test = DISTImport()
         >>> test.arrival_time_set_uniform_limits(20,30)
 
         """
@@ -294,6 +306,7 @@ class DISTImport(object):
     def arrival_time_get_uniform_limits(self):
         """Return the uniform distribution limits of the arrival time
 
+        >>> test = DISTImport()
         >>> test.arrival_time_get_uniform_limits()
         self.arrival_time_limits is undefined!
 
@@ -310,6 +323,7 @@ class DISTImport(object):
     def suppression_time_set_uniform_limits(self,lowerbound,upperbound):
         """Set the limits of the suppression time uniform distribution
 
+        >>> test = DISTImport()
         >>> test.suppression_time_set_uniform_limits(20,30)
 
         """
@@ -317,6 +331,7 @@ class DISTImport(object):
     def suppression_time_get_uniform_limits(self):
         """Return the uniform distribution limits of the suppression time
 
+        >>> test = DISTImport()
         >>> test.suppression_time_get_uniform_limits()
         self.suppression_time_limits is undefined!
 

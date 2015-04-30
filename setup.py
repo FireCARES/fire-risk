@@ -61,15 +61,17 @@ setup(
     author_email=author_email,
     packages=find_packages(exclude=["tests.*", "tests"]),
     package_data=get_package_data(package),
+    test_suite='tests',
     install_requires=[
         'matplotlib==1.4.3',
         'numpy==1.9.2',
         'pandas==0.16.0',
         'psycopg2==2.6',
-        'click==4.0'
+        'click==4.0',
+        'pytest==2.7.0'
     ],
     zip_safe=False,
-    entry_points={
-    },
+    #entry_points={
+    #},
 )
 
