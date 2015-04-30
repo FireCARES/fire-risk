@@ -127,7 +127,7 @@ class tctOptim:
         return it_A
 
 # Read in data and get total fires
-data = pd.read_csv('../Data/ArlingtonCensusFire.csv', header=0)
+data = pd.read_csv('data/arlington_census_fire.csv', header=0)
 total_fires = len(data['inc_type'])
 room_origin = 0 
 floor_origin = 0 
@@ -177,7 +177,7 @@ plt.figure()
 plt.hist(tct,bins=20)
 plt.xlabel('t correction (s)',size=18)
 plt.ylabel('Count',size=18)
-savefig('../Figures/t_correct_histogram.pdf',format='pdf')
+savefig('figures/t_correct_histogram.pdf',format='pdf')
 
 # Save tct array
-np.savetxt('../Figures/t_correct_raw.csv',tct,delimiter=',')
+np.savetxt('figures/t_correct_raw.csv',tct,delimiter=',')

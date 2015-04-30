@@ -127,7 +127,7 @@ class tctGibbs:
     #output storage function
     def gibbs_store(self,gibbsoutputlist,filenameoutputlist):
         for i in range(0,len(gibbsoutputlist)):
-            f=open('../RawOutput/'+filenameoutputlist[i],'wb')
+            f=open('raw_output/'+filenameoutputlist[i],'wb')
             np.savetxt(f,gibbsoutputlist[i],delimiter=',')
             f.close()
 

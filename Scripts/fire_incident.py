@@ -9,7 +9,7 @@ from matplotlib import rcParams
 rcParams.update({'figure.autolayout': True})
 import random
 
-incident = pd.read_csv('../Data/arlington_incidents.csv', header=0)
+incident = pd.read_csv('data/arlington_incidents.csv', header=0)
 total_incidents = len(incident['incident_class_code'])
 total_fires = 0
 for i in incident['incident_class_code']:

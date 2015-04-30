@@ -8,7 +8,7 @@ from pylab import *
 import random
 
 #import the data
-incidents = pd.read_csv('../Data/ArlingtonCensusFireDataYearly.csv')
+incidents = pd.read_csv('data/ArlingtonCensusFireDataYearly.csv')
 #aggregate the yearly number of residential structure fires that ACFD responded to
 yeardist = incidents.groupby('year').aggregate('sum')['COUNT']
 #aggregate the total number of residential fires that occurred in each census tract

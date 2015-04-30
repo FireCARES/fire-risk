@@ -53,9 +53,9 @@ class DISTImport(object):
         Returns:
             changes the relevant values of the firespread_count
 
-        >>> test.pgdb_import('nfirs2','postgres','localhost','network345','marginalstrucfires')
-        >>> test.get_firespread_count()
-        {'bldg': 411340L, 'object': 72775L, 'beyond': 324971L, 'room': 353886L, 'floor': 88510L}
+        #>>> test.pgdb_import()
+        #>>> test.get_firespread_count()
+        #{'bldg': 411340L, 'object': 72775L, 'beyond': 324971L, 'room': 353886L, 'floor': 88510L}
         """
         try: 
             conn = psycopg2.connect("dbname='{}' user='{}' host='{}' \

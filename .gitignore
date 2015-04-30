@@ -59,3 +59,7 @@ target/
 
 # IDE configurations
 .idea/
+
+
+scripts/raw_output/*.csv
+scripts/figures/
