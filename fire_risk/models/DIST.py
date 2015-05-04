@@ -6,7 +6,7 @@ import numpy as np
 from math import log
 
 
-class LowerBoundgreaterthanUpperBoundexception(Exception):
+class LowerBoundGreaterThanUpperBoundException(Exception):
     pass
 
 
@@ -193,7 +193,7 @@ class DIST(object):
         upperbound = ((log(room_area)-log(ao))/theta)-task_time
 
         if lowerbound > upperbound:
-            raise LowerBoundgreaterthanUpperBoundexception
+            raise LowerBoundGreaterThanUpperBoundException
 
         return random.uniform(lowerbound, upperbound)
 
@@ -211,7 +211,7 @@ class DIST(object):
         >>> DIST.draw_DIST_building(25, 100, room_area=100)
         Traceback (most recent call last):
             ...
-        LowerBoundgreaterthanUpperBoundexception
+        LowerBoundGreaterThanUpperBoundException
         """
 
         if floor_extent:
@@ -223,7 +223,7 @@ class DIST(object):
         upperbound = ((log(building_area)-log(ao))/theta)-task_time
 
         if lowerbound > upperbound:
-            raise LowerBoundgreaterthanUpperBoundexception
+            raise LowerBoundGreaterThanUpperBoundException
 
         return random.uniform(lowerbound, upperbound)
 
