@@ -1,68 +1,30 @@
 import unittest
-import numpy as np
 
-from fire_risk.models.DIST_output import DISTOutput
-from fire_risk.models.DIST_import import DISTImport
-from fire_risk.models.DIST_calculations import DISTCalculate
+from fire_risk.models import DIST
+from fire_risk.backends import PostgresBackend
+
 
 class TestDISTModel(unittest.TestCase):
-
 
     def test_dist_import(self):
         floor_extent = False
 
-        Dimport = DISTImport()
-        Dimport.set_firespread_count([93,190,39,64,9])
-        Dimport.room_area_set_uniform_limits(72,380)
-        Dimport.bldg_area_set_uniform_limits(1088,9004)
-        Dimport.alarm_time_set_uniform_limits(90,120)
-        Dimport.dispatch_time_set_uniform_limits(40,80)
-        Dimport.turnout_time_set_uniform_limits(60,100)
-        Dimport.arrival_time_set_uniform_limits(300,420)
-        Dimport.suppression_time_set_uniform_limits(60,180)
+        results = {'floor_of_origin': 126896L,
+                   'beyond': 108959L,
+                   'object_of_origin': 383787L,
+                   'room_of_origin': 507378L,
+                   'building_of_origin': 529300L}
 
-        Dcalc = DISTCalculate(floor_extent=floor_extent)
-        Dout = DISTOutput(
-                Dimport.get_extent_list(),Dimport.get_firespread_count(), floor_extent
-                )
+        #with PostgresBackend(dict(host='localhost')) as backend:
+        #    results = backend.get_firespread_counts()
+        #print results
 
-        #set Gibbs chain settings
-        n_iter = 10000
-        burn_in = 500
-        thin = 1
-        iter_total = n_iter+burn_in
+        dist = DIST(room_area_uniform_limits=(72, 380), building_area_uniform_limits=(1088, 9004),
+                    alarm_time_uniform_limits=(90, 120), dispatch_time_uniform_limits=(40, 80),
+                    turnout_time_uniform_limits=(60, 100), arrival_time_uniform_limits=(300, 420),
+                    suppression_time_uniform_limits=(60, 180), floor_extent=floor_extent, **results)
 
-        #determine size of the chains necessary to hold data
-        n_store = int(n_iter/thin+0.0001)
-
-        #obtain a list of attributes to be recorded
-        #Note that you must always include DIST_room, DIST_bldg, and DIST_beyond
-        #in that order
-        record_list = ['DIST_room','DIST_bldg','DIST_beyond','room_area']
-
-        #initialize space for the chains
-        chain_record = np.full((n_store,len(record_list)),-1000)
-
-        #begin gibbs sampling
-        call_list = ['alarm_time','dispatch_time','turnout_time','arrival_time',
-        'suppression_time','room_area','bldg_area']
-        for i in range(iter_total):
-            drawfunctions = ['draw_uniform_{}'.format(x) for x in call_list]
-            getfunctions = ['{}_get_uniform_limits'.format(x) for x in call_list]
-            for x,y in zip(drawfunctions,getfunctions):
-                draws = getattr(Dcalc, x)
-                gets = getattr(Dimport,y)
-                draws(*gets())
-            Dcalc.draw_DIST_room()
-            Dcalc.draw_DIST_bldg()
-            Dcalc.draw_DIST_beyond()
-            if(i >= burn_in):
-                for z,label in zip(range(chain_record.shape[1]),record_list):
-                    chain_record[i-burn_in,z] = getattr(Dcalc, label)
-
-        #output the DIST score. For 'default' values (present values in fields)
-        #the value returned should be 13.0, I don't know how to doctest a script
-        self.assertEqual(round(Dout.DIST_score(chain_record[...,0],chain_record[...,1], chain_record[...,2])), 13.0)
+        self.assertAlmostEqual(dist.gibbs_sample(), 32.0, delta=4)
 
 if __name__ == '__main__':
     unittest.main()
