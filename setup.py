@@ -70,8 +70,5 @@ setup(
         'click==4.0',
         'pytest==2.7.0'
     ],
-    zip_safe=False,
-    #entry_points={
-    #},
+    zip_safe=False
 )
-

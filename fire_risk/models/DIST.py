@@ -151,7 +151,7 @@ class DIST(object):
         >>> d.gibbs_sample()
         12.0
         """
-        #determine size of the chains necessary to hold data
+        # determine size of the chains necessary to hold data
         n_store = int(iterations / thin + 0.0001)
         chain_record = np.full((n_store, 4), -1000)
         params = dict(ao=ao, theta=theta)
@@ -266,33 +266,31 @@ class DIST(object):
         """
         raise NotImplementedError
 
-    #diagnostic methods
-    def traceplot(self,vector_of_drawn_values):
-        """generate a traceplot of a vector of drawn values.
-
+    # diagnostic methods
+    def traceplot(self, vector_of_drawn_values):
+        """
+        Generates a traceplot of a vector of drawn values.
         """
         raise NotImplementedError
 
     def densityplot(self, vector_of_drawn_values):
         """Plot the estimated probability density function of the drawn values.
-
         """
         raise NotImplementedError
 
     def summarystats(self, vector_of_drawn_values, list_of_quantiles=(0.025, 0.25, 0.5, 0.75, 0.975)):
-        """Calculate and print summary statistics of given raw output.
-        
+        """
+        Calculates and print summary statistics of given raw output.
         """
         raise NotImplementedError
-    
+
     def save_raw_output(self, vector_of_drawn_values):
-        """Save raw output to a temporary .csv file
-
+        """
+        Saves the raw output to a temporary .csv file
         """
         raise NotImplementedError
 
-    #Aggregate Raw output methods
-
+    # Aggregate Raw output methods
     def raw_DIST_compute(self, DIST_room, DIST_bldg, DIST_beyond, DIST_floor=None):
         """Compute the raw DIST value from the raw constituent chains
 
@@ -311,25 +309,25 @@ class DIST(object):
         if self.floor_extent:
             floorweight = self.floor_of_origin / self.total_fires
 
-        raw_DIST = (roomweight*DIST_room+bldgweight*DIST_bldg+
-                    beyondweight*DIST_beyond)
+        raw_DIST = (roomweight * DIST_room + bldgweight*DIST_bldg +
+                    beyondweight * DIST_beyond)
         if DIST_floor is not None:
-            raw_DIST = raw_DIST + floorweight*DIST_floor
+            raw_DIST = raw_DIST + floorweight * DIST_floor
 
         return raw_DIST
 
-    def DIST_score(self,DIST_room, DIST_bldg, DIST_beyond, DIST_floor=None):
+    def DIST_score(self, DIST_room, DIST_bldg, DIST_beyond, DIST_floor=None):
         """Compute the single value DIST score from the raw constituent chains
 
-        Note that inputs should be in the form of numpy vectors. 
+        Note that inputs should be in the form of numpy vectors.
 
         """
         raw_DIST = self.raw_DIST_compute(DIST_room, DIST_bldg, DIST_beyond, DIST_floor)
         raw_DIST[raw_DIST < 0] = 0
         DIST_score = np.average(raw_DIST)
         return DIST_score
-        
 
-if __name__=="__main__":
-   import doctest
-   doctest.testmod()
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()

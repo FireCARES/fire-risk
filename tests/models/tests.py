@@ -1,7 +1,6 @@
 import unittest
 
 from fire_risk.models import DIST
-from fire_risk.backends import PostgresBackend
 
 
 class TestDISTModel(unittest.TestCase):
@@ -15,9 +14,10 @@ class TestDISTModel(unittest.TestCase):
                    'room_of_origin': 507378L,
                    'building_of_origin': 529300L}
 
-        #with PostgresBackend(dict(host='localhost')) as backend:
-        #    results = backend.get_firespread_counts()
-        #print results
+        # from fire_risk.backends import PostgresBackend
+        # with PostgresBackend(dict(host='localhost')) as backend:
+        #     results = backend.get_firespread_counts()
+        # print results
 
         dist = DIST(room_area_uniform_limits=(72, 380), building_area_uniform_limits=(1088, 9004),
                     alarm_time_uniform_limits=(90, 120), dispatch_time_uniform_limits=(40, 80),
