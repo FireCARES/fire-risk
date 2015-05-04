@@ -1,4 +1,4 @@
-# fire-risk
+# fire-risk [![Build Status](https://travis-ci.org/FireCARES/fire-risk.svg?branch=master)](https://travis-ci.org/FireCARES/fire-risk)
 
 Numerical Models for Developing Community Scale Risk Model
 
