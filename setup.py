@@ -68,7 +68,8 @@ setup(
         'pandas==0.16.0',
         'psycopg2==2.6',
         'click==4.0',
-        'pytest==2.7.0'
+        'pytest==2.7.0',
+        'flake8==2.2.5'
     ],
     zip_safe=False
 )
