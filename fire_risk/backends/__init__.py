@@ -1,4 +1,6 @@
 import psycopg2
+
+from .queries import ALL_RESIDENTIAL_FIRES
 from psycopg2.extras import DictCursor
 
 
@@ -65,16 +67,13 @@ class PostgresBackend(Backend):
     def close_connection(self):
         self.connection.close()
 
-    def query(self, query):
+    def query(self, query, query_params=()):
         cursor = self.get_cursor()
-        cursor.execute(query)
+        cursor.execute(query, query_params)
         return cursor
 
-    def get_firespread_counts(self, query='SELECT fire_sprd, COUNT(*) FROM buildingfires WHERE fire_sprd IN '
-                                          '(\'1\',\'2\',\'3\',\'4\',\'5\') GROUP BY fire_sprd ORDER BY fire_sprd '
-                                          'DESC;'):
-
-        results = self.query(query=query).fetchall()
+    def get_firespread_counts(self, query=ALL_RESIDENTIAL_FIRES, query_params=()):
+        results = self.query(query=query, query_params=query_params).fetchall()
         counts = dict(object_of_origin=0, room_of_origin=0, floor_of_origin=0, building_of_origin=0, beyond=0)
 
         for result in results:
