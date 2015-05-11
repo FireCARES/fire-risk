@@ -19,3 +19,34 @@ using [pytest](http://pytest.org/):
 ```
 py.test
 ```
+
+### Running the DIST model
+```
+from fire_risk.models.DIST import DIST
+
+dist = DIST(floor_of_origin=34, beyond=12, object_of_origin=170, room_of_origin=190, building_of_origin=74,
+            room_area_uniform_limits=(72, 380), building_area_uniform_limits=(1088, 9004),
+            alarm_time_uniform_limits=(90, 120), dispatch_time_uniform_limits=(40, 80),
+            turnout_time_uniform_limits=(60, 100), arrival_time_uniform_limits=(300, 420),
+            suppression_time_uniform_limits=(60, 180), floor_extent=False)
+
+dist.gibbs_sample()
+```
+
+### Running the DIST model when residential fire counts are stored in a Postgres database
+```
+from fire_risk.models.DIST import DIST
+from fire_risk.backends import PostgresBackend
+from fire_risk.backends.queries import RESIDENTIAL_FIRES_BY_FDID_STATE
+
+with PostgresBackend(dict(host='localhost')) as backend:
+    # Get residential fire counts for Arlington, VA
+    results = backend.get_firespread_counts(query=RESIDENTIAL_FIRES_BY_FDID_STATE, query_params=('01300', 'VA'))
+
+dist = DIST(room_area_uniform_limits=(72, 380), building_area_uniform_limits=(1088, 9004),
+            alarm_time_uniform_limits=(90, 120), dispatch_time_uniform_limits=(40, 80),
+            turnout_time_uniform_limits=(60, 100), arrival_time_uniform_limits=(300, 420),
+            suppression_time_uniform_limits=(60, 180), floor_extent=False, **results)
+
+print dist.gibbs_sample()
+```
