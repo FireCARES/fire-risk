@@ -6,7 +6,7 @@ Numerical Models for Developing Community Scale Risk Model
 
 Installing from source:
 
-```
+```bash
 git clone https://github.com/FireCARES/fire-risk.git
 cd fire-risk
 pip install .
@@ -16,12 +16,12 @@ pip install .
 After installing from source, the doctests and unit tests can be executed from the fire-risk root directory
 using [pytest](http://pytest.org/):
 
-```
+```bash
 py.test
 ```
 
 ### Running the DIST model
-```
+```python
 from fire_risk.models.DIST import DIST
 
 dist = DIST(floor_of_origin=34, beyond=12, object_of_origin=170, room_of_origin=190, building_of_origin=74, floor_extent=False)
@@ -29,7 +29,7 @@ dist.gibbs_sample()
 ```
 
 ### Running the DIST model when residential fire counts are stored in a Postgres database
-```
+```python
 from fire_risk.models.DIST import DIST
 from fire_risk.backends import PostgresBackend
 from fire_risk.backends.queries import RESIDENTIAL_FIRES_BY_FDID_STATE
