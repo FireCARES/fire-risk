@@ -15,9 +15,10 @@ class DIST(object):
     The DIST model.
     """
     def __init__(self, object_of_origin, room_of_origin, floor_of_origin, building_of_origin, beyond,
-                 room_area_uniform_limits, building_area_uniform_limits, alarm_time_uniform_limits,
-                 dispatch_time_uniform_limits, turnout_time_uniform_limits, arrival_time_uniform_limits,
-                 suppression_time_uniform_limits, floor_area_uniform_limits=None,
+                 room_area_uniform_limits=(72, 380), building_area_uniform_limits=(1088, 9004),
+                 alarm_time_uniform_limits=(90, 120), dispatch_time_uniform_limits=(40, 80),
+                 turnout_time_uniform_limits=(60, 100), arrival_time_uniform_limits=(300, 420),
+                 suppression_time_uniform_limits=(60, 180), floor_area_uniform_limits=None,
                  floor_extent=False):
         """initialize attributes of the DISTOutput class.
 
@@ -27,10 +28,7 @@ class DIST(object):
                 see DISTImport class.
 
         >>> test = DIST(object_of_origin=93, room_of_origin=190, floor_of_origin=39, building_of_origin=64, \
-                    beyond=9, room_area_uniform_limits=(72, 380), building_area_uniform_limits=(1088,9004), \
-                    alarm_time_uniform_limits=(90, 120), dispatch_time_uniform_limits=(40, 80), \
-                    turnout_time_uniform_limits=(60, 100), arrival_time_uniform_limits=(300, 420), \
-                    suppression_time_uniform_limits=(60, 180), floor_extent=False)
+                    beyond=9, floor_extent=False)
         >>> test.object_of_origin
         93
         >>> test.room_of_origin
@@ -61,10 +59,7 @@ class DIST(object):
         Returns the count of fires.
 
         >>> d = DIST(object_of_origin=93, room_of_origin=190, floor_of_origin=39, building_of_origin=64,
-        ...          beyond=9, room_area_uniform_limits=(72, 380), building_area_uniform_limits=(1088,9004),
-        ...          alarm_time_uniform_limits=(90, 120), dispatch_time_uniform_limits=(40, 80),
-        ...          turnout_time_uniform_limits=(60, 100), arrival_time_uniform_limits=(300, 420),
-        ...          suppression_time_uniform_limits=(60, 180), floor_extent=False)
+        ...          beyond=9, floor_extent=False)
         >>> d.total_fires
         434
         """

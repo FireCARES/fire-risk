@@ -1,6 +1,8 @@
 import unittest
 
 from fire_risk.models.DIST import DIST
+from fire_risk.backends import PostgresBackend
+from fire_risk.backends.queries import RESIDENTIAL_FIRES_BY_FDID_STATE
 
 
 class TestDISTModel(unittest.TestCase):
@@ -18,11 +20,7 @@ class TestDISTModel(unittest.TestCase):
         # with PostgresBackend(dict(host='localhost')) as backend:
         #     results = backend.get_firespread_counts()
         # print results
-
-        dist = DIST(room_area_uniform_limits=(72, 380), building_area_uniform_limits=(1088, 9004),
-                    alarm_time_uniform_limits=(90, 120), dispatch_time_uniform_limits=(40, 80),
-                    turnout_time_uniform_limits=(60, 100), arrival_time_uniform_limits=(300, 420),
-                    suppression_time_uniform_limits=(60, 180), floor_extent=floor_extent, **results)
+        dist = DIST(floor_extent=floor_extent, **results)
 
         self.assertAlmostEqual(dist.gibbs_sample(), 32.0, delta=4)
 
