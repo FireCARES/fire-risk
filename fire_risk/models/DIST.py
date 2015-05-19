@@ -27,9 +27,9 @@ class DIST(object):
             firespread_count(dict): dictionary of firespread counts by extent.
                 see DISTImport class.
 
-        >>> test = DIST(object_of_origin=93, room_of_origin=190, floor_of_origin=39, building_of_origin=64, \
-                    beyond=9, room_area_uniform_limits=(72, 380), building_area_uniform_limits=(1088, 9004),
-                     floor_extent=False)
+        >>> test = DIST(object_of_origin=93, room_of_origin=190, floor_of_origin=39, building_of_origin=64,
+        ...            beyond=9, room_area_uniform_limits=(72, 380), building_area_uniform_limits=(1088, 9004),
+        ...             floor_extent=False)
         >>> test.object_of_origin
         93
         >>> test.room_of_origin
