@@ -20,7 +20,7 @@ using [pytest](http://pytest.org/):
 py.test
 ```
 
-### Running the DIST model
+### Running the Differential In Standard Time model
 ```python
 from fire_risk.models.DIST import DIST
 
@@ -28,7 +28,7 @@ dist = DIST(floor_of_origin=34, beyond=12, object_of_origin=170, room_of_origin=
 dist.gibbs_sample()
 ```
 
-### Running the DIST model when residential fire counts are stored in a Postgres database
+### Running the Differential In Standard Time model when residential fire counts are stored in a Postgres database
 ```python
 from fire_risk.models.DIST import DIST
 from fire_risk.backends import PostgresBackend

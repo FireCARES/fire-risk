@@ -12,7 +12,7 @@ class LowerBoundGreaterThanUpperBoundException(Exception):
 
 class DIST(object):
     """
-    The DIST model.
+    The Differential In Standard Time (DIST) model.
     """
     def __init__(self, object_of_origin, room_of_origin, floor_of_origin, building_of_origin, beyond,
                  room_area_uniform_limits=(72, 380), building_area_uniform_limits=(1088, 9004),
@@ -28,7 +28,8 @@ class DIST(object):
                 see DISTImport class.
 
         >>> test = DIST(object_of_origin=93, room_of_origin=190, floor_of_origin=39, building_of_origin=64, \
-                    beyond=9, floor_extent=False)
+                    beyond=9, room_area_uniform_limits=(72, 380), building_area_uniform_limits=(1088, 9004),
+                     floor_extent=False)
         >>> test.object_of_origin
         93
         >>> test.room_of_origin
