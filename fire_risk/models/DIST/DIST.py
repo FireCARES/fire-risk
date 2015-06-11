@@ -3,6 +3,7 @@ from __future__ import division
 import random
 import numpy as np
 
+from fire_risk.utils import UniformDraw
 from math import log
 
 
@@ -15,10 +16,10 @@ class DIST(object):
     The Differential In Standard Time (DIST) model.
     """
     def __init__(self, object_of_origin, room_of_origin, floor_of_origin, building_of_origin, beyond,
-                 room_area_uniform_limits=(72, 380), building_area_uniform_limits=(1088, 9004),
-                 alarm_time_uniform_limits=(90, 120), dispatch_time_uniform_limits=(40, 80),
-                 turnout_time_uniform_limits=(60, 100), arrival_time_uniform_limits=(300, 420),
-                 suppression_time_uniform_limits=(60, 180), floor_area_uniform_limits=None,
+                 room_area_draw=UniformDraw(72, 380), building_area_draw=UniformDraw(1088, 9004),
+                 alarm_time_draw=UniformDraw(90, 120), dispatch_time_draw=UniformDraw(40, 80),
+                 turnout_time_draw=UniformDraw(60, 100), arrival_time_draw=UniformDraw(300, 420),
+                 suppression_time_draw=UniformDraw(60, 180), floor_area_draw=None,
                  floor_extent=False):
         """initialize attributes of the DISTOutput class.
 
@@ -28,8 +29,7 @@ class DIST(object):
                 see DISTImport class.
 
         >>> test = DIST(object_of_origin=93, room_of_origin=190, floor_of_origin=39, building_of_origin=64,
-        ...            beyond=9, room_area_uniform_limits=(72, 380), building_area_uniform_limits=(1088, 9004),
-        ...             floor_extent=False)
+        ...            beyond=9, floor_extent=False)
         >>> test.object_of_origin
         93
         >>> test.room_of_origin
@@ -41,16 +41,16 @@ class DIST(object):
         self.building_of_origin = building_of_origin
         self.beyond = beyond
         self.floor_extent = floor_extent
-        self.room_area_uniform_limits = room_area_uniform_limits
-        self.building_area_uniform_limits = building_area_uniform_limits
-        self.alarm_time_uniform_limits = alarm_time_uniform_limits
-        self.dispatch_time_uniform_limits = dispatch_time_uniform_limits
-        self.turnout_time_uniform_limits = turnout_time_uniform_limits
-        self.arrival_time_uniform_limits = arrival_time_uniform_limits
-        self.suppression_time_uniform_limits = suppression_time_uniform_limits
-        self.floor_area_uniform_limits = floor_area_uniform_limits
+        self.room_area_draw = room_area_draw
+        self.building_area_draw = building_area_draw
+        self.alarm_time_draw = alarm_time_draw
+        self.dispatch_time_draw = dispatch_time_draw
+        self.turnout_time_draw = turnout_time_draw
+        self.arrival_time_draw = arrival_time_draw
+        self.suppression_time_draw = suppression_time_draw
+        self.floor_area_draw = floor_area_draw
 
-        # TODO: Should raise error if self.floor_extent=True and floor_area_uniform_limits is None?
+        # TODO: Should raise error if self.floor_extent=True and floor_area_draw is None?
         if not self.floor_extent:
             self.building_of_origin += self.floor_of_origin
 
@@ -74,11 +74,11 @@ class DIST(object):
 
         >>> random.seed(1234)
         >>> test = DIST(object_of_origin=93, room_of_origin=190, floor_of_origin=39, building_of_origin=64,
-        ...          beyond=9, room_area_uniform_limits=(20, 30), building_area_uniform_limits=(20,30),
-        ...          alarm_time_uniform_limits=(20,30), dispatch_time_uniform_limits=(20,30),
-        ...          turnout_time_uniform_limits=(20,30), arrival_time_uniform_limits=(20,30),
-        ...          suppression_time_uniform_limits=(20,30), floor_extent=False)
-        >>> values = test._draw_uniform_values()
+        ...          beyond=9, room_area_draw=UniformDraw(20, 30), building_area_draw=UniformDraw(20,30),
+        ...          alarm_time_draw=UniformDraw(20,30), dispatch_time_draw=UniformDraw(20,30),
+        ...          turnout_time_draw=UniformDraw(20,30), arrival_time_draw=UniformDraw(20,30),
+        ...          suppression_time_draw=UniformDraw(20,30), floor_extent=False)
+        >>> values = test._draw_values()
         >>> round(test._task_time(values), 2)
         131.12
         >>> round(values['alarm_time'] + values['dispatch_time'] + values['turnout_time'] + values['arrival_time'] \
@@ -98,18 +98,20 @@ class DIST(object):
         """
         return random.uniform(*uniform_limits)
 
-    def _draw_uniform_values(self):
+    def _draw_values(self):
         """
-        Draws uniform values for room_area, building_area, alarm_time, dispatch_time, turnout_time, arrival_time,
+        Draws values for room_area, building_area, alarm_time, dispatch_time, turnout_time, arrival_time,
         suppression_time and potentially the floor_area (if self.floor_extent is True).
+
+        All values are expected to have a draw method.
 
         >>> random.seed(1234)
         >>> test = DIST(object_of_origin=93, room_of_origin=190, floor_of_origin=39, building_of_origin=64,
-        ...          beyond=9, room_area_uniform_limits=(20, 30), building_area_uniform_limits=(20,30),
-        ...          alarm_time_uniform_limits=(20,30), dispatch_time_uniform_limits=(20,30),
-        ...          turnout_time_uniform_limits=(20,30), arrival_time_uniform_limits=(20,30),
-        ...          suppression_time_uniform_limits=(20,30), floor_extent=False)
-        >>> values = test._draw_uniform_values()
+        ...          beyond=9, room_area_draw=UniformDraw(20, 30), building_area_draw=UniformDraw(20,30),
+        ...          alarm_time_draw=UniformDraw(20,30), dispatch_time_draw=UniformDraw(20,30),
+        ...          turnout_time_draw=UniformDraw(20,30), arrival_time_draw=UniformDraw(20,30),
+        ...          suppression_time_draw=UniformDraw(20,30), floor_extent=False)
+        >>> values = test._draw_values()
         >>> round(values.get('room_area'), 2)
         29.66
         >>> round(values.get('building_area'), 2)
@@ -117,17 +119,17 @@ class DIST(object):
         """
 
         values = dict(
-            room_area=self.draw_uniform(self.room_area_uniform_limits),
-            building_area=self.draw_uniform(self.building_area_uniform_limits),
-            alarm_time=self.draw_uniform(self.alarm_time_uniform_limits),
-            dispatch_time=self.draw_uniform(self.dispatch_time_uniform_limits),
-            turnout_time=self.draw_uniform(self.turnout_time_uniform_limits),
-            arrival_time=self.draw_uniform(self.arrival_time_uniform_limits),
-            suppression_time=self.draw_uniform(self.suppression_time_uniform_limits)
+            room_area=self.room_area_draw.draw(),
+            building_area=self.building_area_draw.draw(),
+            alarm_time=self.alarm_time_draw.draw(),
+            dispatch_time=self.dispatch_time_draw.draw(),
+            turnout_time=self.turnout_time_draw.draw(),
+            arrival_time=self.arrival_time_draw.draw(),
+            suppression_time=self.suppression_time_draw.draw()
         )
 
-        if self.floor_area_uniform_limits and self.floor_extent:
-            values.update(dict(floor_area=self.draw_uniform(self.floor_area_uniform_limits)))
+        if self.floor_area_draw and self.floor_extent:
+            values.update(dict(floor_area=self.draw_uniform(self.floor_area_draw)))
 
         return values
 
@@ -140,10 +142,10 @@ class DIST(object):
         :return:
         >>> random.seed(1234)
         >>> d = DIST(object_of_origin=93, room_of_origin=190, floor_of_origin=39, building_of_origin=64,
-        ...          beyond=9, room_area_uniform_limits=(72, 380), building_area_uniform_limits=(1088,9004),
-        ...          alarm_time_uniform_limits=(90, 120), dispatch_time_uniform_limits=(40, 80),
-        ...          turnout_time_uniform_limits=(60, 100), arrival_time_uniform_limits=(300, 420),
-        ...          suppression_time_uniform_limits=(60, 180),floor_extent=False)
+        ...          beyond=9, room_area_draw=UniformDraw(72, 380), building_area_draw=UniformDraw(1088,9004),
+        ...          alarm_time_draw=UniformDraw(90, 120), dispatch_time_draw=UniformDraw(40, 80),
+        ...          turnout_time_draw=UniformDraw(60, 100), arrival_time_draw=UniformDraw(300, 420),
+        ...          suppression_time_draw=UniformDraw(60, 180),floor_extent=False)
         >>> d.gibbs_sample()
         12.0
         """
@@ -153,11 +155,11 @@ class DIST(object):
         params = dict(ao=ao, theta=theta)
 
         for i in range(iterations + burn_in):
-            uniform_values = self._draw_uniform_values()
-            room_area = uniform_values.get('room_area')
-            building_area = uniform_values.get('building_area')
-            floor_area = uniform_values.get('floor_area')
-            task_time = self._task_time(uniform_values)
+            values = self._draw_values()
+            room_area = values.get('room_area')
+            building_area = values.get('building_area')
+            floor_area = values.get('floor_area')
+            task_time = self._task_time(values)
 
             dist_room = self.draw_DIST_room(room_area=room_area, task_time=task_time, **params)
             dist_beyond = self.draw_DIST_beyond(building_area=building_area, task_time=task_time, **params)

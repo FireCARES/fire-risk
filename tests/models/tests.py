@@ -1,5 +1,5 @@
 import unittest
-from fire_risk.models.DIST import DIST
+from fire_risk.models import DIST
 
 
 class TestDISTModel(unittest.TestCase):
