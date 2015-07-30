@@ -69,7 +69,8 @@ setup(
         'psycopg2==2.6',
         'click==4.0',
         'pytest==2.7.0',
-        'flake8==2.2.5'
+        'flake8==2.2.5',
+        'scipy==0.16.0'
     ],
     zip_safe=False
 )

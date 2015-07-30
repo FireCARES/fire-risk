@@ -42,3 +42,28 @@ dist = DIST(floor_extent=False, **results)
 
 print dist.gibbs_sample()
 ```
+
+### Running the Differential In Standard Time model with an arrival time generated from a Lognormal
+Fit of GIS routed arrival times.
+```python
+import pandas
+from fire_risk.models import DIST
+from fire_risk.backends import PostgresBackend
+from fire_risk.backends.queries import RESIDENTIAL_FIRES_BY_FDID_STATE
+from fire_risk.utils import LogNormalDraw
+from scipy.stats import lognorm
+
+dt = pandas.read_csv('detroit_response_time.csv')
+
+with PostgresBackend(dict(host='localhost')) as backend:
+    # Get residential fire counts for Arlington, VA
+    results = backend.get_firespread_counts(query=RESIDENTIAL_FIRES_BY_FDID_STATE, query_params=('01300', 'VA'))
+
+    params = lognorm.fit(dt['total_travel_time'])
+    # total_travel_time is in minutes use a 60 second multipler
+    results['arrival_time_draw'] = LogNormalDraw(*prams, multiplier=60)
+
+dist = DIST(floor_extent=False, **results)
+
+print dist.gibbs_sample()
+```
