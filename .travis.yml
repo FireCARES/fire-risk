@@ -10,6 +10,9 @@ virtualenv:
 python:
   - "2.7"
 
+before_install:
+  - sudo apt-get install -y gfortran libopenblas-dev liblapack-dev
+
 install:
   - pip install .
 
