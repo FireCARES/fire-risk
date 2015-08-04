@@ -4,7 +4,7 @@ from pandas import DataFrame, melt
 
 FDID_TO_AHS = {
     'WP801-TX': 'Austin-Round Rock, TX AHS Area',
-    '31000-NY': 'New York, NY AHS Area',
+    '24001-NY': 'New York, NY AHS Area',
     '07212-FL': 'Orlando, FL AHS Area',
     '28008-NY': 'Rochester, NY AHS Area',
     '23035-PA': 'Philadelphia, PA-NJ AHS Area',
