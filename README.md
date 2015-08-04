@@ -60,8 +60,8 @@ with PostgresBackend(dict(host='localhost')) as backend:
     results = backend.get_firespread_counts(query=RESIDENTIAL_FIRES_BY_FDID_STATE, query_params=('01300', 'VA'))
 
     params = lognorm.fit(dt['total_travel_time'])
-    # total_travel_time is in minutes use a 60 second multipler
-    results['arrival_time_draw'] = LogNormalDraw(*prams, multiplier=60)
+    # total_travel_time is in minutes use a 60 second multiplier
+    results['arrival_time_draw'] = LogNormalDraw(*params, multiplier=60)
 
 dist = DIST(floor_extent=False, **results)
 
