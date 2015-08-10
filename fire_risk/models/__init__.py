@@ -1,3 +1,3 @@
 # flake8: noqa
 
-from DIST.DIST import DIST
+from DIST.DIST import DIST, NotEnoughRecords

@@ -11,6 +11,10 @@ class LowerBoundGreaterThanUpperBoundException(Exception):
     pass
 
 
+class NotEnoughRecords(Exception):
+    pass
+
+
 class DIST(object):
     """
     The Differential In Standard Time (DIST) model.
@@ -20,7 +24,7 @@ class DIST(object):
                  alarm_time_draw=UniformDraw(90, 120), dispatch_time_draw=UniformDraw(40, 80),
                  turnout_time_draw=UniformDraw(60, 100), arrival_time_draw=UniformDraw(300, 420),
                  suppression_time_draw=UniformDraw(60, 180), floor_area_draw=None,
-                 floor_extent=False):
+                 floor_extent=False, minimum_number_of_records=100):
         """initialize attributes of the DISTOutput class.
 
         Args:
@@ -34,6 +38,11 @@ class DIST(object):
         93
         >>> test.room_of_origin
         283
+        >>> test = DIST(object_of_origin=99, room_of_origin=0, floor_of_origin=0, building_of_origin=0,
+        ...            beyond=0, floor_extent=False)
+        Traceback (most recent call last):
+            ...
+        NotEnoughRecords
         """
         self.object_of_origin = object_of_origin
         self.room_of_origin = room_of_origin + object_of_origin
@@ -53,6 +62,11 @@ class DIST(object):
         # TODO: Should raise error if self.floor_extent=True and floor_area_draw is None?
         if not self.floor_extent:
             self.building_of_origin += self.floor_of_origin
+
+        if minimum_number_of_records:
+            if (self.room_of_origin + self.floor_of_origin + self.building_of_origin +
+                    self.beyond) < minimum_number_of_records:
+                raise NotEnoughRecords
 
     @property
     def total_fires(self):
