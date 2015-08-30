@@ -59,4 +59,3 @@ class LogNormalDraw(DrawType):
 
     def draw(self):
         return lognorm.rvs(self.shape, self.location, self.scale) * self.multiplier
-
