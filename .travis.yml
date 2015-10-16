@@ -23,6 +23,7 @@ install:
   - conda install --yes -n condaenv pip scipy
   - source activate condaenv
   - pip install .
+  - easy_install --upgrade numpy
 
 script:
   - py.test
