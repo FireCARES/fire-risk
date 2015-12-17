@@ -11,19 +11,19 @@ python:
   - "2.7"
 
 before_install:
+  - sudo apt-get -qq -y update
   - sudo apt-get install -y gfortran libopenblas-dev liblapack-dev
 
 install:
   - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
   - ./miniconda.sh -b
-  - export PATH=/home/travis/miniconda/bin:$PATH
+  - export PATH=/home/travis/miniconda2/bin:$PATH
   - conda update --yes conda
   - conda create --yes -n condaenv python=2.7
-  - conda install --yes -n condaenv pip scipy
+  - conda install --yes -n condaenv pip scipy==0.16.0 numpy==1.9.2
   - source activate condaenv
   - pip install .
-  - easy_install --upgrade numpy
 
 script:
   - py.test
