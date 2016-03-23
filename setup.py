@@ -64,13 +64,13 @@ setup(
     test_suite='tests',
     install_requires=[
         'matplotlib==1.4.3',
-        'numpy==1.9.2',
+        'numpy==1.10.4',
         'pandas==0.16.0',
         'psycopg2==2.6',
         'click==4.0',
         'pytest==2.7.0',
         'flake8==2.2.5',
-        'scipy==0.16.0'
+        'scipy==0.17.0'
     ],
     zip_safe=False
 )

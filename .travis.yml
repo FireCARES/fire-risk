@@ -23,9 +23,10 @@ install:
   - chmod +x miniconda.sh
   - ./miniconda.sh -b
   - export PATH=/home/travis/miniconda2/bin:$PATH
+  - conda info -a
   - conda update --yes conda
   - conda create --yes -n condaenv python=2.7
-  - conda install --yes -n condaenv pip scipy==0.16.0 numpy==1.9.2
+  - conda install --yes -n condaenv pip scipy==0.17.0 numpy==1.10.4
   - source activate condaenv
   - pip install .
 
