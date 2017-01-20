@@ -202,8 +202,7 @@ class DIST(object):
         311.16
         """
         lowerbound = ((log(ao)-log(ao))/theta)-task_time
-        upperbound
-        flog(room_area)-log(ao))/theta)-task_time
+        upperbound = ((log(room_area)-log(ao))/theta)-task_time
 
         if lowerbound > upperbound:
             raise LowerBoundGreaterThanUpperBoundException
