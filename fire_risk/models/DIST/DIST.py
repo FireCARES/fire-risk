@@ -174,7 +174,7 @@ class DIST(object):
             building_area = values.get('building_area')
             floor_area = values.get('floor_area')
             task_time = self._task_time(values)
-
+            print(task_time)
             dist_room = self.draw_DIST_room(room_area=room_area, task_time=task_time, **params)
             dist_beyond = self.draw_DIST_beyond(building_area=building_area, task_time=task_time, **params)
             dist_building = self.draw_DIST_building(building_area=building_area, task_time=task_time,
