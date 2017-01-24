@@ -174,7 +174,7 @@ class DIST(object):
             building_area = values.get('building_area')
             floor_area = values.get('floor_area')
             task_time = self._task_time(values)
-            print(task_time)
+
             dist_room = self.draw_DIST_room(room_area=room_area, task_time=task_time, **params)
             dist_beyond = self.draw_DIST_beyond(building_area=building_area, task_time=task_time, **params)
             dist_building = self.draw_DIST_building(building_area=building_area, task_time=task_time,
@@ -339,6 +339,7 @@ class DIST(object):
         DIST_score = np.average(raw_DIST)
         return DIST_score
 
+
 class DISTMH(DIST):
     """
     The Differential In Standard Time (DIST) model for the medium hazard cases.
@@ -348,7 +349,7 @@ class DISTMH(DIST):
                  room_area_draw=UniformDraw(72, 380), building_area_draw=UniformDraw(1088, 9004),
                  alarm_time_draw=UniformDraw(90, 120), dispatch_time_draw=UniformDraw(40, 80),
                  turnout_time_draw=UniformDraw(60, 100), arrival_time_draw=UniformDraw(300, 420),
-                 suppression_time_draw=UniformDraw(60, 180), floor_area_draw= (600,1080), 
+                 suppression_time_draw=UniformDraw(60, 180), floor_area_draw= (600,1200), 
                  number_of_floors_draw = UniformDraw(3,7), floor_extent=True, minimum_number_of_records=100):
 
         """Initializing the inputs to the medium hazard DIST class.
@@ -443,6 +444,7 @@ class DISTHH(DISTMH):
             
         """
         return DISTMH._task_time(uniform_values)
+
 
 if __name__ == "__main__":
     import doctest
