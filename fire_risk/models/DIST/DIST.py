@@ -340,6 +340,112 @@ class DIST(object):
         return DIST_score
 
 
+class DISTMH(DIST):
+    """
+    The Differential In Standard Time (DIST) model for the medium hazard cases.
+    """
+
+    def __init__(self, object_of_origin, room_of_origin, floor_of_origin, building_of_origin, beyond,
+                 room_area_draw=UniformDraw(72, 380), building_area_draw=UniformDraw(1088, 9004),
+                 alarm_time_draw=UniformDraw(90, 120), dispatch_time_draw=UniformDraw(40, 80),
+                 turnout_time_draw=UniformDraw(60, 100), arrival_time_draw=UniformDraw(300, 420),
+                 suppression_time_draw=UniformDraw(60, 180), floor_area_draw= (600,1200), 
+                 number_of_floors_draw = UniformDraw(3,7), floor_extent=True, minimum_number_of_records=100):
+
+        """Initializing the inputs to the medium hazard DIST class.
+
+            Most of the defaults need to be updated. 
+            :param number_of_floors_draw: The draw for the total number of floors in a building
+
+
+        """
+
+        DIST.__init__(self, object_of_origin, room_of_origin, floor_of_origin, building_of_origin, beyond,
+                     room_area_draw, building_area_draw, alarm_time_draw, dispatch_time_draw,
+                     turnout_time_draw, arrival_time_draw, suppression_time_draw, floor_area_draw,
+                     floor_extent, minimum_number_of_records)
+
+
+        self.number_of_floors_draw = number_of_floors_draw
+
+    @staticmethod
+    def _task_time(uniform_values):
+        """
+            Adds in the floor climb time by drawing the floor number that the fire occurs on.
+
+            >>> random.seed(1234)
+            >>> test = DISTMH(object_of_origin=93, room_of_origin=190, floor_of_origin=39, building_of_origin=64,
+            ...          beyond=9, room_area_draw=UniformDraw(20, 30), building_area_draw=UniformDraw(20,30),
+            ...          alarm_time_draw=UniformDraw(20,30), dispatch_time_draw=UniformDraw(20,30),
+            ...          turnout_time_draw=UniformDraw(20,30), arrival_time_draw=UniformDraw(20,30),
+            ...          suppression_time_draw=UniformDraw(20,30), floor_extent=True)
+            >>> values = test._draw_values()
+            >>> round(test._task_time(values), 2)
+            131.12
+            >>> floor_number = max(round(values['floor_number'],0)- 2, 0)
+            >>> round(values['alarm_time'] + values['dispatch_time'] + values['turnout_time'] + values['arrival_time'] \
+             + values['suppression_time'] + .644*floor_number**2 + 30.222*floor_number, 2)
+            131.12
+
+        """
+
+        #The climb is to the n-1 floor when the fire occurs on the nth floor. 
+        floor_number = max(round(uniform_values['floor_number'],0)- 2, 0)
+
+        #I integrated the regression equation to find total (rather than marginal) climb time
+        climb_time = .644*floor_number**2 + 30.222*floor_number
+        times = 'alarm_time dispatch_time turnout_time arrival_time suppression_time'.split()
+        return sum(map(lambda value: uniform_values.get(value, 0), times)) + climb_time
+
+    def _draw_values(self):
+        values = DIST._draw_values(self)
+        values.update(dict(floor_number=self.draw_uniform([1, self.number_of_floors_draw.draw()])))
+
+        return values
+
+
+class DISTHH(DISTMH):
+    """
+    The Differential In Standard Time (DIST) model for the high hazard cases. 
+
+    This is a separate subclass so that different defaults can be used. 
+    """
+    def __init__(self, object_of_origin, room_of_origin, floor_of_origin, building_of_origin, beyond,
+                 room_area_draw=UniformDraw(72, 380), building_area_draw=UniformDraw(1088, 9004),
+                 alarm_time_draw=UniformDraw(90, 120), dispatch_time_draw=UniformDraw(40, 80),
+                 turnout_time_draw=UniformDraw(60, 100), arrival_time_draw=UniformDraw(300, 420),
+                 suppression_time_draw=UniformDraw(60, 180), floor_area_draw= (600,1200), 
+                 number_of_floors_draw = UniformDraw(8,48), floor_extent=True, minimum_number_of_records=100):
+
+        DISTMH.__init__(self, object_of_origin, room_of_origin, floor_of_origin, building_of_origin, beyond,
+                 room_area_draw, building_area_draw, alarm_time_draw, dispatch_time_draw,
+                 turnout_time_draw, arrival_time_draw, suppression_time_draw, floor_area_draw, 
+                 number_of_floors_draw, floor_extent, minimum_number_of_records)
+
+
+    @staticmethod
+    def _task_time(uniform_values):
+        """
+            Adds in the floor climb time by drawing the floor number that the fire occurs on.
+            
+            >>> random.seed(1234)
+            >>> test = DISTHH(object_of_origin=93, room_of_origin=190, floor_of_origin=39, building_of_origin=64,
+            ...          beyond=9, room_area_draw=UniformDraw(20, 30), building_area_draw=UniformDraw(20,30),
+            ...          alarm_time_draw=UniformDraw(20,30), dispatch_time_draw=UniformDraw(20,30),
+            ...          turnout_time_draw=UniformDraw(20,30), arrival_time_draw=UniformDraw(20,30),
+            ...          suppression_time_draw=UniformDraw(20,30), floor_extent=True)
+            >>> values = test._draw_values()
+            >>> round(test._task_time(values),2)
+            414.11
+            >>> floor_number = max(round(values['floor_number'],0)- 2, 0)
+            >>> round(values['alarm_time'] + values['dispatch_time'] + values['turnout_time'] + values['arrival_time'] \
+             + values['suppression_time'] + .644*floor_number**2 + 30.222*floor_number, 2)
+            414.11
+            
+        """
+        return DISTMH._task_time(uniform_values)
+
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
