@@ -373,7 +373,7 @@ class DISTMediumHazard(DIST):
 
         """Initializing the inputs to the medium hazard DIST class.
 
-            Most of the defaults need to be updated. 
+            Most of the defaults need to be updated.
             :param number_of_floors_draw: The draw for the total number of floors in a building
 
 
@@ -388,11 +388,11 @@ class DISTMediumHazard(DIST):
             Adds in the floor climb time by drawing the floor number that the fire occurs on.
 
             >>> random.seed(1234)
-            >>> test = DISTMediumHazard(object_of_origin=93, room_of_origin=190, floor_of_origin=39, building_of_origin=64,
+            >>> test = DISTMediumHazard(object_of_origin=93, room_of_origin=190, floor_of_origin=39,
             ...          beyond=9, room_area_draw=UniformDraw(20, 30), building_area_draw=UniformDraw(20,30),
             ...          alarm_time_draw=UniformDraw(20,30), dispatch_time_draw=UniformDraw(20,30),
             ...          turnout_time_draw=UniformDraw(20,30), arrival_time_draw=UniformDraw(20,30),
-            ...          suppression_time_draw=UniformDraw(20,30), floor_extent=True)
+            ...          suppression_time_draw=UniformDraw(20,30), floor_extent=True, building_of_origin=64)
             >>> values = test._draw_values()
             >>> round(test._task_time(values), 2)
             131.12
@@ -419,7 +419,7 @@ class DISTMediumHazard(DIST):
 
 class DISTHighHazard(DISTMediumHazard):
     """
-    The Differential In Standard Time (DIST) model for the high hazard cases. 
+    The Differential In Standard Time (DIST) model for the high hazard cases.
 
     This is a separate subclass so that different defaults can be used.
 
