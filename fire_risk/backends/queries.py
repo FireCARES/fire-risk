@@ -27,4 +27,3 @@ WHERE prop_use IN ('419','429','439','449','459','460','462','464','400')
 GROUP BY fdid, fire_sprd
 ORDER BY fdid, fire_sprd;
 """
-
