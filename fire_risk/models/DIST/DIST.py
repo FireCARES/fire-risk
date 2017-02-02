@@ -5,7 +5,7 @@ import numpy as np
 
 from fire_risk.utils import UniformDraw
 from math import log
-
+from math import ceil
 
 class LowerBoundGreaterThanUpperBoundException(Exception):
     pass
@@ -131,6 +131,31 @@ class DIST(object):
         :param uniform_limits: a tuple of of uniform limits.
         """
         return random.uniform(*uniform_limits)
+
+    @staticmethod
+    def draw_custom(draw_file_name, filter = False):
+    	"""
+    	Draw a new value of an attribute from a custom distribution.
+
+    	This can be used when there is actual data for a given parameter
+
+    	"""
+	custom_values = []
+	custom_cdf = []
+	with open(draw_file_name) as f:
+		for line in f:
+			  custom_values.append(float(line.split('\t')[0]))
+			  custom_cdf.append(float(line.split('\t')[1]))
+		index_array = range(0, len(custom_values))
+
+		lowerbound = 0
+		if filter:
+			lowerbound_index = int(ceil(np.interp(filter, custom_values, index_array)))
+			lowerbound = custom_cdf[lowerbound_index]
+
+		interp_value = np.random.uniform(lowerbound,1)
+		interp_index = int(ceil(np.interp(interp_value, custom_cdf, index_array)))
+		return custom_values[interp_index]
 
     def _draw_values(self):
         """
@@ -365,8 +390,9 @@ class DISTMediumHazard(DIST):
     The Differential In Standard Time (DIST) model for the medium hazard cases.
     """
 
-    floor_area_draw = (600, 1200)
-    number_of_floors_draw = UniformDraw(3, 7)
+    floor_area_draw = 'Data/Med_floor_draw'
+    floor_num_draw = 'Data/Med_floor_num_draw'
+    building_area_draw = 'Data/Med_building_draw'
 
     def __init__(self, object_of_origin, room_of_origin, floor_of_origin, building_of_origin, beyond,
                  **kwargs):
@@ -389,31 +415,52 @@ class DISTMediumHazard(DIST):
 
             >>> random.seed(1234)
             >>> test = DISTMediumHazard(object_of_origin=93, room_of_origin=190, floor_of_origin=39,
-            ...          beyond=9, room_area_draw=UniformDraw(20, 30), building_area_draw=UniformDraw(20,30),
+            ...          beyond=9, room_area_draw=UniformDraw(20, 30), building_area_draw='Data/Med_building_draw',
             ...          alarm_time_draw=UniformDraw(20,30), dispatch_time_draw=UniformDraw(20,30),
             ...          turnout_time_draw=UniformDraw(20,30), arrival_time_draw=UniformDraw(20,30),
             ...          suppression_time_draw=UniformDraw(20,30), floor_extent=True, building_of_origin=64)
             >>> values = test._draw_values()
             >>> round(test._task_time(values), 2)
-            131.12
-            >>> floor_number = max(round(values['floor_number'],0)- 2, 0)
+            128.81
+            >>> floor_number = max(round(values['floor_climb'],0)- 2, 0)
             >>> round(values['alarm_time'] + values['dispatch_time'] + values['turnout_time'] + values['arrival_time'] \
              + values['suppression_time'] + .644*floor_number**2 + 30.222*floor_number, 2)
-            131.12
+            128.81
 
         """
-        # The climb is to the n-1 floor when the fire occurs on the nth floor.
-        floor_number = max(round(uniform_values['floor_number'], 0) - 2, 0)
+        # The climb is to the n-2 floor when the fire occurs on the nth floor.
+        floor_climb= max(round(uniform_values['floor_climb'], 0) - 2, 0)
 
         # I integrated the regression equation to find total (rather than marginal) climb time
-        climb_time = .644 * floor_number ** 2 + 30.222 * floor_number
+        climb_time = .644 * floor_climb ** 2 + 30.222 * floor_climb
 
         return super(DISTMediumHazard, DISTMediumHazard)._task_time(uniform_values) + climb_time
 
     def _draw_values(self):
-        values = super(DISTMediumHazard, self)._draw_values()
-        values.update(dict(floor_number=self.draw_uniform([1, self.number_of_floors_draw.draw()])))
 
+        values = dict(
+            room_area=self.room_area_draw.draw(),
+            alarm_time=self.alarm_time_draw.draw(),
+            dispatch_time=self.dispatch_time_draw.draw(),
+            turnout_time=self.turnout_time_draw.draw(),
+            arrival_time=self.arrival_time_draw.draw(),
+            suppression_time=self.suppression_time_draw.draw()
+        )
+
+        values.update(dict(floor_climb=self.draw_uniform([1, self.draw_custom(self.floor_num_draw)])))
+        
+        """
+        Drawing from custom distributions
+
+        Note that the second (filter) argument is passed to draw_custom to prevent drawing 
+        a building area smaller than the floor or room areas. 
+
+        """
+        if self.floor_area_draw and self.floor_extent:
+            values.update(dict(floor_area=self.draw_custom(self.floor_area_draw, values['room_area'])))
+            values.update(dict(building_area=self.draw_custom(self.building_area_draw, values['floor_area'])))
+        else:
+        	values.update(dict(building_area=self.draw_custom(self.building_area_draw, values['room_area'])))
         return values
 
 
@@ -428,20 +475,22 @@ class DISTHighHazard(DISTMediumHazard):
 
     >>> random.seed(1234)
     >>> test = DISTHighHazard(object_of_origin=93, room_of_origin=190, floor_of_origin=39, building_of_origin=64,
-    ...          beyond=9, room_area_draw=UniformDraw(20, 30), building_area_draw=UniformDraw(20,30),
+    ...          beyond=9, room_area_draw=UniformDraw(20, 30), building_area_draw='Data/High_building_draw',
     ...          alarm_time_draw=UniformDraw(20,30), dispatch_time_draw=UniformDraw(20,30),
     ...          turnout_time_draw=UniformDraw(20,30), arrival_time_draw=UniformDraw(20,30),
     ...          suppression_time_draw=UniformDraw(20,30), floor_extent=True)
     >>> values = test._draw_values()
     >>> round(test._task_time(values),2)
-    414.11
-    >>> floor_number = max(round(values['floor_number'],0)- 2, 0)
+    260
+    >>> floor_number = max(round(values['floor_climb'],0)- 2, 0)
     >>> round(values['alarm_time'] + values['dispatch_time'] + values['turnout_time'] + values['arrival_time'] \
      + values['suppression_time'] + .644*floor_number**2 + 30.222*floor_number, 2)
-    414.11
+    260
     """
-
-    number_of_floors_draw = UniformDraw(8, 48)
+    floor_area_draw = 'Data/High_floor_draw'
+    floor_num_draw = 'Data/High_floor_num_draw'
+    building_area_draw = 'Data/High_building_draw'
+    
 
 if __name__ == "__main__":
     import doctest
