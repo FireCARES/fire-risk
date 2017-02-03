@@ -29,7 +29,7 @@ class DIST(object):
     suppression_time_draw = UniformDraw(60, 180)
     floor_area_draw = None
     floor_extent = True
-    minimum_number_of_records = 100
+    minimum_number_of_records = 75
 
     @property
     def params(self):
@@ -52,7 +52,7 @@ class DIST(object):
         93
         >>> test.room_of_origin
         283
-        >>> test = DIST(object_of_origin=99, room_of_origin=0, floor_of_origin=0, building_of_origin=0,
+        >>> test = DIST(object_of_origin=74, room_of_origin=0, floor_of_origin=0, building_of_origin=0,
         ...            beyond=0, floor_extent=False)
         Traceback (most recent call last):
             ...
