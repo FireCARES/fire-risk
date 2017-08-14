@@ -1,0 +1,183 @@
+#' pkgFireCARES: A package for estimating community risk in FireCARES
+#'
+#' This package creates a series of functions that are used to
+#' estimate community risk models and make community risk predictions.
+#'
+#' @section Functions:
+#'
+#'  Functions included are:
+#'  \code{\link{fcSetup}}: Takes data file (either for model estimation or
+#' prediction) and prepare it for use.
+#'
+#'  \code{\link{npt}}: Builds a control object from the specified templates
+#'  in the database.
+#'
+#'  \code{\link{mass.npt}}: Builds a collection of control objects. This 
+#'  function calls npt to do most of the work.
+#'
+#'  \code{\link{fcRun}}: Uses the control object to run a set of models.
+#'
+#'  \code{\link{fcTest}}: Calculates the out-of-sample Root-Mean-Square error
+#'  on the results for the models in the supplied test object. This function 
+#'  works on output from \code{\link{fcRun}}.
+#'
+#'  \code{\link{macro}}: For a supplied set of control objects, sequentially 
+#'  \code{\link{fcRun}}s them, runs \code{\link{fcTest}} on them, summarized the 
+#'  \code{\link{fcTest}} results in a single data.frame, and saves the results to
+#'  disk.
+#'
+#'  \code{\link{naive}}: Takes a \code{\link{fcTest}} output and computes the 
+#'  naive estimator and the RMS Error for the naive estimator for that test 
+#'  object.
+#'
+#'  \code{\link{fcEstimate}}: Takes output from the \code{\link{fcRun}} routine 
+#'  and new data and computes predictions by tract or (for high-risk fires)
+#'  Assessors Parcel.
+#'
+#'  \code{\link{lasso}}: Helper function for LASSO and ridge regression models.
+#'
+#'  \code{\link{ranger}}: Helper function for Random Forest models (using the 
+#'  \pkg{ranger} package).
+#'
+#'  \code{\link{c.test}}: Combines two test objects.
+#'
+#'  \code{\link{acs.dwnld}}: Downloads new ACS data from Census for import to
+#'  the database. This should considerably simplify the process of keeping 
+#'  census data up to date. Note that it requires census API key installed 
+#'  (see the acs package documentation).
+#'
+#' @section Basic Setup:
+#' This package works with data on the nfirs database on the FireCARES server. 
+#' In particular, it works with the information in the 'nist' and 'controls' 
+#' schemas. Most of that, however, is transparent to the functions in this 
+#' package. Any function that accesses the database takes a DBI Connection as
+#' one of its parameters. That connection will contain all the connection 
+#' parameters and must be supplied. Note that while I assume that the database
+#' is a PostgreSQL one (as is currently the case), there is nothing in these 
+#' functions that is specific to PostgreSQL. So any DBI connection can be used.
+#' There are packages in R that create DBI connections for MySQL, SQLite, 
+#' Oracle, the ODBC Interface, SQLServer, and others. So these functions should 
+#' continue to work even in the server hosting the database is changed.
+#'
+#' @section Typical Workflow:
+#'
+#' \emph{Build the definitions of the models to be estimated.} That will 
+#' typically be done by a call to \code{\link{mass.npt}}, although it could be 
+#' done by calling \code{\link{npt}} directly. Either will leave one or more 
+#' control objects in the working environment.
+#'
+#' \emph{Download data for analysis.} That will be done outside these routines.
+#'
+#' \emph{Prepare the data for analysis.} This is done by a call to 
+#' \code{\link{fcSetup}}.
+#'
+#' \emph{Estimate the models and calcuate the RMS Error for all the models 
+#' queued up for estimation.} That is typically done by a call to 
+#' \code{\link{macro}}. However it can be done by sequentially calling 
+#' \code{\link{fcRun}} and \code{\link{fcTest}}, although that is not recommended. 
+#' Note that \code{\link{macro}} takes all the objects created by either 
+#' \code{\link{fcRun}} or \code{\link{fcTest}}, saves them to file and deletes them
+#' from the working enviroment. It leaves behind a summary data frame 
+#' summarizing the RMS Errors of the models run.
+#'
+#' \emph{Estimate the naive model for comparison.} To do that, you will need 
+#' the output of \code{\link{fcTest}} from one of the sets of models estimated, 
+#' and will use the \code{\link{naive}} function.
+#'
+#' \emph{Estimate predictions for each tract or parcel.} That occurs in three
+#' steps. First, download the data to be used to make predictions. That will 
+#' occur outside any of these functions. Second, prepare the new data for 
+#' analysis. That occurs through a call to \code{\link{fcSetup}}. Finally, 
+#' compute the predictions based on the selected models. That occurs through
+#' a call to \code{\link{fcEstimate}}.
+#' 
+#' @section ACS Data:
+#' These models and estimates rely on data from the American Community Survey
+#' maintained by the Census Bureau. New data is released for the survey 
+#' annually. The function \code{\link{acs.dwnld}} is a utility function that 
+#' simplifies the process of downloading new data. In order to use it you will
+#' need a Census API key installed on the server (see the \pkg{acs} package 
+#' documentation for more details). It leaves a set of tables on ther server
+#' (in the 'nist' schema) that are formatted the same as the master ACS tables
+#' already on the server. Those tables will need to be appended to the existing
+#' ACS tables already on the server.
+#'
+#' @section IMPORTS: 
+#' acs,boot,glmnet,ranger,RPostgreSQL,utils
+#'
+#' @section SUGGESTS: 
+#' doParallel
+#'
+#' @section Notes:
+#' These functions do assume that the information they need is in the 
+#' 'controls' and 'nist' schemas, so if that changes, these functions will need
+#' to be rewritten.
+#'
+#' The 'controls' schema is assumed to contain the definitions of all models
+#' that are used by these functions. The format for the tables in the 'controls'
+#' schema is very specific, and is hard-coded into these functions. There are 
+#' three tables assumed to exist in the 'controls' schema:  
+#' \code{models}, and \code{inputs} and \code{runs}. Their layouts are described
+#' below.
+#'
+#' @section Table models:
+#' This table specifies information about each model to be run.
+#'
+#' \tabular{lcl}{
+#' Name    \tab Type    \tab Details\cr
+#' index   \tab integer \tab primary key.\cr
+#' lst     \tab text    \tab Typically the name of the control object.\cr
+#' model   \tab text    \tab Name of the model to be estimated.\cr
+#' library \tab text    \tab Name of the library needed to estimate the model.\cr
+#' ff      \tab text    \tab Name of the function that estimates the model.\cr
+#' target  \tab text    \tab Name of the dependent variable estimated.\cr
+#' runs    \tab text    \tab One of '0', 'S', or 'L'. Whether the model 
+#' is estimated over the whole data set ('0' or 'S') or separately over 
+#' subsets of the data ('L').
+#' }
+#'
+#' @section Table inputs:
+#' This table specifies the parameters for the model to be run.
+#'
+#' \tabular{lcl}{
+#' Name    \tab Type    \tab Details\cr
+#' index   \tab integer \tab primary key.\cr
+#' lst     \tab text    \tab Typically the name of the control object.\cr
+#' model   \tab text    \tab Name of the model to be estimated.\cr
+#' input   \tab text    \tab Name of an input parameter for the estimation 
+#' function (ff above).\cr
+#' class   \tab text    \tab Class of the input parameter.\cr
+#' value   \tab text    \tab Value of the input parameter.
+#' }
+#'
+#' Note that for practical purposes, the (lst, model)pair serve as keys 
+#' to the list of models, and they are a foreign key that \code{inputs} uses
+#' to link to the \code{models} table.
+#'
+#' @section Table runs:
+#' This table specifies how the data is partitioned. Each partition will
+#' have a separate model built for it. Other than the partition, all other
+#' inputs are identical.
+#'
+#' \tabular{lcl}{
+#' Name    \tab Type    \tab Details\cr
+#' grp     \tab text    \tab One of 'long' or 'short' This matches 'L' (for 
+#' 'long') or 'S' or '0' (for 'short') in the in the \code{models} table.\cr
+#' tier1   \tab text    \tab This combined with 'tier2' below serve as a name
+#' for the subset to be evaluated.\cr
+#' tier2   \tab text    \tab See above.\cr
+#' value   \tab text    \tab Definition of the subset to be evaluated.
+#' }
+#'
+#' @section To-Do Notes:
+#' I need to give some thought to how to handle doParallel. This setup works
+#' just fine on my computer, but there is no guarantee that it will work on
+#' the server. First, the server may have a different operating system (which
+#' matters quite a lot). Second, I don't know how may processors it will have.
+#' So when it comes to parallelization, I need to build this robustly. For now,
+#' I think I will disable it (or perhaps make doParallel a 'SUGGESTS' package,
+#' if that will do the job), for use on any system other than my own.
+#'
+#' @docType package
+#' @name pkgFireCARES
+"_PACKAGE"
