@@ -82,8 +82,8 @@ fcEstimate <- function(input, output, new.data, subset=TRUE)
                         glm.fmla[[2]] <- NULL
                         new.x <- model.matrix(glm.fmla, new.data[fltr, ], na.action=na.pass)
                         if("offset" %in% names(nput$models[[k]]$inputs)) {
-#                           off <- eval(nput$models[[k]]$inputs$offset, new.data[fltr,])
-                            off <- model.offset(n.dta)
+                            off <- eval(nput$models[[k]]$inputs$offset, new.data[fltr,])
+#                           off <- model.offset(n.dta)
                             results[[new.vars[1]]][fltr] <- predict(oput[[k]][[i]]$model, newx=new.x, type="response", s="lambda.min", offset=off)
                             results[[new.vars[2]]][fltr] <- predict(oput[[k]][[i]]$model, newx=new.x, type="response", s="lambda.1se", offset=off)
                         } else {
