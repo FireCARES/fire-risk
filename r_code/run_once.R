@@ -1,11 +1,11 @@
 install.packages( c( "RPostgreSQL",
                      "ranger",
-					 "glmnet",
-					 "devtools",
-					 "roxygen2",
-					 "acs",
-					 "boot",
-					 "utils"), 
+                     "glmnet",
+                     "devtools",
+                     "roxygen2",
+                     "acs",
+                     "boot",
+                     "utils"), 
                   repos="https://cloud.r-project.org",
                   dependencies=c("Depends","Imports") )
 library(devtools)
