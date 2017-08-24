@@ -175,9 +175,9 @@ class   \tab text    \tab Class of the input parameter.\cr
 value   \tab text    \tab Value of the input parameter.
 }
 
-Note that for practical purposes, the (lst, model)pair serve as keys 
-to the list of models, and they are a foreign key that \code{inputs} uses
-to link to the \code{models} table.
+Note that for practical purposes, the (lst, model) pair serve as keys 
+to the list of models, and they are a foreign key that the \code{inputs} table
+uses to link to the \code{models} table.
 }
 
 \section{Table runs}{
@@ -197,15 +197,18 @@ value   \tab text    \tab Definition of the subset to be evaluated.
 }
 }
 
-\section{To-Do Notes}{
+\section{Parallel Processing}{
 
-I need to give some thought to how to handle doParallel. This setup works
-just fine on my computer, but there is no guarantee that it will work on
-the server. First, the server may have a different operating system (which
-matters quite a lot). Second, I don't know how may processors it will have.
-So when it comes to parallelization, I need to build this robustly. For now,
-I think I will disable it (or perhaps make doParallel a 'SUGGESTS' package,
-if that will do the job), for use on any system other than my own.
+Both LASSO and Random Forest (through the \pkg{ranger} package) can use parallel
+computation if multiple processors are available. The \pkg{ranger} package has 
+support for multiple processors built in by default. I have made no adjustment
+to the defaults, so it will use them if they are there and the package supports
+them. LASSO (through the \pkg{glmnet}) can also use it, but setup is required.
+LASSO here is set up to use the \pkg{doParallel} package if it is set up. Note that
+for LASSO to use multiple processors, it must be set up separately. That is, the 
+package must be installed and loaded (typically with a call to \code{\link[base]{library}})
+in advance. It that is done (and works--doParallel only works on certain types of systems)
+the LASSO will make use of it. If not, it will not.
 }
 
 \examples{
