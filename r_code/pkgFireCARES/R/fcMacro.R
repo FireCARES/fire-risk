@@ -45,7 +45,7 @@
 #' Side Effects:
 #'
 #' \itemize{ 
-#'    \item Creates rmse.sum in the global environment.
+#'    \item Creates \code{rmse.sum} in the global environment.
 #'    \item For each control object, creates a .RData file on the disk 
 #'          containing the objects created.
 #'    \item For each control object, creates a message text file on disk 
@@ -54,7 +54,27 @@
 #'          in a specified environment.
 #' }
 #'
-#' @return Data frame listing the objects and files created for each control object.
+#' \code{rmse.sum} is a named list. Each control object that produces a fcTest
+#' object (many will not) has an entry in the list. The name of the entry is the 
+#' name of the control object. The entry is the .$se entry in the fcTest object. 
+#'
+#' @return 
+#' Data frame listing the objects and files created for each control object.
+#' 
+#' The data.frame has the following structure:
+#' 
+#' \describe{
+#'   \item{npt.name}{Name of the control object.}
+#'   \item{res.name}{Name of the results output by \code{\link{fcRun}}.} 
+#'   \item{tst.name}{Name of the test results output by \code{\link{fcTest}}.}
+#'   \item{msg.name}{Text file in which errors and messages associated with 
+#'                   this object are output.}
+#'   \item{save.name}{Name of the file to which all objects are saved.}
+#' }
+#'
+#' Note that if an object is not created (typically due to an error) then an NA
+#' will appear in the appropriate cell.
+#' 
 #' @export
 #' @examples
 #' \dontrun{
@@ -128,9 +148,7 @@ fcMacro <- function(npt, conn=NULL, save.tests=NULL)
 # all the previous work hasn't been lost.
         if(exists(tst.name, where=globalenv())){
             if(! exists("rmse.sum")) rmse.sum <<- list()
-            colname <- strsplit(tst.name, ".", fixed=TRUE)[[1]]
-            colname <- paste(colname[2], ifelse(substring(colname[3], 1, 1)=='0', 'S', substring(colname[3], 1, 1)), sep=".")
-            rmse.sum[[colname]] <<- get(tst.name, pos=globalenv())$se
+            rmse.sum[[npt.name]] <<- get(tst.name, pos=globalenv())$se
         }
 # If save.tests is defined, collect the 'test.' objects and save them to the 
 # specified environment.
