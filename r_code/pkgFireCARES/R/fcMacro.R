@@ -20,7 +20,7 @@
 #' This routine sequentially runs \code{\link{fcRun}} and \code{\link{fcTest}} 
 #' for all the test objects supplied. It then collects summary information from
 #' the \code{\link{fcTest}} output for all the control objects listed and 
-#' returns it in a data frame.
+#' returns it in the list \code{rmse.sum} which is created in the global environment.
 #' 
 #' The function saves the control, output, and test objects to disk and 
 #' deletes them from the R environment. This step is necessary because some of
