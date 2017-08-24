@@ -6,6 +6,7 @@
 #' @section Functions:
 #'
 #'  Functions included are:
+#'
 #'  \code{\link{fcSetup}}: Takes data file (either for model estimation or
 #' prediction) and prepare it for use.
 #'
@@ -21,7 +22,7 @@
 #'  on the results for the models in the supplied test object. This function 
 #'  works on output from \code{\link{fcRun}}.
 #'
-#'  \code{\link{macro}}: For a supplied set of control objects, sequentially 
+#'  \code{\link{fcMacro}}: For a supplied set of control objects, sequentially 
 #'  \code{\link{fcRun}}s them, runs \code{\link{fcTest}} on them, summarized the 
 #'  \code{\link{fcTest}} results in a single data.frame, and saves the results to
 #'  disk.
@@ -39,7 +40,7 @@
 #'  \code{\link{ranger}}: Helper function for Random Forest models (using the 
 #'  \pkg{ranger} package).
 #'
-#'  \code{\link{c.test}}: Combines two test objects.
+#'  \code{\link{c_test}}: Combines two test objects.
 #'
 #'  \code{\link{acs.dwnld}}: Downloads new ACS data from Census for import to
 #'  the database. This should considerably simplify the process of keeping 
@@ -73,9 +74,9 @@
 #'
 #' \emph{Estimate the models and calcuate the RMS Error for all the models 
 #' queued up for estimation.} That is typically done by a call to 
-#' \code{\link{macro}}. However it can be done by sequentially calling 
+#' \code{\link{fcMacro}}. However it can be done by sequentially calling 
 #' \code{\link{fcRun}} and \code{\link{fcTest}}, although that is not recommended. 
-#' Note that \code{\link{macro}} takes all the objects created by either 
+#' Note that \code{\link{fcMacro}} takes all the objects created by either 
 #' \code{\link{fcRun}} or \code{\link{fcTest}}, saves them to file and deletes them
 #' from the working enviroment. It leaves behind a summary data frame 
 #' summarizing the RMS Errors of the models run.
@@ -150,9 +151,9 @@
 #' value   \tab text    \tab Value of the input parameter.
 #' }
 #'
-#' Note that for practical purposes, the (lst, model)pair serve as keys 
-#' to the list of models, and they are a foreign key that \code{inputs} uses
-#' to link to the \code{models} table.
+#' Note that for practical purposes, the (lst, model) pair serve as keys 
+#' to the list of models, and they are a foreign key that the \code{inputs} table
+#' uses to link to the \code{models} table.
 #'
 #' @section Table runs:
 #' This table specifies how the data is partitioned. Each partition will
@@ -169,15 +170,58 @@
 #' value   \tab text    \tab Definition of the subset to be evaluated.
 #' }
 #'
-#' @section To-Do Notes:
-#' I need to give some thought to how to handle doParallel. This setup works
-#' just fine on my computer, but there is no guarantee that it will work on
-#' the server. First, the server may have a different operating system (which
-#' matters quite a lot). Second, I don't know how may processors it will have.
-#' So when it comes to parallelization, I need to build this robustly. For now,
-#' I think I will disable it (or perhaps make doParallel a 'SUGGESTS' package,
-#' if that will do the job), for use on any system other than my own.
+#' @section Parallel Processing:
+#' Both LASSO and Random Forest (through the \pkg{ranger} package) can use parallel
+#' computation if multiple processors are available. The \pkg{ranger} package has 
+#' support for multiple processors built in by default. I have made no adjustment
+#' to the defaults, so it will use them if they are there and the package supports
+#' them. LASSO (through the \pkg{glmnet}) can also use it, but setup is required.
+#' LASSO here is set up to use the \pkg{doParallel} package if it is set up. Note that
+#' for LASSO to use multiple processors, it must be set up separately. That is, the 
+#' package must be installed and loaded (typically with a call to \code{\link[base]{library}})
+#' in advance. It that is done (and works--doParallel only works on certain types of systems)
+#' the LASSO will make use of it. If not, it will not.
+#'
+#' @examples
+#' \dontrun{
+#' cat("No current example")
+#' }
 #'
 #' @docType package
 #' @name pkgFireCARES
+##
+## General Notes:
+##  For reasons I do not understand, the doParallel package (used in
+##  the LASSO models) does not load on the fly. So it needs to be loaded
+##  separately before running the models.
+##
+##  Functions included are:
+##    fcSetup:   Takes data file (either for model estimation or prediction)
+##               and prepare it for use.
+##    npt:       Builds a control object from the specified templates
+##               in the database.
+##    mass.npt:  Builds a collection of control objects. This function
+##               calls npt to do most of the work.
+##    fcRun:     Uses the control object to run a set of models.
+##    fcTest:    Calculates the out-of-sample Root-Mean-Square error
+##               on the results for the models in the supplied test object.
+##               This function works on output from 'run'
+##    fcMacro:   For a supplied set of control objects, sequentially 'runs'
+##               them, runs 'test' on them, summarized the 'test' results 
+##               in a single data.frame, and saves the results to disk.
+##    naive:     Takes a 'test' output and computes the naive estimator
+##               and the RMS Error for the naive estimator for that
+##               test object.
+##    fcEstimate:Takes output from the 'run' routine and new data and
+##               computes predictions by tract or (for high-risk fires)
+##               Assessors Parcel.
+##    lasso:     Helper function for LASSO and ridge regression models.
+##    ranger:    Helper function for Random Forest models (using the 
+##               ranger package).
+##    c_test:    Combines two test objects.
+##    acs.dwnld: Downloads new ACS data from Census for import to the 
+##               database. This should considerably simplify the process
+##               of keeping census data up to date. Note that it requires
+##               a census API key installed (see the acs package documentation).
+##
 "_PACKAGE"

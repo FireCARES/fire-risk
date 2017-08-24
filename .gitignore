@@ -63,3 +63,9 @@ target/
 
 scripts/raw_output/*.csv
 scripts/figures/
+
+# R Files
+*.RData
+*.Rproj.user
+*.Rhistory
+/r_code/library/

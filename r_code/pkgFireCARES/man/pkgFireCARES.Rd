@@ -14,6 +14,7 @@ estimate community risk models and make community risk predictions.
 
 
  Functions included are:
+
  \code{\link{fcSetup}}: Takes data file (either for model estimation or
 prediction) and prepare it for use.
 
@@ -29,7 +30,7 @@ prediction) and prepare it for use.
  on the results for the models in the supplied test object. This function 
  works on output from \code{\link{fcRun}}.
 
- \code{\link{macro}}: For a supplied set of control objects, sequentially 
+ \code{\link{fcMacro}}: For a supplied set of control objects, sequentially 
  \code{\link{fcRun}}s them, runs \code{\link{fcTest}} on them, summarized the 
  \code{\link{fcTest}} results in a single data.frame, and saves the results to
  disk.
@@ -47,7 +48,7 @@ prediction) and prepare it for use.
  \code{\link{ranger}}: Helper function for Random Forest models (using the 
  \pkg{ranger} package).
 
- \code{\link{c.test}}: Combines two test objects.
+ \code{\link{c_test}}: Combines two test objects.
 
  \code{\link{acs.dwnld}}: Downloads new ACS data from Census for import to
  the database. This should considerably simplify the process of keeping 
@@ -85,9 +86,9 @@ control objects in the working environment.
 
 \emph{Estimate the models and calcuate the RMS Error for all the models 
 queued up for estimation.} That is typically done by a call to 
-\code{\link{macro}}. However it can be done by sequentially calling 
+\code{\link{fcMacro}}. However it can be done by sequentially calling 
 \code{\link{fcRun}} and \code{\link{fcTest}}, although that is not recommended. 
-Note that \code{\link{macro}} takes all the objects created by either 
+Note that \code{\link{fcMacro}} takes all the objects created by either 
 \code{\link{fcRun}} or \code{\link{fcTest}}, saves them to file and deletes them
 from the working enviroment. It leaves behind a summary data frame 
 summarizing the RMS Errors of the models run.
@@ -207,6 +208,12 @@ I think I will disable it (or perhaps make doParallel a 'SUGGESTS' package,
 if that will do the job), for use on any system other than my own.
 }
 
+\examples{
+\dontrun{
+cat("No current example")
+}
+
+}
 \author{
 \strong{Maintainer}: Stanley Gilbert \email{stanley.gilbert@nist.gov}
 

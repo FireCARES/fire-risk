@@ -36,7 +36,7 @@
 ##    lasso:     Helper function for LASSO and ridge regression models.
 ##    ranger:    Helper function for Random Forest models (using the 
 ##               ranger package).
-##    c.test:    Combines two test objects.
+##    c_test:    Combines two test objects.
 ##    acs.dwnld: Downloads new ACS data from Census for import to the 
 ##               database. This should considerably simplify the process
 ##               of keeping census data up to date. Note that it requires
@@ -50,10 +50,11 @@
 #' This uses a pattern to collect a set of control files, and then calls 'npt' 
 #' for each of those control files.
 #'
-#' @param base character. Used to pattern-match the 'lst' values in the control 
-#' list.
 #' @param conn DBI connection. Connects to the database containing the 
 #' 'controls' sets.
+#' @param pattern character. Used to pattern-match the 'lst' values in the control 
+#' list.
+#' @param list character. List of control objects to build.
 #' @param relocate environment. This is an [optional] environment into which
 #' to move any existing test objects.
 #'
@@ -62,19 +63,20 @@
 #' @details
 #' Creates:
 #'   A set of control objects in the global environment, as specified in the 
-#'  'base' input.
+#'  'pattern' input.
 #'
-#' This is usually followed up with a call to \code{\link{macro}}
+#' This is usually followed up with a call to \code{\link{fcMacro}}
 #'
 #' @export
 #' @examples
-#' dontrun{
+#' \dontrun{
 #'   conn <- dbConnect("PostgreSQL", host="hostname.com", dbname="nfirs", user="username", password="***")
-#'   mass.npt("npt.f", conn)
+#'   mass.npt(conn, "npt.f")
 #'   res <- new.env()
 #'   mass.npt("final", conn, res)
 #' }
-mass.npt <- function(base, conn, relocate=NULL)
+#'
+mass.npt <- function(conn, pattern=NULL, list=NULL, relocate=NULL)
 {
 #   This section finds any 'test.' objects and moves them into a user-specified
 #   backup environment. This makes room for the new objects that will shortly be 
@@ -87,11 +89,18 @@ mass.npt <- function(base, conn, relocate=NULL)
         }
     }
 #   Find the 'lst' values, and then create the input files for each of the control lists.
-    a <- dbGetQuery(conn, paste("select lst, replace(runs, '0', 'S') as runs, count(*) as n ", 
-	                              "from controls.models where lst like '%", base, "%' ", 
-								  "group by lst, replace(runs, '0', 'S') order by lst", sep=""))
+    if(! is.null(pattern)){
+        a <- dbGetQuery(conn, paste("select lst, replace(runs, '0', 'S') as runs, count(*) as n ", 
+	                                "from controls.models where lst like '%", pattern, "%' ", 
+                                    "group by lst, replace(runs, '0', 'S') order by lst", sep=""))
+    } else {
+        if(is.null(list)) stop( "At least one of 'pattern' or 'list' must be specified!")
+        a <- dbGetQuery(conn, paste("select lst, replace(runs, '0', 'S') as runs, count(*) as n ", 
+	                                "from controls.models where lst in ('", paste(list, collapse="','"),
+                                    "') group by lst, replace(runs, '0', 'S') order by lst", sep=""))
+    }
     for(i in 1:nrow(a)) {
-        assign(a$lst[i], pkgFireCARES::npt(conn, a$lst[i], run=ifelse(a$runs[i] == "L", "long", "short")), envir=globalenv())
+        assign(a$lst[i], npt(conn, a$lst[i], run=ifelse(a$runs[i] == "L", "long", "short")), envir=globalenv())
     }
 	a$lst
 }
@@ -137,7 +146,7 @@ mass.npt <- function(base, conn, relocate=NULL)
 #'  the computer.
 #'
 #' @examples
-#' dontrun{
+#' \dontrun{
 #'   npt(conn, "npt.base")
 #'   npt(conn, "npt.base", run="long")
 #'   npt(conn, y="f", mdls=c("", ""))
@@ -242,24 +251,53 @@ npt <- function(conn, group=NULL, risk=NULL, y=NULL, mdls=NULL, run="short")
 #' @param save.tests environment. Where to save the test results. [optional]
 #'
 #' @details
-#' The object listed in \code{npt} need not exist in the R environment. If it does not, then
-#' this function calls the \code{\link{npt}} function to get the definition of the control object 
-#' out of the database. That is what the 'conn' variable is used for. If the objects
-#' already exist in the R environment, then there is no need to supply the \code{conn} variable.
+#' The object listed in \code{npt} need not exist in the R environment. If it 
+#' does not, then this function calls the \code{\link{npt}} function to get 
+#' the definition of the control object out of the database. That is what the 
+#' \code{conn} variable is used for. If the objects already exist in the R 
+#' environment, then there is no need to supply the \code{conn} variable.
 #'
-#' If the save.tests environment is not supplied, then the test results will be removed 
-#' from the R environment after they are saved to disk (and a summary saved to a data.frame). 
-#' Some of these objects can be very large, so removing them is largely necessary. The \code{test} 
-#' objects are the only ones saved. They are small enough that they can be saved without 
-#' much harm. Note again that they are saved (if they are saved) in a separate environment 
-#' which keeps the global environment less cluttered.
+#' This routine sequentially runs \code{\link{fcRun}} and \code{\link{fcTest}} 
+#' for all the test objects supplied. It then collects summary information from
+#' the \code{\link{fcTest}} output for all the control objects listed and 
+#' returns it in a data frame.
+#' 
+#' The function saves the control, output, and test objects to disk and 
+#' deletes them from the R environment. This step is necessary because some of
+#' output objects are quite large.
 #'
-#' Creates rmse.sum in the global environment.
+#' The function creates a message text file on disk for each control object so 
+#' as to contain any errors or or messages generated while running the models. 
+#' The name of the message file is 'message.nn.txt' where nn is a two-digit 
+#' number. This function finds the message file with the largest such number 
+#' already on the disk and names the new file with the next-largest number. 
+#' Note that if a large number of such files already exist on the disk or if 
+#' fcMacro is called with a long list of control objects, it is possible for
+#' the 'nn' in the name above to extend into triple digits.
+#' 
+#' If the save.tests environment is supplied, then the \code{\link{fcTest}} 
+#' results (and only the \code{\link{fcTest}} results) will be retained in the  
+#' environment specified. The \code{\link{fcTest}} objects are small enough that
+#' they can be retained without much harm. Note again that they are saved (if 
+#' they are saved) in a separate environment which keeps the global environment
+#' less cluttered.
 #'
-#' @return nothing
+#' Side Effects:
+#'
+#' \itemize{ 
+#'    \item Creates rmse.sum in the global environment.
+#'    \item For each control object, creates a .RData file on the disk 
+#'          containing the objects created.
+#'    \item For each control object, creates a message text file on disk 
+#'          containing any errors or messages generated in the process.
+#'    \item Optionally saves the outputs of the \code{\link{fcTest}} function
+#'          in a specified environment.
+#' }
+#'
+#' @return Data frame listing the objects and files created for each control object.
 #' @export
 #' @examples
-#' dontrun{
+#' \dontrun{
 #'   fcMacro(c("mr.final", "npt.final", "npt.final.L"))
 #'
 #'   res <- new.env()
@@ -267,6 +305,8 @@ npt <- function(conn, group=NULL, risk=NULL, y=NULL, mdls=NULL, run="short")
 #' }
 fcMacro <- function(npt, conn=NULL, save.tests=NULL)
 {
+    n0 <- as.integer(sapply(strsplit(list.files(pattern="messages[.][0-9][0-9]+[.]txt"), "[.]"), function(x) x[2]))
+	n0 <- ifelse(length(n0) == 0, 0, max(n0))
     for(i in 1:length(npt))
     {
 # First this creates names for output objects and files. This is based on the name of the
@@ -276,7 +316,7 @@ fcMacro <- function(npt, conn=NULL, save.tests=NULL)
         npt.name <- npt[i]
         res.name <- sub(strsplit(npt.name, ".", fixed=TRUE)[[1]][1], "results", npt.name)
         tst.name <- sub(strsplit(npt.name, ".", fixed=TRUE)[[1]][1], "test",    npt.name)
-        msg.name <- paste("messages", formatC(i, width=2, flag="0"), "txt", sep=".")
+        msg.name <- paste("messages", formatC(i + n0, width=2, flag="0"), "txt", sep=".")
         save.name <- paste(npt.name, "RData", sep=".")
 
         if(exists("test.00") && "subset" %in% names(test.00)){
@@ -290,9 +330,9 @@ fcMacro <- function(npt, conn=NULL, save.tests=NULL)
         if(! exists(npt.name, where=globalenv())){
             if(! is.null(conn)){
                 if(grepl("L", npt.name)){
-                    assign(npt.name, pkgFireCARES::npt(conn, npt.name, run="long"), envir=globalenv())
+                    assign(npt.name, npt(conn, npt.name, run="long"), envir=globalenv())
                 } else {
-                    assign(npt.name, pkgFireCARES::npt(conn, npt.name), envir=globalenv())
+                    assign(npt.name, npt(conn, npt.name), envir=globalenv())
                 }
             } else {
                 if(interactive()) cat("\tNo such object exists!\n")
@@ -300,17 +340,21 @@ fcMacro <- function(npt, conn=NULL, save.tests=NULL)
             }
         }
 # Run the model
-        pkgFireCARES::fcRun(get(npt.name), sink=msg.name)
+        fcRun(get(npt.name), sink=msg.name)
         if(exists("offset", where=globalenv(), inherits=FALSE)) rm(offset, pos=globalenv())
 # Calculate out-of-sample RMSE
         if(interactive()) cat("Calculating out-of-sample RMSE: ", sep="")
-        tm <- tryCatch(system.time(assign(tst.name, pkgFireCARES::fcTest(get(npt.name), out, subset=sbset), pos=globalenv())),
+        tm <- tryCatch(system.time(assign(tst.name, fcTest(get(npt.name), out, subset=sbset), pos=globalenv())),
             error  =function(e){
-                cat("ERROR   Testing Object: ", res.name, ". Message: ", e$message, "\n", sep="", 
-                     file=ifelse(is.null(msg.name), stderr(), msg.name))
+                if(is.null(msg.name)){
+				    cat("ERROR   Testing Object: ", res.name, ". Message: ", e$message, "\n", sep="")
+                } else {
+				    cat("ERROR   Testing Object: ", res.name, ". Message: ", e$message, "\n", sep="",
+					    file=msg.name, append=TRUE)
+                }
                 return(rep(0, 5))
             }
-)
+        )
         if(interactive()) cat("Elapsed time: ", tm[3], " secs\n", sep="")
         assign(res.name, out, pos=globalenv())
         rm(out, pos=globalenv())
@@ -336,10 +380,21 @@ fcMacro <- function(npt, conn=NULL, save.tests=NULL)
         }
 # Delete all added objects, and clean up. I include an explicit garbage-collection
 # run because I have found that it makes a big difference.
+        uu <- c(ifelse(exists(npt.name, where=globalenv()),npt.name,NA), 
+                ifelse(exists(res.name, where=globalenv()),res.name,NA), 
+                ifelse(exists(tst.name, where=globalenv()),tst.name,NA), 
+                msg.name, 
+                save.name)
+        if(exists("result")) result <- rbind(result, uu)
+		else                 result <- matrix(uu, ncol=5)
         rm(list=intersect(ls(pos=globalenv()), c(res.name, npt.name, tst.name)), pos=globalenv())
         rm(npt.name, res.name, tst.name, msg.name, save.name)
         gc()
     }
+	result <- as.data.frame(result)
+	row.names(result) <- NULL
+    names(result) <- c("npt.name", "res.name", "tst.name", "msg.name", "save.name")
+	result
 }
 
 
@@ -366,10 +421,10 @@ fcMacro <- function(npt, conn=NULL, save.tests=NULL)
 #' returned as an object is that if one of the models errors out, I still 
 #' get the results of the previous models.
 #'
-#' This will typically be followed up by a run of \code{\link{test}}
+#' This will typically be followed up by a run of \code{\link{fcTest}}
 #' @export
 #' @examples
-#' dontrun{
+#' \dontrun{
 #'   fcRun(mr.d.00, sink="messages.13.txt")
 #'   fcRun(mr.f.S0b, n=1000, sink="messages.08.txt")
 #'   fcRun(mr.j.L0a)
@@ -378,7 +433,7 @@ fcRun <- function(sets, n=0, sink=NULL)
 {
 # In each model, 'library' specfies the R library that will be needed to run the model.
 # Here I extract a list of all those libraries and load them.
-	for(i in unique(sapply(sets$models,  function(x) x$fn['library']))) loadNamespace(i)
+	for(i in unique(sapply(sets$models,  function(x) x$fn['library']))) library(i, character.only=TRUE)  # loadNamespace(i)
 
     if(interactive()) u <- Sys.time()
     out <<- list()
@@ -412,10 +467,14 @@ fcRun <- function(sets, n=0, sink=NULL)
 # This will only be needed if a user wanted to call the 'ranger' function 
 # directly rather than through the interface set up here.
         fn  <- sets$models[[k]]$fn['ff']
-        if(grep("::|[$]", fn) > 0){
-            env <- strsplit("::|[$]", fn)[[1]]
-			fn  <- env[2]
-			env <- env[1]
+        if(length(grep("::|[$]", fn)) > 0){
+            env <- strsplit(fn, "::|[$]")[[1]]
+            fn  <- env[2]
+            env <- env[1]
+            specify=TRUE
+        } else {
+            env <- sets$models[[k]]$fn['library']
+            specify=FALSE
         }
 # Pull the inputs. Subset is handled differently, so extract it. Pull the 
 # (name of the) data.
@@ -448,7 +507,8 @@ fcRun <- function(sets, n=0, sink=NULL)
 # remaining models.
             tryCatch(
                 {
-                    if(exists("env")){
+                    if(specify || ! exists(fn)){
+#                       stop(paste(env, "::", fn, "(", paste(paste(names(aa), sapply(aa, deparse), sep="="), collapse=", "), ")", sep=""))
                         out[[k]][[i]]$model <<- do.call(fn, aa, envir=getNamespace(env), quote=TRUE)
                     } else {
                         out[[k]][[i]]$model <<- do.call(fn, aa)
@@ -480,7 +540,7 @@ fcRun <- function(sets, n=0, sink=NULL)
 
 #' LASSO helper function 
 #'
-#' This is a helper function that \code{\link{run}} calls whenever a LASSO model is used.
+#' This is a helper function that \code{\link{fcRun}} calls whenever a LASSO model is used.
 #'
 #' @param formula Formula. This describes the model that the LASSO fits.
 #' @param data Data Frame. The data used for the model.
@@ -492,27 +552,26 @@ fcRun <- function(sets, n=0, sink=NULL)
 #' reflect the call to this function rather than the glmnet function.
 #' 
 #' @details
-#' Basically it takes the standard inputs from the \code{\link{run}} routine and translates
+#' Basically it takes the standard inputs from the \code{\link{fcRun}} routine and translates
 #' them to work with the glmnet \code{\link[glmnet]{cv.glmnet}} function.
 lasso <- function(formula, data, subset=NULL, ...)
 {
 #   Get the argument list for the function
-    argg <- c(as.list(environment()), list(...))
     cll <- match.call()
+    argg <- as.list(cll)[-1]
 
 #   Unlike all the other models used here, 'glmnet' does not use the formula interface. 
 #   This section is intended to take formula / data input and adjust it to fit the glmnet
 #   interface.
     aaa <- list(formula=argg$formula, data=argg$data)
-    if(! is.null(argg$subset)) aaa <- c(aaa, list(subset=argg$subset))
-    if("offset" %in% names(argg)) aaa <- c(aaa, list(offset=argg$offset))
+    if(! is.null(argg$subset))    aaa$subset <- argg$subset
+    if("offset" %in% names(argg)) aaa$offset <- argg$offset
     dta <- do.call("model.frame", aaa)
 
 #   create the x, y and offset matrices/vectors that are needed by glmnet.
     argg$x <- model.matrix(argg$formula, dta)
     argg$y <- model.response(dta)
     if("offset" %in% names(argg)) argg$offset <- model.offset(dta)
-    argg$parallel <- TRUE
 #   Regardless, remove the 'formula', 'subset' and 'data' arguments from the argument list.
     argg$formula <- NULL
     argg$data    <- NULL
@@ -524,6 +583,7 @@ lasso <- function(formula, data, subset=NULL, ...)
         
 #   call the main 'cv.glmnet' function with the modified function list and set up a parallel cluster for it.
     if( isNamespaceLoaded( "doParallel" ) ) registerDoParallel()
+    if( isNamespaceLoaded( "doParallel" ) ) argg$parallel <- TRUE
     out <- do.call(glmnet::cv.glmnet, argg)
     if( isNamespaceLoaded( "doParallel" ) ) stopImplicitCluster()
     out$call <- cll
@@ -532,9 +592,9 @@ lasso <- function(formula, data, subset=NULL, ...)
 
 #' ranger helper function 
 #'
-#' This is a helper function that \code{\link{run}} calls whenever a ranger model is used.
+#' This is a helper function that \code{\link{fcRun}} calls whenever a ranger model is used.
 #'
-#' @param formula Formula. This describes the model that the LASSO fits.
+#' @param formula Formula. This describes the model that the Random Forest fits.
 #' @param data Data Frame. The data used for the model.
 #' @param subset Name. This defines the subset of the data the model is 
 #' evaluated over.
@@ -545,20 +605,22 @@ lasso <- function(formula, data, subset=NULL, ...)
 #' 
 #' @details
 #' Basically it takes the standard inputs from the 'run' routine and translates
-#' them to work with the \code{link[ranger]{ranger}} function.
+#' them to work with the \code{\link[ranger]{ranger}} function.
 #' 
 #' The reason this helper function exists is because the default ranger
 #' function does not have a subset argument.
 ranger <- function(formula, data, subset=NULL, ...)
 {
 #   Get the argument list for the function
-    argg <- c(as.list(environment()), list(...))
     cll <- match.call()
+    argg <- as.list(cll)[-1]
+	subset <- substitute(subset)
+#!!!stop(paste("pkgFireCARES::ranger(", paste(paste(names(argg), sapply(argg, deparse), sep="="), collapse=", "), ")", sep=""))
 #   If the "subset" argument is included, subset the data to pass on to the main 'ranger' 
 #   function.
-
     if(! is.null(argg$subset)) {
-        argg$data <- do.call("subset", list(x=argg$data, subset=argg$subset))
+        s <- eval(argg$subset, data)
+        argg$data <- do.call("subset", list(x=data, subset=s))
     }
 #   Regardless, remove the 'subset' argument from the argument list.
     argg$subset <- NULL
@@ -571,7 +633,8 @@ ranger <- function(formula, data, subset=NULL, ...)
     if(! "verbose"      %in% names(argg)) argg$verbose      <- FALSE
 #
 #   call the main 'ranger' function with the modified function list.
-    out <- do.call(ranger::ranger, argg)
+#   browser()
+    out <- do.call("ranger", argg, envir=getNamespace("ranger"))
     out$call <- cll
     out
 }
@@ -583,16 +646,16 @@ ranger <- function(formula, data, subset=NULL, ...)
 #'
 #' Compute out-of-sample RMS Errors for model output
 #'
-#' @param input  Control object. The input control object used by \code{\link{run}} to 
+#' @param input  Control object. The input control object used by \code{\link{fcRun}} to 
 #' generate the output.
-#' @param output Model Output. The model output produced by \code{\link{run}}.
+#' @param output Model Output. The model output produced by \code{\link{fcRun}}.
 #' @param subset The subset of the data over which to estimate RMS Errors. 
 #' I include this because in some cases the test subset has been different from
 #' the training subset in non-random ways.
 #'
 #' @export
 #' @details
-#' This function takes output from the \code{\link{run}} function and calculates the
+#' This function takes output from the \code{\link{fcRun}} function and calculates the
 #' out-of-sample Root-Mean-Square Error values for each model in the output
 #' object.
 #' 
@@ -734,9 +797,9 @@ fcTest <- function(input, output, subset=NULL)
 
 
 
-#' Merge multiple \code{\link{test}} objects 
+#' Merge multiple \code{\link{fcTest}} objects 
 #'
-#' Merges multiple \code{\link{test}} objects
+#' Merges multiple \code{\link{fcTest}} objects
 #'
 #' @param t1 test object.
 #' @param ... Additional test objects
@@ -746,10 +809,10 @@ fcTest <- function(input, output, subset=NULL)
 #' 
 #' @export
 #' @examples
-#' dontrun{
-#'   c.test(test.f.L1, test.f.L2)
+#' \dontrun{
+#'   c_test(test.f.L1, test.f.L2)
 #' }
-c.test <- function(t1, ...)
+c_test <- function(t1, ...)
 {
 # First, get the arguments to this function.
 # Since the first object in the match.call list is NOT an argument of the function,
@@ -850,12 +913,14 @@ naive <- function(test)
 #' data frames as well.
 #'
 #' This function carries out the following tasks:
-#' 1) Set any nulls in the outcome variables to zero.
-#' 2) Turn any categorical predictors into factors.
-#' 3) Take the log of the income variable.
-#' 4) Ensure that there is an f_located column in the table.
-#' 5) Define any filters that are needed (only for training tables).
-#' 6) Define training and test sets for the training tables.
+#' \enumerate{
+#'   \item Set any nulls in the outcome variables to zero.
+#'   \item Turn any categorical predictors into factors.
+#'   \item Take the log of the income variable.
+#'   \item Ensure that there is an f_located column in the table.
+#'   \item Define any filters that are needed (only for training tables).
+#'   \item Define training and test sets for the training tables.
+#' }
 #'
 fcSetup <- function(dta, seed=953016876)
 {
@@ -903,15 +968,15 @@ fcSetup <- function(dta, seed=953016876)
 #              nilf, smoke_st, smoke_cty
 #
 # Identify what table this is:
-    if('res_all' %in% names(dta))  lr.tbl   <- TRUE
-        else                           lr.tbl   <- FALSE
-    if('injuries' %in% names(dta)) pred.tbl <- FALSE
-        else                           pred.tbl <- TRUE
-	tr.id <- grep("tr10_fid|geoid$", names(dta), value=TRUE)
+    if('res_all' %in% names(dta))        lr.tbl   <- TRUE
+        else                             lr.tbl   <- FALSE
+    if('dept_incidents' %in% names(dta)) pred.tbl <- FALSE
+        else                             pred.tbl <- TRUE
+    tr.id <- grep("tr10_fid|geoid$", names(dta), value=TRUE)
 # Format the data as needed.
-    v.factors <- intersect(c('region', 'state', 'fd_id', 'fd_size', 'res_corelogic', 'res_other', 'risk_class'), names(dta))
-    v.zeros <- intersect(c('res_all', 'low_risk', 'res_1', 'res_2', 'res_3', 'injuries', 'deaths', 'med_risk', 
-                             'mr_1', 'mr_2', 'mr_3', 'fires', 'size_1', 'size_2', 'size_3', 'hr_floors'), names(dta))
+    v.factors <- intersect(c('region',  'state',    'fd_id', 'fd_size', 'res_corelogic',      'res_other', 'risk_class'), names(dta))
+    v.zeros   <- intersect(c('res_all', 'low_risk', 'res_1', 'res_2',   'res_3',  'injuries', 'deaths',    'med_risk', 
+                             'mr_1',    'mr_2',     'mr_3',  'fires',   'size_1', 'size_2',   'size_3',    'hr_floors' ), names(dta))
     v.na <- setdiff(names(dta), c(v.zeros, 'res_corelogic', 'eff_yr', 'geoid_source', 'bld_units'))
     for(i in v.zeros) dta[[i]][is.na(dta[[i]])] <- 0
     dta$region[dta$state == 'PR'] <- 'Puerto Rico'
@@ -960,14 +1025,15 @@ fcSetup <- function(dta, seed=953016876)
         dept$m <- ddd$m[match(dept$fd_id, ddd$fd_id)]
         dept$sd <- ddd$sd[match(dept$fd_id, ddd$fd_id)]
         dept$lg <- ! (is.na(dept$dept_incidents) | dept$dept_incidents < dept$m - 2 * dept$sd)
+		dept$lg[is.na(dept$lg)] <- FALSE
         dta$lcl <- dept$lg
         rm(dept, ddd)
         if(lr.tbl) {
 # giants filter
-            u <- with(dta[dta$base,], list(pop      =dta[[tr.id]][  pop > quantile(pop,      .999)],
-                                               hse.units=dta[[tr.id]][hse_units > quantile(hse_units, .999)],
-                                               males    =dta[[tr.id]][males > quantile(males,     .999)],
-                                               age_45_54=dta[[tr.id]][age_45_54 > quantile(age_45_54, .999)]))
+            u <- with(dta[dta$base,], list(pop      =dta[[tr.id]][  pop      > quantile(pop,      .999)],
+                                            hse.units=dta[[tr.id]][hse_units > quantile(hse_units, .999)],
+                                            males    =dta[[tr.id]][males     > quantile(males,     .999)],
+                                            age_45_54=dta[[tr.id]][age_45_54 > quantile(age_45_54, .999)]))
             v <- NULL
             for(i in names(u)) v <- union(v, u[[i]])
             dta$giants <- ! dta[[tr.id]] %in% v
@@ -1053,25 +1119,34 @@ fcEstimate <- function(input, output, new.data, subset=TRUE)
                 fltr <- eval(substitute(nulls & a & b, list(a=subset, b=nput$runs[[i]])), envir=new.data)
 #   And in some cases that subset is empty, or there was no model output for that group, so skip those cases.
                 if(any(fltr) & ! is.null(oput[[k]][[i]]$model)) {
+                    frame.input <- list( formula=nput$models[[k]]$inputs$formula,
+                                         data=new.data,
+                                         subset=fltr)
+                    if("offset" %in% names(nput$models[[k]]$inputs)){
+                        frame.input[["offset"]] <- nput$models[[k]]$inputs$offset
+                    }
+                    n.dta <- do.call("model.frame", frame.input)
 #   An uncomfortably large number of routines require special handling to ensure they give answers.
 #   So, here I cycle through each of the libraries that need special handling and give it to them.
 #
 #   GLMER
 #   There are two things that need attention here. First, I need to add the 'allow.new.levels' flag.
-#   In the 'test' script, I record which rows have no department id in the model. I am not interested 
+#   In the 'fcTest' script, I record which rows have no department id in the model. I am not interested 
 #   in doing that here, because it is the final predicted results.
                     if(nput$models[[k]]$fn["library"] == "lme4") {
-                        results[[k]][fltr] <- predict(oput[[k]][[i]]$model, newdata=new.data[fltr,], type="response", allow.new.levels=TRUE)
+                        results[[k]][fltr] <- predict(oput[[k]][[i]]$model, newdata=n.dta, type="response", allow.new.levels=TRUE)
                     }
 #   LASSO / RIDGE
 #   The input format for glmnet is different, so I have to account for that. 
 #   There are two different solutions to glmnet. This is designed to return both.
                     else if(nput$models[[k]]$fn["library"] == "glmnet") {
-                        glm.fmla <- nput$models[[k]]$inputs$formula
-                        glm.fmla[[2]] <- NULL
-                        new.x <- model.matrix(glm.fmla, new.data[fltr,], na.action=na.pass)
+#                       glm.fmla <- nput$models[[k]]$inputs$formula
+#                       glm.fmla[[2]] <- NULL
+#                       new.x <- model.matrix(glm.fmla, n.dta, na.action=na.pass)
+                        new.x <- model.matrix(attr(n.dta, "terms"), n.dta)
                         if("offset" %in% names(nput$models[[k]]$inputs)) {
-                            off <- eval(nput$models[[k]]$inputs$offset, new.data[fltr,])
+#                           off <- eval(nput$models[[k]]$inputs$offset, new.data[fltr,])
+                            off <- model.offset(n.dta)
                             results[[new.vars[1]]][fltr] <- predict(oput[[k]][[i]]$model, newx=new.x, type="response", s="lambda.min", offset=off)
                             results[[new.vars[2]]][fltr] <- predict(oput[[k]][[i]]$model, newx=new.x, type="response", s="lambda.1se", offset=off)
                         } else {
@@ -1083,11 +1158,11 @@ fcEstimate <- function(input, output, new.data, subset=TRUE)
 #   Right now, the only special item here is verbose=FALSE, and the name of the newdata set.
 #   The predict function also returns a structure, and I just want the prediction
                     else if(nput$models[[k]]$fn["library"] == "ranger") {
-                        results[[k]][fltr] <- predict(oput[[k]][[i]]$model, data=new.data[fltr,], verbose=FALSE)$predictions
+                        results[[k]][fltr] <- predict(oput[[k]][[i]]$model, data=n.dta, verbose=FALSE)$predictions
                     }
 #   Everything else
                     else {
-                        results[[k]][fltr] <- predict(oput[[k]][[i]]$model, newdata=new.data[fltr,], type="response")
+                        results[[k]][fltr] <- predict(oput[[k]][[i]]$model, newdata=n.dta, type="response")
                     }
                 }
             }
@@ -1117,13 +1192,16 @@ fcEstimate <- function(input, output, new.data, subset=TRUE)
 #' to be manually inserted into the main acs_est table.
 #' 
 #' @return returns a list with the following entries:
-#'   table.name.est: Name of the table on the database in which the new estimates
-#'                   are stored. 
-#'   table.name.err: Name of the table on the database in which the new error values
-#'                   are stored.
-#'   rows:           Number of rows added to the data set.
-#'   elapsed.time:   Time it took to complete the download (in seconds?)
-#' 
+#'
+#' \describe{
+#'   \item{table.name.est}{Name of the table on the database in which the new estimates
+#'                   are stored.} 
+#'   \item{table.name.err}{Name of the table on the database in which the new error values
+#'                   are stored.}
+#'   \item{rows}{Number of rows added to the data set.}
+#'   \item{elapsed.time}{Time it took to complete the download (in seconds?)}
+#' }
+#'
 acs.dwnld <- function(conn, year, cols, states=NULL)
 {
     time.0 <- Sys.time()
