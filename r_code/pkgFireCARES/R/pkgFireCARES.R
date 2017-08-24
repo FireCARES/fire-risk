@@ -184,7 +184,26 @@
 #'
 #' @examples
 #' \dontrun{
-#' cat("No current example")
+#' conn <- dbConnect("PostgreSQL", host="some.host.com", dbname="nfirs", user="user", password="pwd")
+#' low.risk.fires <- dbGetQuery(conn, "select * from nist.low_risk_fires")
+#' low.risk.fires <- fcSetup(low.risk.fires)
+#' med.risk.fires <- dbGetQuery(conn, "select * from nist.med_risk_fires")
+#' med.risk.fires <- fcSetup(med.risk.fires)
+#' high.risk.fires <- dbGetQuery(conn, "select * from nist.high_risk_fires")
+#' high.risk.fires <- fcSetup(high.risk.fires)
+#' 
+#' models <- mass.npt(conn, pattern="final")
+#' tables <- fcMacro(models)
+#' tables
+#' 
+#' lr.mr.pred <- dbGetQuery(conn, "select * from nist.lr_mr_pred")
+#' lr.mr.pred <- fcSetup(lr.mr.pred)
+#'
+#' e <- new.env()
+#' npt.final <- e$npt.final
+#' npt.final.res <- e$npt.final.res
+#' lr.pred <- fcEstimate("npt.final", "npt.final.res", lr.mr.pred, quote(fd_size %in% paste("size_", 3:9, sep="")))
+#' head(lr.pred)
 #' }
 #'
 #' @docType package
