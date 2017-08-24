@@ -74,8 +74,8 @@ fcMacro <- function(npt, conn=NULL, save.tests=NULL)
 # objects or existing files. So, user beware.
 #
         npt.name <- npt[i]
-        res.name <- sub(strsplit(npt.name, ".", fixed=TRUE)[[1]][1], "results", npt.name)
-        tst.name <- sub(strsplit(npt.name, ".", fixed=TRUE)[[1]][1], "test",    npt.name)
+        res.name <- paste( npt.name, "res", sep=".")
+        tst.name <- paste( npt.name, "tst", sep=".")
         msg.name <- paste("messages", formatC(i + n0, width=2, flag="0"), "txt", sep=".")
         save.name <- paste(npt.name, "RData", sep=".")
 
