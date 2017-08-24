@@ -17,6 +17,20 @@ on the command line. [optional]}
 }
 \value{
 Data frame listing the objects and files created for each control object.
+
+The data.frame has the following structure:
+
+\describe{
+  \item{npt.name}{Name of the control object.}
+  \item{res.name}{Name of the results output by \code{\link{fcRun}}.} 
+  \item{tst.name}{Name of the test results output by \code{\link{fcTest}}.}
+  \item{msg.name}{Text file in which errors and messages associated with 
+                  this object are output.}
+  \item{save.name}{Name of the file to which all objects are saved.}
+}
+
+Note that if an object is not created (typically due to an error) then an NA
+will appear in the appropriate cell.
 }
 \description{
 This function takes a list of control objects and goes through the steps 
@@ -57,7 +71,7 @@ less cluttered.
 Side Effects:
 
 \itemize{ 
-   \item Creates rmse.sum in the global environment.
+   \item Creates \code{rmse.sum} in the global environment.
    \item For each control object, creates a .RData file on the disk 
          containing the objects created.
    \item For each control object, creates a message text file on disk 
@@ -65,6 +79,10 @@ Side Effects:
    \item Optionally saves the outputs of the \code{\link{fcTest}} function
          in a specified environment.
 }
+
+\code{rmse.sum} is a named list. Each control object that produces a fcTest
+object (many will not) has an entry in the list. The name of the entry is the 
+name of the control object. The entry is the .$se entry in the fcTest object.
 }
 \examples{
 \dontrun{
