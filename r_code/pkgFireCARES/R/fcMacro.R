@@ -169,7 +169,7 @@ fcMacro <- function(npt, conn=NULL, save.tests=NULL)
         rm(npt.name, res.name, tst.name, msg.name, save.name)
         gc()
     }
-	result <- as.data.frame(result)
+	result <- as.data.frame(result, stringsAsFactors=FALSE)
 	row.names(result) <- NULL
     names(result) <- c("npt.name", "res.name", "tst.name", "msg.name", "save.name")
 	result
