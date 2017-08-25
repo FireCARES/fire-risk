@@ -3,7 +3,7 @@
 # This script is called as:
 # source("full_analysis.R")
 #
-# There are three switches that this uses to determine its behavior:
+# There are four switches that this uses to determine its behavior:
 # 
 # * The data.frame: models.run. This data frame determines what models are run.
 #   Its format is given as an example below. If it is undefined, then a default
@@ -16,9 +16,17 @@
 #       mr   mr.final
 #       hr   hr.final
 #
-# * The logical variable 'do.predictions'. If it is 
-#   TRUE, then predictions are generated from the models run. If not, then no predictions
-#   are generated from the estimated models. If it is undefined, then it is assumed to be TRUE.
+# * The logical variable 'bypass.models'. If it is TRUE, then no models are estimated. If not, 
+#   then the models listed in 'models.run' above are estimated first. Note that if 'bypass.models'
+#   is TRUE, then the 'objects' data frame (output of the fcMacro function) must be defined in
+#   the global environment. Since this script is set up to evaluate each separate risk level 
+#   separately, the objects data frame must be supplied separately for each risk level. That is 
+#   accomplished by supplying each objects data frame in a named list (with the risk levels as 
+#   the names). If 'bypass.models' is undefined, then it is assumed to be FALSE.
+#
+# * The logical variable 'do.predictions'. If it is TRUE, then predictions are generated from 
+#   the models run. If not, then no predictions are generated from the estimated models. If it 
+#   is undefined, then it is assumed to be TRUE.
 #
 # * The logical variable 'roll.up.2.dept'. If it is TRUE, then the predictions are rolled
 #   up to the department level. If it is FALSE, then the predictions are left at the census
@@ -66,52 +74,52 @@ if(! exists("conn")){
 # If it still doesn't exist, error out.
 if( ! exists("models.run"))   source("models_run.R")
 if( ! exists("models.run")) stop("The list of models to run (in 'models.run') does not exist!")
-if(length(setdiff(unique(models.run$risk), c("lr", "mr", "hr"))) > 0) stop( "The only risk classes allowed in models.run are 'lr', 'mr', and 'hr'!")
-if( ! exists("roll.up.2.dept")) roll.up.2.dept <- FALSE
+if(length(setdiff(unique(models.run$risk), c("lr", "mr", "hr"))) > 0){
+  stop( "The only risk classes allowed in models.run are 'lr', 'mr', and 'hr'!")
+}
 if( ! exists("do.predictions")) do.predictions <- TRUE
-
+if( ! exists("roll.up.2.dept")) roll.up.2.dept <- FALSE
+roll.up.2.dept <- roll.up.2.dept && do.predictions
+if( ! exists("bypass.models")) bypass.models <- FALSE
+if(bypass.models & (! exists("object.list"))){
+  stop("If bypass.models is TRUE then the objects data frame (output of the fcMacro function) must be present!")
+}
 models.run0 <- list()
 for(i in unique(models.run$risk)){
   models.run0[[i]] <- models.run$lst[models.run$risk == i]
 }
-#
-# > ls()
-# i
-# conn
-# do.predictions   roll.up.2.dept
-# est.names        est.tabls       src.names      src.tabls
-# models.run       models.run0
-## All of these but models.run are needed at this point.
-##
-for(i in names(models.run0)){
-  browser()
+models.run <- models.run0
+rm(models.run0)
+
+for(i in names(models.run)){
   src.name <- src.names[i]
-  if(! exists(src.name)){
-    assign(src.name, dbGetQuery(conn, src.tabls[i]))
-    assign(src.name, fcSetup(get(src.name)))
+  if(! bypass.models){
+# Download the data needed for the model estimation
+    if(! exists(src.name)){
+      assign(src.name, dbGetQuery(conn, src.tabls[i]))
+      assign(src.name, fcSetup(get(src.name)))
+    }
+# Create the control objects for the models...
+    models  <- mass.npt(conn, list=models.run[[i]])
+# And estimate the models.
+    objects <- fcMacro(models)
+  } else {
+# If bypass.models is defined, then we need to get the relevant 'objects' data frame
+# If it does not exist in the object.list list then skip to the next risk level.
+    if(i %in% names(object.list)){
+      objects <- object.list[[i]]
+	} else {
+      next
+	}
   }
-  models  <- mass.npt(conn, list=models.run0[[i]])
-  objects <- fcMacro(models)
 #
-# The format of 'objects' (from the fcMacro documentation) is:
-#     npt.name   res.name       tst.name       msg.name         save.name
-#     npt.final  npt.final.res  npt.final.tst  messages.00.txt  npt.final.RData
-#     ...
+# Note: The format of 'objects' (from the fcMacro documentation) is:
+#       npt.name   res.name       tst.name       msg.name         save.name
+#       npt.final  npt.final.res  npt.final.tst  messages.00.txt  npt.final.RData
+#       ...
 #
-#
-# > ls()
-# i
-# conn
-# do.predictions   roll.up.2.dept
-# est.names        est.tabls       src.names      src.tabls
-# models.run       models.run0
-# objects         
-# models           src.name       <src.name>      [rmse.sum]
-## Of these, I can dispense with models.run and all the objects 
-## on the last line. However, of these, only <src.name> will buy 
-## anything by deleting it.
-## 
   if(do.predictions){
+    pred.name <- paste(i, "predict", sep=".")
     est.name <- est.names[i]
     if(! exists(est.name)){
       assign(est.name, dbGetQuery(conn, est.tabls[i]))
@@ -124,46 +132,76 @@ for(i in names(models.run0)){
     for(j in 1:nrow(objects)){
       e <- new.env()
       load(objects$save.name[j], e)
-      with(objects, assign(npt.name[j], get(npt.name[j], e)))
-      with(objects, assign(res.name[j], get(res.name[j], e)))
+      with(objects, assign(npt.name[j], get(npt.name[j], e), globalenv()))
+      with(objects, assign(res.name[j], get(res.name[j], e), globalenv()))
       rm(e)
       temp.98765 <- fcEstimate(objects$npt.name[j], 
                                objects$res.name[j], 
-                               get("est.name"), 
+                               get(est.name), 
                                subset=quote(fd_size %in% paste("size_", 3:9, sep="")))
 # As written it is possible for some results to have the census tract column called
 # 'geoid' in some cases and 'tr10_fid' in others. More particularly, the team wants
-# the column called 'tr10_fid' to be consistent with their work. This takes care of 
+# that column called 'tr10_fid' to be consistent with their work. This takes care of 
 # that.
       if( "geoid" %in% names(temp.98765)){
         names(temp.98765)[match("geoid", names(temp.98765))] <- "tr10_fid"
       }
 # Here I get a list of the names of the prediction columns.
       dta.cols <- setdiff(names(temp.98765), c("geoid", "tr10_fid", "fd_id", "parcel_id", "year", "geoid_source"))
-# Since the high-risk results are at the parcel level, and all the rest of the data
-# is at the census tract level, I need to roll up the hr data to the census tract level.
-      if(i == 'hr'){
-        temp.98765 <- aggregate(temp.98765[, dta.cols], 
-                                with(temp.98765, list(year=year, geoid=geoid, fd_id=fd_id), 
-                                function(x) sum(x, na.rm=TRUE)))
-      }
 # Since it is highly likely that there will be multiple columns across different
 # risk classes with the same names, take steps to make the names different.
-      names(temp.98765)[match(dta.cols), names(temp.98765)] <- paste(i, dta.cols, sep=".")
+      names(temp.98765)[match(dta.cols, names(temp.98765))] <- paste(i, dta.cols, sep=".")
 # Combine the various predictions into a single data frame.
-      if(exists("predictions")){
-        predictions <- merge(predictions, temp.98765, all=TRUE)
+      if(exists(pred.name)){
+        assign(pred.name, merge(get(pred.name), temp.98765, all=TRUE))
       } else {
-        predictions <- temp.98765
+        assign(pred.name, temp.98765)
       }
       rm(temp.98765)
     }
-# If requested, roll the data up to the department level.
-    if(roll.up.2.dept){
-      dta.cols <- setdiff(names(predictions), c("geoid", "tr10_fid", "fd_id", "parcel_id", "year", "geoid_source"))
-      temp.98765 <- aggregate(predictions[, dta.cols], 
-                              with(predictions, list(year=year, fd_id=fd_id), 
-                              function(x) sum(x, na.rm=TRUE)))	  
+# 
+# Since the high-risk results are at the parcel level, and all the rest of the data
+# is at the census tract level, I need to roll up the hr data to the census tract level.
+    if(i == 'hr'){
+      temp.98765 <- hr.predict
+      hr.predict <- aggregate(temp.98765[, paste(i, dta.cols, sep=".")], 
+                              with(temp.98765, list(year=year, tr10_fid=tr10_fid, fd_id=fd_id)), 
+                              function(x) sum(x, na.rm=TRUE))
+    }
+#
+# Cleanup
+  rm(list=intersect(c(src.name, objects$npt.name, objects$res.name ), ls()))
+  rm(list=intersect(c("src.name", "objects", "est.name", "dta.cols" ), ls()))
+#
+# Merge all the predictions into a single prediction data frame.
+    if(exists("predictions", inherits=FALSE)){
+      predictions <- merge(predictions, get(pred.name), all=TRUE)
+    } else {
+      predictions <- get(pred.name)
+    }
+# Clean up. I want to leave the intermediate results, mainly for the high-risk data
+# so they can be inspected. So we return hr.pred to its former self, and delete
+# the intermediate table.
+    if(i == 'hr'){
+      hr.predict <- temp.98765
+      rm(temp.98765)
     }
   }
+# > ls()
+# 
+# 
 }
+# If requested, roll the data up to the department level.
+# Note that this does not work for sz2 and sz3!!!
+if(roll.up.2.dept){
+  dta.cols <- setdiff(names(predictions), c("geoid", "tr10_fid", "fd_id", "parcel_id", "year", "geoid_source"))
+  predictions <- aggregate(predictions[, dta.cols], 
+                           with(predictions, list(year=year, fd_id=fd_id)), 
+                           function(x) sum(x, na.rm=TRUE))
+}
+#
+# Do cleanup
+keep <- c("conn", "bypass.models", "do.predictions", "roll.up.2.dept",
+          "models.run", "object.list", 
+          "predictions", paste(names(models.run), "predict", sep="."))
+rm(list=setdiff(ls(), keep))
