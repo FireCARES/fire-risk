@@ -4,5 +4,5 @@ models.run <- matrix( c("lr", "npt.final",
                         "hr", "hr.final"     ),
                       byrow=TRUE,
                       ncol=2 )
-models.run <- as.data.frame(models.run)
+models.run <- as.data.frame(models.run, stringsAsFactors=FALSE)
 names(models.run) <- c("risk", "lst")
