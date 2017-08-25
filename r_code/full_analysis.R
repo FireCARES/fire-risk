@@ -60,7 +60,6 @@ if(! exists("conn")){
                      user="username", 
                      password="pwd")
 }
-browser()
 # The 'models.run' object contains the list of control objects
 # to run and some key information this script needs to run them.
 # Check to see if it already exists. If not load it off the disk.
@@ -75,12 +74,21 @@ models.run0 <- list()
 for(i in unique(models.run$risk)){
   models.run0[[i]] <- models.run$lst[models.run$risk == i]
 }
-
+#
+# > ls()
+# i
+# conn
+# do.predictions   roll.up.2.dept
+# est.names        est.tabls       src.names      src.tabls
+# models.run       models.run0
+## All of these but models.run are needed at this point.
+##
 for(i in names(models.run0)){
-  src.name <- est.names[i]
-  if(! exists(est.name)){
-    assign(est.name, dbGetQuery(conn, est.tabls[i]))
-    assign(est.name, fcSetup(get(est.name))
+  browser()
+  src.name <- src.names[i]
+  if(! exists(src.name)){
+    assign(src.name, dbGetQuery(conn, src.tabls[i]))
+    assign(src.name, fcSetup(get(src.name)))
   }
   models  <- mass.npt(conn, list=models.run0[[i]])
   objects <- fcMacro(models)
@@ -90,11 +98,24 @@ for(i in names(models.run0)){
 #     npt.final  npt.final.res  npt.final.tst  messages.00.txt  npt.final.RData
 #     ...
 #
+#
+# > ls()
+# i
+# conn
+# do.predictions   roll.up.2.dept
+# est.names        est.tabls       src.names      src.tabls
+# models.run       models.run0
+# objects         
+# models           src.name       <src.name>      [rmse.sum]
+## Of these, I can dispense with models.run and all the objects 
+## on the last line. However, of these, only <src.name> will buy 
+## anything by deleting it.
+## 
   if(do.predictions){
-    est.name <- src.names[i]
-    if(! exists(src.name)){
-      assign(src.name, dbGetQuery(conn, src.tabls[i]))
-      assign(src.name, fcSetup(get(src.name))
+    est.name <- est.names[i]
+    if(! exists(est.name)){
+      assign(est.name, dbGetQuery(conn, est.tabls[i]))
+      assign(est.name, fcSetup(get(est.name)))
     }
 # Basically what I am going to do here is call fcEstimate. Note that 
 # fcEstimate can take lists of control and output objects and work on 
@@ -102,12 +123,12 @@ for(i in names(models.run0)){
 # I am doing them one at a time so as not to blow up the machine.
     for(j in 1:nrow(objects)){
       e <- new.env()
-      load(objects$save.name[i], e)
-      with(objects, assign(npt.name[i], get(npt.name[i], e)))
-      with(objects, assign(res.name[i], get(res.name[i], e)))
+      load(objects$save.name[j], e)
+      with(objects, assign(npt.name[j], get(npt.name[j], e)))
+      with(objects, assign(res.name[j], get(res.name[j], e)))
       rm(e)
-      temp.98765 <- fcEstimate(objects$npt.name[i], 
-                               objects$res.name[i], 
+      temp.98765 <- fcEstimate(objects$npt.name[j], 
+                               objects$res.name[j], 
                                get("est.name"), 
                                subset=quote(fd_size %in% paste("size_", 3:9, sep="")))
 # As written it is possible for some results to have the census tract column called
