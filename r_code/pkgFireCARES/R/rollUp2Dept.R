@@ -65,9 +65,13 @@ rollUp2Dept <- function(predictions, fire.col, sz2.col, sz3.col){
   }
 # Here the data variables are summed over census tracts.
   dta.cols <- setdiff(names(predictions), c("geoid", "tr10_fid", "fd_id", "parcel_id", "year", "geoid_source"))
-  predictions <- aggregate(predictions[, dta.cols], 
-                           with(predictions, list(year=year, fd_id=fd_id)), 
-                           function(x) sum(x, na.rm=TRUE))
+  predictions <- aggregate( predictions[, dta.cols], 
+                            with(predictions, list(year=year, fd_id=fd_id)), 
+                            function(x) {
+                              if( length(! is.na(x)) == 0) NA
+                              else sum(x, na.rm=TRUE)
+                            }
+                          )							 
 #
 # Now the old sz2 and sz3 columns are garbage. However, the new columns, which contain estimated
 # counts of size 2 and size 3 fires, are not. Use them to back-estimate the percentages.
