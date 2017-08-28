@@ -4,11 +4,11 @@
 #' Compute out-of-sample RMS Errors for model output
 #'
 #' @param input  Control object. The input control object used by \code{\link{fcRun}} to 
-#' generate the output.
+#'               generate the output.
 #' @param output Model Output. The model output produced by \code{\link{fcRun}}.
 #' @param subset The subset of the data over which to estimate RMS Errors. 
-#' I include this because in some cases the test subset has been different from
-#' the training subset in non-random ways.
+#'               I include this because in some cases the test subset has been different from
+#'               the training subset in non-random ways.
 #'
 #' @export
 #' @details

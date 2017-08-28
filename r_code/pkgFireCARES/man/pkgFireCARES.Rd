@@ -43,6 +43,9 @@ prediction) and prepare it for use.
  and new data and computes predictions by tract or (for high-risk fires)
  Assessors Parcel.
 
+ \code{\link{rollUp2Dept}}: Takes output from the \code{\link{fcEstimate}} routine 
+ sums over census tracts to the department level.
+
  \code{\link{lasso}}: Helper function for LASSO and ridge regression models.
 
  \code{\link{ranger}}: Helper function for Random Forest models (using the 
@@ -103,6 +106,9 @@ occur outside any of these functions. Second, prepare the new data for
 analysis. That occurs through a call to \code{\link{fcSetup}}. Finally, 
 compute the predictions based on the selected models. That occurs through
 a call to \code{\link{fcEstimate}}.
+
+\emph{Optionally, roll the census tract predictions up to the department level.} 
+A call to \code{\link{rollUp2Dept}} completes this task.
 }
 
 \section{ACS Data}{
