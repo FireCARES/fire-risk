@@ -36,6 +36,19 @@
 # Global Environment before 'source'ing this script. If not, then some adjustment will 
 # have to be made.
 #
+# Output
+# This script leaves the following files in the global environment:
+# 
+# Run Information:
+#   conn           DBI Connection supplied to the script
+#   bypass.models  Logical variable described above.
+#   do.predictions Logical variable described above.
+#   roll.up.2.dept Logical variable described above.
+#   models.run     A LIST containing the same information as models.run above (see 'future work' 
+#                  below for a description of this list).
+#
+# 
+#
 # Future Work:
 # * I do not like the data.frame approach to models.run. My preference would be a list 
 #   that looks something like this:
@@ -84,6 +97,7 @@ if( ! exists("bypass.models")) bypass.models <- FALSE
 if(bypass.models & (! exists("object.list"))){
   stop("If bypass.models is TRUE then the objects data frame (output of the fcMacro function) must be present!")
 }
+if(! bypass.models) object.list <- list()
 models.run0 <- list()
 for(i in unique(models.run$risk)){
   models.run0[[i]] <- models.run$lst[models.run$risk == i]
@@ -103,6 +117,7 @@ for(i in names(models.run)){
     models  <- mass.npt(conn, list=models.run[[i]])
 # And estimate the models.
     objects <- fcMacro(models)
+	object.list[[i]] <- objects
   } else {
 # If bypass.models is defined, then we need to get the relevant 'objects' data frame
 # If it does not exist in the object.list list then skip to the next risk level.
