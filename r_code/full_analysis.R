@@ -187,17 +187,14 @@ for(i in names(models.run)){
       rm(temp.98765)
     }
   }
-# > ls()
-# 
-# 
 }
 # If requested, roll the data up to the department level.
 # Note that this does not work for sz2 and sz3!!!
 if(roll.up.2.dept){
-  dta.cols <- setdiff(names(predictions), c("geoid", "tr10_fid", "fd_id", "parcel_id", "year", "geoid_source"))
-  predictions <- aggregate(predictions[, dta.cols], 
-                           with(predictions, list(year=year, fd_id=fd_id)), 
-                           function(x) sum(x, na.rm=TRUE))
+  fire.col <- grep("fire", names(predictions), value=TRUE)
+  sz2.col  <- grep("sz2",  names(predictions), value=TRUE)
+  sz3.col  <- grep("sz3",  names(predictions), value=TRUE)
+  predictions <- rollUp2Dept(predictions, fire.col, sz2.col, sz3.col)
 }
 #
 # Do cleanup
