@@ -47,7 +47,19 @@
 #   models.run     A LIST containing the same information as models.run above (see 'future work' 
 #                  below for a description of this list).
 #
-# 
+# Output Information
+#   prediction     Predictions either by census tract or department depending on the 
+#                  value of roll.up.2.dept.
+#   *.predict      For each risk class contains the original predictions. This will differ from the
+#                  values in 'predictions' in two cases. If roll.up.2.dept is TRUE, then this will
+#                  contain tract / parcel level predictions will 'predictions' contains summaries by
+#                  department. This will always differ from the values in 'predictions' for high-risk
+#                  fires because the raw values are at the parcel level, not at either the tract or 
+#                  department level.
+#   object.list    This contains a list of data frames with the names of the message files created on
+#                  the disk, the save files created on the disk (when bypass.models is FALSE), and the 
+#                  objects they contain. Note that if bypass.models is TRUE, then this list must be supplied
+#                  (it will still be left in the global environment).
 #
 # Future Work:
 # * I do not like the data.frame approach to models.run. My preference would be a list 
@@ -76,10 +88,10 @@ library(RPostgreSQL)
 library(pkgFireCARES)
 if(! exists("conn")){
   conn <- dbConnect( "PostgreSQL", 
-                     host="firecares-restore.c3gxdjk57saa.us-east-1.rds.amazonaws.com", 
-                     dbname="nfirs", 
-                     user="username", 
-                     password="pwd")
+                     host="firecares-restore.c3gxdjk57saa.us-east-1.rds.amazonaws.com", # Sys.getenv("host"),
+                     dbname="nfirs",                                                    # Sys.getenv("dbname"),
+                     user="username",                                                   # Sys.getenv("user"),
+                     password="pwd")                                                    # Sys.getenv("password"))
 }
 # The 'models.run' object contains the list of control objects
 # to run and some key information this script needs to run them.
