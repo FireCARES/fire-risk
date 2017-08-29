@@ -88,10 +88,11 @@ library(RPostgreSQL)
 library(pkgFireCARES)
 if(! exists("conn")){
   conn <- dbConnect( "PostgreSQL", 
-                     host="firecares-restore.c3gxdjk57saa.us-east-1.rds.amazonaws.com", # Sys.getenv("host"),
-                     dbname="nfirs",                                                    # Sys.getenv("dbname"),
-                     user="username",                                                   # Sys.getenv("user"),
-                     password="pwd")                                                    # Sys.getenv("password"))
+                     host    =Sys.getenv("DATABASE_HOST"),
+                     port    =Sys.getenv("DATABASE_PORT"),
+                     dbname  =Sys.getenv("DATABASE_NAME"),
+                     user    =Sys.getenv("DATABASE_USER"),
+                     password=Sys.getenv("DATABASE_PASSWORD"))
 }
 # The 'models.run' object contains the list of control objects
 # to run and some key information this script needs to run them.
