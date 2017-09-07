@@ -16,7 +16,8 @@
 #' This leaves a 'temporary' table on the database. That table will then need
 #' to be manually inserted into the main acs_est table.
 #' 
-#' @return returns a list with the following entries:
+#' @return 
+#' returns a list with the following entries:
 #'
 #' \describe{
 #'   \item{table.name.est}{Name of the table on the database in which the new estimates
@@ -26,6 +27,9 @@
 #'   \item{rows}{Number of rows added to the data set.}
 #'   \item{elapsed.time}{Time it took to complete the download (in seconds?)}
 #' }
+#'
+#' @section Future Work:
+#' Supply default values for \code{cols}.
 #'
 acs.dwnld <- function(conn, year, cols, states=NULL)
 {

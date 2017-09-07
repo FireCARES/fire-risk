@@ -7,6 +7,9 @@
 #'
 #'  Functions included are:
 #'
+#'  \code{\link{full_analysis}}: Runs through complete analysis (depending 
+#'  on the parameters set).
+#'
 #'  \code{\link{fcSetup}}: Takes data file (either for model estimation or
 #' prediction) and prepare it for use.
 #'

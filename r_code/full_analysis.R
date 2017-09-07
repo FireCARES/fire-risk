@@ -111,13 +111,15 @@ if(bypass.models & (! exists("object.list"))){
   stop("If bypass.models is TRUE then the objects data frame (output of the fcMacro function) must be present!")
 }
 if(! bypass.models) object.list <- list()
-models.run0 <- list()
-for(i in unique(models.run$risk)){
-  models.run0[[i]] <- models.run$lst[models.run$risk == i]
+# if necessary, convert models.run to a more congenial list.
+if(is.data.frame(models.run)){
+  models.run0 <- list()
+  for(i in unique(models.run$risk)){
+    models.run0[[i]] <- models.run$lst[models.run$risk == i]
+  }
+  models.run <- models.run0
+  rm(models.run0)
 }
-models.run <- models.run0
-rm(models.run0)
-
 for(i in names(models.run)){
   src.name <- src.names[i]
   if(! bypass.models){

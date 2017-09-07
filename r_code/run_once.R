@@ -17,6 +17,5 @@ library(roxygen2)
 document("pkgFireCARES")
 install ("pkgFireCARES")
 # install the Census key
-# Key needs to be requested at http://api.census.gov/data/key_signup.html
 library(acs)
 api.key.install( "d075012434f632cf410c8b7d9441c0f56747117c" )
