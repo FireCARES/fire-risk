@@ -34,7 +34,8 @@
 #'                    level that is run. The entry for each risk level must contain data frame 
 #'                    with the output from \code{\link(fcMacro}} for that risk level. If 
 #'                    \code{bypass.models} is TRUE and this parameter is undefined, the 
-#'                    function will error out.
+#'                    function will error out. If \code{bypass.models} is FALSE, then 
+#'                    this parameter is ignored.
 #'
 #' @details
 #' The \code{models.run} parameter can have one of two formats, a list format or a data 
@@ -62,13 +63,19 @@
 #' ##                      mr=c("mr.final"),
 #' ##                      hr=c("hr.final") )
 #'
-#' The \code{object.list} 
+#' The \code{object.list} list object has an entry for each risk level run. That
+#' entry is a data frame with information output from \code{\link{fcMacro}}. The 
+#' structure of that data frame is given by the following example:
 #'
+#' \tabular{lcl}{
+#' npt.name    \tab res.name        \tab tst.name        \tab msg.name        \tab save.name       \cr
+#' npt.final   \tab npt.final.res   \tab npt.final.tst   \tab messages.00.txt \tab npt.final.RData \cr
+#' npt.final.L \tab npt.final.L.res \tab npt.final.L.tst \tab messages.01.txt \tab npt.final.L.RData
+#' }
 #'
-#' Note: The format of 'objects' (from the fcMacro documentation) is:
-#'       npt.name   res.name       tst.name       msg.name         save.name
-#'       npt.final  npt.final.res  npt.final.tst  messages.00.txt  npt.final.RData
-#'       ...
+#' Note that if you are supplying the the \code{object.list} structure while using the 
+#' \code{bypass.models} option, you can safely leave out the \code{tst.name} and 
+#' \code{msg.name} columns.
 #'
 #' @export
 #'
@@ -76,48 +83,29 @@
 #' returns a list with the following entries:
 #'
 #' \describe{
-#'   \item{table.name.est}{Name of the table on the database in which the new estimates
-#'                   are stored.} 
-#'   \item{table.name.err}{Name of the table on the database in which the new error values
-#'                   are stored.}
-#'   \item{rows}{Number of rows added to the data set.}
-#'   \item{elapsed.time}{Time it took to complete the download (in seconds?)}
+#'   \item{models.run}{The \code{models.run} input listing the models run by 
+#'                     risk level} 
+#'   \item{bypass.models}{The input \code{bypass.models} value}
+#'   \item{do.predictions}{The input \code{do.predictions} value}
+#'   \item{roll.up.2.dept}{The input \code{roll.up.2.dept} value}
+#'   \item{object.list}{The \code{object.list} object described above. If the 
+#'                      \code{bypass.models} flag is set, then this is the object
+#'                      supplied to the function. Otherwise it is returned by the
+#'                      calls to \code{\link{fcMacro}}.}
+#'   \item{prediction}{Predictions for all variables requested in the models.run
+#'                     object. The predictions are either by census tract or 
+#'                     by department depending on the value of the \code{roll.up.2.dept}
+#'                     flag.}
+#'   \item{risk.results}{This is a list, with an entry for each risk level. This contains
+#'                       the raw estimates for each risk level. For low and medium risk 
+#'                       fires this contains the predictions at the census tract level 
+#'                       (which are redundant with the results in \code{predictions} if 
+#'                       \code{roll.up.2.dept} is not set). For high risk fires, this 
+#'                       contains predictions at the parcel level.}
 #' }
-#'
-#' This script leaves the following files in the global environment:
-#'
-#' Run Information:
-#'   conn           DBI Connection supplied to the script
-#'   bypass.models  Logical variable described above.
-#'   do.predictions Logical variable described above.
-#'   roll.up.2.dept Logical variable described above.
-#'   models.run     A LIST containing the same information as models.run above (see 'future work' 
-#'                  below for a description of this list).
-#'
-#' Output Information
-#'   prediction     Predictions either by census tract or department depending on the 
-#'                  value of roll.up.2.dept.
-#'   *.predict      For each risk class contains the original predictions. This will differ from the
-#'                  values in 'predictions' in two cases. If roll.up.2.dept is TRUE, then this will
-#'                  contain tract / parcel level predictions will 'predictions' contains summaries by
-#'                  department. This will always differ from the values in 'predictions' for high-risk
-#'                  fires because the raw values are at the parcel level, not at either the tract or 
-#'                  department level.
-#'   object.list    This contains a list of data frames with the names of the message files created on
-#'                  the disk, the save files created on the disk (when bypass.models is FALSE), and the 
-#'                  objects they contain. Note that if bypass.models is TRUE, then this list must be supplied
-#'                  (it will still be left in the global environment).
 #'
 #' @section Future Work:
 #' Convert this to a function in the pkgFireCARES package. That requires the following tasks:
-#'   * Convert the switches above to parameters. As currently written, this script 
-#'     can be run with no information provided--all the inputs have defaults. Keep it
-#'     that way.
-#'   * As a script, this left several objects in the global environment. Find a way
-#'     to return those objects.
-#'   * Convert this header to documentation for the function.
-#'   * Update the documentation for the package (in \code{pkgFireCARES.R}) to reflect the 
-#'     addition of this function.
 #'   * Test everything and make sure I didn't break it.
 #'
 full_analysis <- function(conn=NULL, 
@@ -283,12 +271,13 @@ full_analysis <- function(conn=NULL,
     predictions <- rollUp2Dept(predictions, fire.col, sz2.col, sz3.col)
   }
 # Return the results
-  list(models.run=models.run,
-       settings=list(bypass.models=bypass.models,
-                     do.predictions=do.predictions,
-                     roll.up.2.dept=roll.up.2.dept),
-       models.run=models.run,
-       prediction=prediction,
-       object.list=object.list,
-       risk.results=risk.results)             
+  out <- list(models.run=models.run,
+              bypass.models=bypass.models,
+              do.predictions=do.predictions,
+              roll.up.2.dept=roll.up.2.dept,
+              object.list=object.list)
+  if(do.predictions){
+    out[["prediction"]] <- prediction
+    out[["risk.results"]] <- risk.results
+  }
 }
