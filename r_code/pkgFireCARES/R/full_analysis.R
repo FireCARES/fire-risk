@@ -26,13 +26,13 @@
 #'                            the models run. If not, then no predictions are generated 
 #'                            from the estimated models.
 #'
-#' @param roll.up.2.dept=FALSE Logical. If it is TRUE, then the predictions are rolled
+#' @param roll.up.2.dept=TRUE  Logical. If it is TRUE, then the predictions are rolled
 #'                             up to the department level. If it is FALSE, then the 
 #'                             predictions are left at the census tract level.
 #' 
 #' @param object.list List of data frames. The list must contain an entry for every risk
 #'                    level that is run. The entry for each risk level must contain data frame 
-#'                    with the output from \code{\link(fcMacro}} for that risk level. If 
+#'                    with the output from \code{\link{fcMacro}} for that risk level. If 
 #'                    \code{bypass.models} is TRUE and this parameter is undefined, the 
 #'                    function will error out. If \code{bypass.models} is FALSE, then 
 #'                    this parameter is ignored.
@@ -46,34 +46,34 @@
 #' is the \code{lst} value from the \code{controls} database for the model set to be 
 #' run. The default value of \code{models.run} (in data.frame format) is listed below.
 #'
-#' \tabular{lcl}{
-#' risk  \tab lst\cr
-#' lr    \tab npt.final\cr
-#' lr    \tab npt.final.L\cr
-#' mr    \tab mr.final\cr
-#' hr    \tab hr.final
+#' \tabular{cc}{
+#' \strong{risk} \tab \strong{lst}\cr
+#' lr            \tab npt.final   \cr
+#' lr            \tab npt.final.L \cr
+#' mr            \tab mr.final    \cr
+#' hr            \tab hr.final
 #' }
 #'
 #' The list format contains a named entry for each risk level to be run. The 
 #' entry contains a character vector listing the \code{lst} values from the 
 #' \code{controls} database for the model sets to be run for that risk level.
-# The default value of \code{models.run} (in list format) is listed below.
+#' The default value of \code{models.run} (in list format) is listed below.
 #' 
-#' ##  models.run <- list( lr=c("npt.final", "npt.final.L"),
-#' ##                      mr=c("mr.final"),
-#' ##                      hr=c("hr.final") )
+#' \code{models.run <- list( lr=c("npt.final", "npt.final.L"),  
+#'                     mr=c("mr.final"),  
+#'                     hr=c("hr.final") )}  
 #'
 #' The \code{object.list} list object has an entry for each risk level run. That
 #' entry is a data frame with information output from \code{\link{fcMacro}}. The 
 #' structure of that data frame is given by the following example:
 #'
-#' \tabular{lcl}{
-#' npt.name    \tab res.name        \tab tst.name        \tab msg.name        \tab save.name       \cr
-#' npt.final   \tab npt.final.res   \tab npt.final.tst   \tab messages.00.txt \tab npt.final.RData \cr
-#' npt.final.L \tab npt.final.L.res \tab npt.final.L.tst \tab messages.01.txt \tab npt.final.L.RData
+#' \tabular{ccccc}{
+#' \strong{npt.name} \tab \strong{res.name} \tab \strong{tst.name} \tab \strong{msg.name} \tab \strong{save.name} \cr
+#'   npt.final       \tab npt.final.res     \tab npt.final.tst     \tab messages.00.txt   \tab npt.final.RData    \cr
+#'   npt.final.L     \tab npt.final.L.res   \tab npt.final.L.tst   \tab messages.01.txt   \tab npt.final.L.RData
 #' }
 #'
-#' Note that if you are supplying the the \code{object.list} structure while using the 
+#' Note that if you are supplying the \code{object.list} structure while using the 
 #' \code{bypass.models} option, you can safely leave out the \code{tst.name} and 
 #' \code{msg.name} columns.
 #'
@@ -92,27 +92,27 @@
 #'                      \code{bypass.models} flag is set, then this is the object
 #'                      supplied to the function. Otherwise it is returned by the
 #'                      calls to \code{\link{fcMacro}}.}
-#'   \item{prediction}{Predictions for all variables requested in the models.run
-#'                     object. The predictions are either by census tract or 
-#'                     by department depending on the value of the \code{roll.up.2.dept}
+#'   \item{prediction}{Data frame containing predictions for all variables requested 
+#'                     in the models.run object. The predictions are either by census 
+#'                     tract or by department depending on the value of the \code{roll.up.2.dept}
 #'                     flag.}
-#'   \item{risk.results}{This is a list, with an entry for each risk level. This contains
-#'                       the raw estimates for each risk level. For low and medium risk 
-#'                       fires this contains the predictions at the census tract level 
-#'                       (which are redundant with the results in \code{predictions} if 
-#'                       \code{roll.up.2.dept} is not set). For high risk fires, this 
-#'                       contains predictions at the parcel level.}
+#'   \item{risk.results}{This is a list, with an entry for each risk level. Each entry 
+#'                       contains a data frame with the raw estimates for that risk level. 
+#'                       For low and medium risk fires this contains the predictions at the 
+#'                       census tract level (which are redundant with the results in 
+#'                       \code{predictions} if \code{roll.up.2.dept} is FALSE). For high risk 
+#'                       fires, this contains predictions at the parcel level.}
 #' }
 #'
 #' @section Future Work:
-#' Convert this to a function in the pkgFireCARES package. That requires the following tasks:
+#' Convert this to a function in the pkgFireCARES package. That requires the following tasks:  
 #'   * Test everything and make sure I didn't break it.
 #'
 full_analysis <- function(conn=NULL, 
                           models.run=NULL,
                           bypass.models=FALSE,
                           do.predictions=TRUE,
-                          roll.up.2.dept=FALSE,
+                          roll.up.2.dept=TRUE,
                           object.list=NULL){
 #
   library(RPostgreSQL)
@@ -129,7 +129,7 @@ full_analysis <- function(conn=NULL,
                   mr="select * from nist.lr_mr_pred",
                   hr="select * from nist.hr_pred")
 # Handle default values of inputs and check for validity
-  if(is.null("conn")){
+  if(is.null(conn)){
     conn <- dbConnect( "PostgreSQL", 
                        host    =Sys.getenv("DATABASE_HOST"),
                        port    =Sys.getenv("DATABASE_PORT"),
@@ -140,16 +140,16 @@ full_analysis <- function(conn=NULL,
 # The 'models.run' object contains the list of control objects
 # to run and some key information this script needs to run them.
 # Check to see if it already exists. If not, create it.
-  if(is.null("models.run")){
-    models.run <- list( lr=c("npt.final", "npt.final.L"),
-                        mr=c("mr.final"),
-                        hr=c("hr.final") )
+  if(is.null(models.run)){
+    models.run <- list(lr=c("npt.final", "npt.final.L"),
+                       mr=c("mr.final"),
+                       hr=c("hr.final"))
   }
   if(length(setdiff(unique(models.run$risk), c("lr", "mr", "hr"))) > 0){
     stop( "The only risk classes allowed in models.run are 'lr', 'mr', and 'hr'!")
   }
   roll.up.2.dept <- roll.up.2.dept && do.predictions
-  if(bypass.models & is.null("object.list")){
+  if(bypass.models & is.null(object.list)){
     stop("If bypass.models is TRUE then objects.list must be defined!")
   }
   if(! bypass.models) object.list <- list()
@@ -164,7 +164,15 @@ full_analysis <- function(conn=NULL,
   }
   for(i in names(models.run)){
     src.name <- src.names[i]
-    if(! bypass.models){
+    if(bypass.models){
+# If bypass.models is defined, then we need to get the relevant 'objects' data frame
+# If it does not exist in the object.list list then skip to the next risk level.
+      if(i %in% names(object.list)){
+        objects <- object.list[[i]]
+      } else {
+        next
+	  }
+    } else {
 # Download the data needed for the model estimation
       if(! exists(src.name)){
         assign(src.name, dbGetQuery(conn, src.tabls[i]))
@@ -175,20 +183,7 @@ full_analysis <- function(conn=NULL,
 # And estimate the models.
       objects <- fcMacro(models)
 	  object.list[[i]] <- objects
-    } else {
-# If bypass.models is defined, then we need to get the relevant 'objects' data frame
-# If it does not exist in the object.list list then skip to the next risk level.
-      if(i %in% names(object.list)){
-        objects <- object.list[[i]]
-      } else {
-        next
-	  }
     }
-#
-# Note: The format of 'objects' (from the fcMacro documentation) is:
-#       npt.name   res.name       tst.name       msg.name         save.name
-#       npt.final  npt.final.res  npt.final.tst  messages.00.txt  npt.final.RData
-#       ...
 #
     if(do.predictions){
       risk.results <- list()
@@ -204,8 +199,8 @@ full_analysis <- function(conn=NULL,
       for(j in 1:nrow(objects)){
         e <- new.env()
         load(objects$save.name[j], e)
-        with(objects, assign(npt.name[j], get(npt.name[j], e), globalenv()))
-        with(objects, assign(res.name[j], get(res.name[j], e), globalenv()))
+        with(objects, assign(npt.name[j], get(npt.name[j], e), pos=globalenv()))
+        with(objects, assign(res.name[j], get(res.name[j], e), pos=globalenv()))
         rm(e)
         temp.98765 <- fcEstimate(objects$npt.name[j], 
                                  objects$res.name[j], 
@@ -245,8 +240,8 @@ full_analysis <- function(conn=NULL,
 # Again, some of these objects can be quite large. Deleting them 
 # may prevent the program from crashing due to an out-of-memory 
 # error.
-    rm(list=intersect(c(src.name, objects$npt.name, objects$res.name ), ls()))
-    rm(list=intersect(c("src.name", "objects", "est.name", "dta.cols" ), ls()))
+    rm(list=intersect(c(objects$npt.name, objects$res.name ), ls(pos=globalenv())), pos=globalenv())
+    rm(list=intersect(c(src.name, "src.name", "objects", "est.name", "dta.cols" ), ls()))
 #
 # Merge all the predictions into a single prediction data frame.
       if(exists("predictions", inherits=FALSE)){
@@ -277,7 +272,7 @@ full_analysis <- function(conn=NULL,
               roll.up.2.dept=roll.up.2.dept,
               object.list=object.list)
   if(do.predictions){
-    out[["prediction"]] <- prediction
+    out[["prediction"]] <- predictions
     out[["risk.results"]] <- risk.results
   }
 }
