@@ -59,9 +59,7 @@
 #' \code{controls} database for the model sets to be run for that risk level.
 #' The default value of \code{models.run} (in list format) is listed below.
 #' 
-#' \code{models.run <- list( lr=c("npt.final", "npt.final.L"),  
-#'                     mr=c("mr.final"),  
-#'                     hr=c("hr.final") )}  
+#' \code{models.run <- list(lr=c("npt.final", "npt.final.L"), mr=c("mr.final"), hr=c("hr.final"))}  
 #'
 #' The \code{object.list} list object has an entry for each risk level run. That
 #' entry is a data frame with information output from \code{\link{fcMacro}}. The 
