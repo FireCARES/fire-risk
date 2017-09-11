@@ -138,6 +138,7 @@ full_analysis <- function(conn=NULL,
 # The 'models.run' object contains the list of control objects
 # to run and some key information this script needs to run them.
 # Check to see if it already exists. If not, create it.
+  browser()
   if(is.null(models.run)){
     models.run <- list(lr=c("npt.final", "npt.final.L"),
                        mr=c("mr.final"),
@@ -173,8 +174,8 @@ full_analysis <- function(conn=NULL,
     } else {
 # Download the data needed for the model estimation
       if(! exists(src.name)){
-        assign(src.name, dbGetQuery(conn, src.tabls[i]))
-        assign(src.name, fcSetup(get(src.name)))
+        assign(src.name, dbGetQuery(conn, src.tabls[i]), pos=globalenv())
+        assign(src.name, fcSetup(get(src.name)), pos=globalenv())
       }
 # Create the control objects for the models...
       models  <- mass.npt(conn, list=models.run[[i]])
@@ -238,8 +239,8 @@ full_analysis <- function(conn=NULL,
 # Again, some of these objects can be quite large. Deleting them 
 # may prevent the program from crashing due to an out-of-memory 
 # error.
-    rm(list=intersect(c(objects$npt.name, objects$res.name ), ls(pos=globalenv())), pos=globalenv())
-    rm(list=intersect(c(src.name, "src.name", "objects", "est.name", "dta.cols" ), ls()))
+    rm(list=intersect(c(src.name, objects$npt.name, objects$res.name ), ls(pos=globalenv())), pos=globalenv())
+    rm(list=intersect(c("src.name", "objects", "est.name", "dta.cols" ), ls()))
 #
 # Merge all the predictions into a single prediction data frame.
       if(exists("predictions", inherits=FALSE)){
