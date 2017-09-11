@@ -4,7 +4,7 @@
 \alias{acs.dwnld}
 \title{Download ACS data}
 \usage{
-acs.dwnld(conn, year, cols, states = NULL)
+acs.dwnld(conn, year, cols = NULL, states = NULL)
 }
 \arguments{
 \item{conn}{DBI Connection. The connection to the database where the data 
@@ -13,7 +13,7 @@ will be uploaded.}
 \item{year}{Integer. The year for which to download ACS data}
 
 \item{cols}{Character vector. Vector of column names (from the ACS) 
-reflecting what ACS columns to download.}
+reflecting what ACS columns to download. [optional]}
 
 \item{states}{Character vector. This allows me to specify a subset of states. 
 If it is not specified, all nationwide data is downloaded. [optional]}
@@ -27,7 +27,7 @@ returns a list with the following entries:
   \item{table.name.err}{Name of the table on the database in which the new error values
                   are stored.}
   \item{rows}{Number of rows added to the data set.}
-  \item{elapsed.time}{Time it took to complete the download (in seconds?)}
+  \item{elapsed.time}{Time it took to complete the download}
 }
 }
 \description{

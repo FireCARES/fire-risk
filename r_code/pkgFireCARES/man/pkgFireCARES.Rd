@@ -15,6 +15,9 @@ estimate community risk models and make community risk predictions.
 
  Functions included are:
 
+ \code{\link{full_analysis}}: Runs through complete analysis (depending 
+ on the parameters set).
+
  \code{\link{fcSetup}}: Takes data file (either for model estimation or
 prediction) and prepare it for use.
 
@@ -77,6 +80,10 @@ continue to work even in the server hosting the database is changed.
 \section{Typical Workflow}{
 
 
+This section takes you through the basic work flow that will typically
+be followed in using this package. The function \code{\link{full_analysis}}
+automates this process.
+
 \emph{Build the definitions of the models to be estimated.} That will 
 typically be done by a call to \code{\link{mass.npt}}, although it could be 
 done by calling \code{\link{npt}} directly. Either will leave one or more 
@@ -118,7 +125,7 @@ maintained by the Census Bureau. New data is released for the survey
 annually. The function \code{\link{acs.dwnld}} is a utility function that 
 simplifies the process of downloading new data. In order to use it you will
 need a Census API key installed on the server (see the \pkg{acs} package 
-documentation for more details). It leaves a set of tables on ther server
+documentation for more details). It leaves a set of tables on the server
 (in the 'nist' schema) that are formatted the same as the master ACS tables
 already on the server. Those tables will need to be appended to the existing
 ACS tables already on the server.
@@ -209,9 +216,9 @@ Both LASSO and Random Forest (through the \pkg{ranger} package) can use parallel
 computation if multiple processors are available. The \pkg{ranger} package has 
 support for multiple processors built in by default. I have made no adjustment
 to the defaults, so it will use them if they are there and the package supports
-them. LASSO (through the \pkg{glmnet}) can also use it, but setup is required.
+them. LASSO (through the \pkg{glmnet} package) can also use it, but setup is required.
 LASSO here is set up to use the \pkg{doParallel} package if it is set up. Note that
-for LASSO to use multiple processors, it must be set up separately. That is, the 
+for LASSO to use multiple processors, \pkg{doParallel} must be set up separately. That is, the 
 package must be installed and loaded (typically with a call to \code{\link[base]{library}})
 in advance. It that is done (and works--doParallel only works on certain types of systems)
 the LASSO will make use of it. If not, it will not.

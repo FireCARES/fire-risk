@@ -25,11 +25,8 @@
 #'   \item{table.name.err}{Name of the table on the database in which the new error values
 #'                   are stored.}
 #'   \item{rows}{Number of rows added to the data set.}
-#'   \item{elapsed.time}{Time it took to complete the download (in seconds?)}
+#'   \item{elapsed.time}{Time it took to complete the download}
 #' }
-#'
-#' @section Future Work:
-#' Supply default values for \code{cols}.
 #'
 acs.dwnld <- function(conn, year, cols=NULL, states=NULL)
 {

@@ -53,27 +53,38 @@
 #'  census data up to date. Note that it requires census API key installed 
 #'  (see the acs package documentation).
 #'
-#' @section Basic Setup:
-#' This package works with data on the nfirs database on the FireCARES server. 
-#' In particular, it works with the information in the 'nist' and 'controls' 
+#' @section Database Info:
+#' This package works with data on the \code{nfirs} database on the FireCARES server. 
+#' In particular, it works with the information in the \code{nist} and \code{controls} 
 #' schemas. Most of that, however, is transparent to the functions in this 
-#' package. Any function that accesses the database takes a DBI Connection as
-#' one of its parameters. That connection will contain all the connection 
-#' parameters and must be supplied. Note that while I assume that the database
-#' is a PostgreSQL one (as is currently the case), there is nothing in these 
-#' functions that is specific to PostgreSQL. So any DBI connection can be used.
-#' There are packages in R that create DBI connections for MySQL, SQLite, 
+#' package. Any function (except \code{\link{full_analysis}}) that accesses the 
+#' database takes a DBI Connection as one of its parameters. That connection will
+#'  contain all the connection parameters and must be supplied. 
+#'
+#' Note that while I assume that the database is a PostgreSQL one (as is currently 
+#' the case), there is nothing in these functions (again, except for 
+#' \code{\link{full_analysis}}) that is specific to PostgreSQL. So any DBI connection 
+#' can be used. There are packages in R that create DBI connections for MySQL, SQLite, 
 #' Oracle, the ODBC Interface, SQLServer, and others. So these functions should 
-#' continue to work even in the server hosting the database is changed.
+#' continue to work even if the server hosting the database is changed.
+#'
+#' Even \code{\link{full_analysis}} allows for a DBI connection object to be supplied. 
+#' So, if the database were to change, then the correct connection object could be 
+#' supplied without rewriting the package.
 #'
 #' @section Typical Workflow:
+#'
+#' This section takes you through the basic work flow that will typically
+#' be followed in using this package. The function \code{\link{full_analysis}}
+#' automates this process.
 #'
 #' \emph{Build the definitions of the models to be estimated.} That will 
 #' typically be done by a call to \code{\link{mass.npt}}, although it could be 
 #' done by calling \code{\link{npt}} directly. Either will leave one or more 
 #' control objects in the working environment.
 #'
-#' \emph{Download data for analysis.} That will be done outside these routines.
+#' \emph{Download data for analysis.} That will need to be done separately if 
+#' \code{\link{full_analysis}} is not used.
 #'
 #' \emph{Prepare the data for analysis.} This is done by a call to 
 #' \code{\link{fcSetup}}.
@@ -107,7 +118,7 @@
 #' annually. The function \code{\link{acs.dwnld}} is a utility function that 
 #' simplifies the process of downloading new data. In order to use it you will
 #' need a Census API key installed on the server (see the \pkg{acs} package 
-#' documentation for more details). It leaves a set of tables on ther server
+#' documentation for more details). It leaves a set of tables on the server
 #' (in the 'nist' schema) that are formatted the same as the master ACS tables
 #' already on the server. Those tables will need to be appended to the existing
 #' ACS tables already on the server.
@@ -184,9 +195,9 @@
 #' computation if multiple processors are available. The \pkg{ranger} package has 
 #' support for multiple processors built in by default. I have made no adjustment
 #' to the defaults, so it will use them if they are there and the package supports
-#' them. LASSO (through the \pkg{glmnet}) can also use it, but setup is required.
+#' them. LASSO (through the \pkg{glmnet} package) can also use it, but setup is required.
 #' LASSO here is set up to use the \pkg{doParallel} package if it is set up. Note that
-#' for LASSO to use multiple processors, it must be set up separately. That is, the 
+#' for LASSO to use multiple processors, \pkg{doParallel} must be set up separately. That is, the 
 #' package must be installed and loaded (typically with a call to \code{\link[base]{library}})
 #' in advance. It that is done (and works--doParallel only works on certain types of systems)
 #' the LASSO will make use of it. If not, it will not.
