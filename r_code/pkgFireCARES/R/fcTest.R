@@ -219,7 +219,7 @@ c_test <- function(t1, ...)
 #'
 #' Generates the naive estimator for any given data set.
 #'
-#' @param \code{\link{fcTest}} object.
+#' @param test \code{\link{fcTest}} object.
 #'
 #' @return (modified) \code{\link{fcTest}} object.
 #'

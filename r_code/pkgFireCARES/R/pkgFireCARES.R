@@ -152,9 +152,8 @@
 #' library \tab text    \tab Name of the library needed to estimate the model.\cr
 #' ff      \tab text    \tab Name of the function that estimates the model.\cr
 #' target  \tab text    \tab Name of the dependent variable estimated.\cr
-#' runs    \tab text    \tab One of '0', 'S', or 'L'. Whether the model 
-#' is estimated over the whole data set ('0' or 'S') or separately over 
-#' subsets of the data ('L').
+#' runs    \tab text    \tab One of '0', 'S', or 'L'. Whether the model is estimated over the whole  
+#'                           data set ('0' or 'S') or separately over subsets of the data ('L').
 #' }
 #'
 #' @section Table inputs:
@@ -204,7 +203,11 @@
 #'
 #' @examples
 #' \dontrun{
-#' conn <- dbConnect("PostgreSQL", host="some.host.com", dbname="nfirs", user="user", password="pwd")
+#' conn <- dbConnect("PostgreSQL", 
+#'                   host="some.host.com", 
+#'                   dbname="nfirs", 
+#'                   user="user", 
+#'                   password="pwd")
 #' low.risk.fires <- dbGetQuery(conn, "select * from nist.low_risk_fires")
 #' low.risk.fires <- fcSetup(low.risk.fires)
 #' med.risk.fires <- dbGetQuery(conn, "select * from nist.med_risk_fires")
@@ -222,7 +225,10 @@
 #' e <- new.env()
 #' npt.final <- e$npt.final
 #' npt.final.res <- e$npt.final.res
-#' lr.pred <- fcEstimate("npt.final", "npt.final.res", lr.mr.pred, quote(fd_size %in% paste("size_", 3:9, sep="")))
+#' lr.pred <- fcEstimate("npt.final", 
+#'                       "npt.final.res", 
+#'                       lr.mr.pred, 
+#'                       quote(fd_size %in% paste("size_", 3:9, sep="")))
 #' head(lr.pred)
 #' }
 #'
