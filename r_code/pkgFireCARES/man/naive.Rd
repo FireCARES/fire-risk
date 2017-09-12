@@ -7,16 +7,16 @@
 naive(test)
 }
 \arguments{
-\item{test}{Test object.}
+\item{test}{\code{\link{fcTest}} object.}
 }
 \value{
-(modified) test object.
+(modified) \code{\link{fcTest}} object.
 }
 \description{
 Generates the naive estimator for any given data set.
 }
 \details{
-This takes an output object from the test function and computes
+This takes an output object from the \code{\link{fcTest}} function and computes
 the Naive predictor. The Naive predictor says that the best prediction
 for a tract-year is the number of outcomes (fires, injuries, etc.) 
 that occurred for that tract the previous year. It is undefined 

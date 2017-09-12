@@ -62,19 +62,25 @@ prediction) and prepare it for use.
  (see the acs package documentation).
 }
 
-\section{Basic Setup}{
+\section{Database Info}{
 
-This package works with data on the nfirs database on the FireCARES server. 
-In particular, it works with the information in the 'nist' and 'controls' 
+This package works with data on the \code{nfirs} database on the FireCARES server. 
+In particular, it works with the information in the \code{nist} and \code{controls} 
 schemas. Most of that, however, is transparent to the functions in this 
-package. Any function that accesses the database takes a DBI Connection as
-one of its parameters. That connection will contain all the connection 
-parameters and must be supplied. Note that while I assume that the database
-is a PostgreSQL one (as is currently the case), there is nothing in these 
-functions that is specific to PostgreSQL. So any DBI connection can be used.
-There are packages in R that create DBI connections for MySQL, SQLite, 
+package. Any function (except \code{\link{full_analysis}}) that accesses the 
+database takes a DBI Connection as one of its parameters. That connection will
+ contain all the connection parameters and must be supplied. 
+
+Note that while I assume that the database is a PostgreSQL one (as is currently 
+the case), there is nothing in these functions (again, except for 
+\code{\link{full_analysis}}) that is specific to PostgreSQL. So any DBI connection 
+can be used. There are packages in R that create DBI connections for MySQL, SQLite, 
 Oracle, the ODBC Interface, SQLServer, and others. So these functions should 
-continue to work even in the server hosting the database is changed.
+continue to work even if the server hosting the database is changed.
+
+Even \code{\link{full_analysis}} allows for a DBI connection object to be supplied. 
+So, if the database were to change, then the correct connection object could be 
+supplied without rewriting the package.
 }
 
 \section{Typical Workflow}{
@@ -89,7 +95,8 @@ typically be done by a call to \code{\link{mass.npt}}, although it could be
 done by calling \code{\link{npt}} directly. Either will leave one or more 
 control objects in the working environment.
 
-\emph{Download data for analysis.} That will be done outside these routines.
+\emph{Download data for analysis.} That will need to be done separately if 
+\code{\link{full_analysis}} is not used.
 
 \emph{Prepare the data for analysis.} This is done by a call to 
 \code{\link{fcSetup}}.
@@ -167,9 +174,8 @@ model   \tab text    \tab Name of the model to be estimated.\cr
 library \tab text    \tab Name of the library needed to estimate the model.\cr
 ff      \tab text    \tab Name of the function that estimates the model.\cr
 target  \tab text    \tab Name of the dependent variable estimated.\cr
-runs    \tab text    \tab One of '0', 'S', or 'L'. Whether the model 
-is estimated over the whole data set ('0' or 'S') or separately over 
-subsets of the data ('L').
+runs    \tab text    \tab One of '0', 'S', or 'L'. Whether the model is estimated over the whole  
+                          data set ('0' or 'S') or separately over subsets of the data ('L').
 }
 }
 
@@ -226,7 +232,11 @@ the LASSO will make use of it. If not, it will not.
 
 \examples{
 \dontrun{
-conn <- dbConnect("PostgreSQL", host="some.host.com", dbname="nfirs", user="user", password="pwd")
+conn <- dbConnect("PostgreSQL", 
+                  host="some.host.com", 
+                  dbname="nfirs", 
+                  user="user", 
+                  password="pwd")
 low.risk.fires <- dbGetQuery(conn, "select * from nist.low_risk_fires")
 low.risk.fires <- fcSetup(low.risk.fires)
 med.risk.fires <- dbGetQuery(conn, "select * from nist.med_risk_fires")
@@ -244,7 +254,10 @@ lr.mr.pred <- fcSetup(lr.mr.pred)
 e <- new.env()
 npt.final <- e$npt.final
 npt.final.res <- e$npt.final.res
-lr.pred <- fcEstimate("npt.final", "npt.final.res", lr.mr.pred, quote(fd_size \%in\% paste("size_", 3:9, sep="")))
+lr.pred <- fcEstimate("npt.final", 
+                      "npt.final.res", 
+                      lr.mr.pred, 
+                      quote(fd_size \%in\% paste("size_", 3:9, sep="")))
 head(lr.pred)
 }
 

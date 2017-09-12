@@ -34,7 +34,11 @@ This is usually followed up with a call to \code{\link{fcMacro}}
 }
 \examples{
 \dontrun{
-  conn <- dbConnect("PostgreSQL", host="hostname.com", dbname="nfirs", user="username", password="***")
+  conn <- dbConnect("PostgreSQL", 
+                    host="hostname.com", 
+                    dbname="nfirs", 
+                    user="username", 
+                    password="***")
   mass.npt(conn, "npt.f")
   res <- new.env()
   mass.npt("final", conn, res)
