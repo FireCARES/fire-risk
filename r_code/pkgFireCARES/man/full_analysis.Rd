@@ -109,9 +109,3 @@ Note that if you are supplying the \code{object.list} structure while using the
 \code{bypass.models} option, you can safely leave out the \code{tst.name} and 
 \code{msg.name} columns.
 }
-\section{Future Work}{
-
-Convert this to a function in the pkgFireCARES package. That requires the following tasks:  
-  * Test everything and make sure I didn't break it.
-}
-

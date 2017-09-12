@@ -102,10 +102,6 @@
 #'                       fires, this contains predictions at the parcel level.}
 #' }
 #'
-#' @section Future Work:
-#' Convert this to a function in the pkgFireCARES package. That requires the following tasks:  
-#'   * Test everything and make sure I didn't break it.
-#'
 full_analysis <- function(conn=NULL, 
                           models.run=NULL,
                           bypass.models=FALSE,
@@ -126,6 +122,7 @@ full_analysis <- function(conn=NULL,
   est.tabls <- c( lr="select * from nist.lr_mr_pred",
                   mr="select * from nist.lr_mr_pred",
                   hr="select * from nist.hr_pred")
+  old.ls <- c(ls(pos=globalenv()), "rmse.sum")
 # Handle default values of inputs and check for validity
   if(is.null(conn)){
     conn <- dbConnect( "PostgreSQL", 
@@ -138,7 +135,6 @@ full_analysis <- function(conn=NULL,
 # The 'models.run' object contains the list of control objects
 # to run and some key information this script needs to run them.
 # Check to see if it already exists. If not, create it.
-  browser()
   if(is.null(models.run)){
     models.run <- list(lr=c("npt.final", "npt.final.L"),
                        mr=c("mr.final"),
@@ -152,7 +148,7 @@ full_analysis <- function(conn=NULL,
     stop("If bypass.models is TRUE then objects.list must be defined!")
   }
   if(! bypass.models) object.list <- list()
-# if necessary, convert models.run to a more congenial list.
+# if necessary, convert a models.run data.frame to a more congenial list.
   if(is.data.frame(models.run)){
     models.run0 <- list()
     for(i in unique(models.run$risk)){
@@ -161,6 +157,10 @@ full_analysis <- function(conn=NULL,
     models.run <- models.run0
     rm(models.run0)
   }
+#
+# Here we begin the actual analysis
+#
+  risk.results <- list()
   for(i in names(models.run)){
     src.name <- src.names[i]
     if(bypass.models){
@@ -185,7 +185,6 @@ full_analysis <- function(conn=NULL,
     }
 #
     if(do.predictions){
-      risk.results <- list()
       est.name <- est.names[i]
       if(! exists(est.name)){
         assign(est.name, dbGetQuery(conn, est.tabls[i]))
@@ -239,7 +238,9 @@ full_analysis <- function(conn=NULL,
 # Again, some of these objects can be quite large. Deleting them 
 # may prevent the program from crashing due to an out-of-memory 
 # error.
-    rm(list=intersect(c(src.name, objects$npt.name, objects$res.name ), ls(pos=globalenv())), pos=globalenv())
+# This returns the global environment to its original state and removes
+# a few variables from the functions environment.
+    rm(list=setdiff(ls(pos=globalenv()), old.ls), pos=globalenv())
     rm(list=intersect(c("src.name", "objects", "est.name", "dta.cols" ), ls()))
 #
 # Merge all the predictions into a single prediction data frame.
@@ -274,4 +275,5 @@ full_analysis <- function(conn=NULL,
     out[["prediction"]] <- predictions
     out[["risk.results"]] <- risk.results
   }
+  out
 }
