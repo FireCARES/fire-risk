@@ -109,6 +109,7 @@ full_analysis <- function(conn=NULL,
                           roll.up.2.dept=TRUE,
                           object.list=NULL){
 #
+  gc()
   library(RPostgreSQL)
   src.names <- c( lr="low.risk.fires",
                   mr="med.risk.fires",
@@ -162,6 +163,7 @@ full_analysis <- function(conn=NULL,
 #
   risk.results <- list()
   for(i in names(models.run)){
+    gc()
     src.name <- src.names[i]
     if(bypass.models){
 # If bypass.models is defined, then we need to get the relevant 'objects' data frame
