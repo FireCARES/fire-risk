@@ -64,6 +64,8 @@ target/
 scripts/raw_output/*.csv
 scripts/figures/
 
+.ipynb_checkpoints
+
 # R Files
 *.RData
 *.Rproj.user

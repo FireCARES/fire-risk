@@ -1,6 +1,6 @@
 import psycopg2
 
-from .queries import ALL_RESIDENTIAL_FIRES
+from .queries import ALL_RESIDENTIAL_FIRES, RESIDENTIAL_FIRES_BY_FDID_STATE_HAZARD
 from psycopg2.extras import DictCursor
 
 
@@ -93,6 +93,18 @@ class PostgresBackend(Backend):
                 counts['beyond'] += result['count']
 
         return counts
+
+    def get_hazard_level_firespread_counts(self, query=RESIDENTIAL_FIRES_BY_FDID_STATE_HAZARD, query_params=()):
+        results = self.query(query=query, query_params=query_params).fetchall()
+        ret = dict()
+
+        for result in results:
+            r = dict(result)
+            hazard = r.pop('risk_category')
+            ret[hazard] = r
+
+        return ret
+
 
 if __name__ == '__main__':
     import doctest

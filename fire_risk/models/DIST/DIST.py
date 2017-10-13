@@ -473,9 +473,15 @@ class DISTMediumHazard(DIST):
         """
         if self.floor_area_draw and self.floor_extent:
             values.update(dict(floor_area=self.draw_custom(self.floor_area_draw, values['room_area'])))
-            values.update(dict(building_area=self.draw_custom(self.building_area_draw, values['floor_area'])))
+            if hasattr(self.building_area_draw, 'draw'):
+                values.update(dict(building_area=self.building_area_draw.draw()))
+            else:
+                values.update(dict(building_area=self.draw_custom(self.building_area_draw, values['floor_area'])))
         else:
-            values.update(dict(building_area=self.draw_custom(self.building_area_draw, values['room_area'])))
+            if hasattr(self.building_area_draw, 'draw'):
+                values.update(dict(building_area=self.building_area_draw.draw()))
+            else:
+                values.update(dict(building_area=self.draw_custom(self.building_area_draw, values['room_area'])))
         return values
 
 

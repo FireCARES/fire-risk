@@ -27,3 +27,31 @@ WHERE prop_use IN ('419','429','439','449','459','460','462','464','400')
 GROUP BY fdid, fire_sprd
 ORDER BY fdid, fire_sprd;
 """
+
+
+RESIDENTIAL_FIRES_BY_FDID_STATE_HAZARD = """
+SELECT *
+    FROM crosstab(
+      'select COALESCE(y.risk_category, ''N/A'') as risk_category, fire_sprd, count(*)
+        FROM buildingfires a left join (
+          SELECT state,
+            fdid,
+            inc_date,
+            inc_no,
+            exp_no,
+            geom,
+            x.parcel_id,
+            x.risk_category
+          FROM (select * from incidentaddress a
+             left join parcel_risk_category_local b using (parcel_id)
+             ) AS x
+        ) AS y using (state, inc_date, exp_no, fdid, inc_no)
+    where a.fdid='%s'
+        and a.state='%s'
+        and prop_use in (''419'',''429'',''439'',''449'', ''459'',''460'',''462'',''464'',''400'')
+        and fire_sprd is not null and fire_sprd != ''''
+    group by risk_category, fire_sprd
+    order by risk_category, fire_sprd ASC')
+    AS ct(risk_category text, "object_of_origin" bigint, "room_of_origin" bigint,
+        "floor_of_origin" bigint, "building_of_origin" bigint, "beyond" bigint);
+"""
