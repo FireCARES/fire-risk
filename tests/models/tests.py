@@ -229,6 +229,5 @@ class TestDISTModel(unittest.TestCase):
                     dist(floor_extent=False, **res).gibbs_sample()
 
 
-
 if __name__ == '__main__':
     unittest.main()
