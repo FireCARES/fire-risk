@@ -7,33 +7,33 @@
 fcEstimate(input, output, new.data, subset = TRUE)
 }
 \arguments{
-\item{input}{character vector. This lists the names of the control objects 
+\item{input}{character vector. This lists the names of the control objects
 used to generate the model(s) used for prediction.}
 
-\item{output}{character vector. This lists the names of the output models 
+\item{output}{character vector. This lists the names of the output models
 created from the control objects listed in 'input'.}
 
-\item{new.data}{data.frame This is the data that will be used to generate 
-the predictions. It needs to contain all the input variables used in 
+\item{new.data}{data.frame This is the data that will be used to generate
+the predictions. It needs to contain all the input variables used in
 creating the model.}
 
-\item{subset}{name. This specifies the subset of new.data for which 
-predictions will be made. If, as I expect, you want predictions for all 
-rows in the new.data object, then the default value (subset=TRUE) will 
+\item{subset}{name. This specifies the subset of new.data for which
+predictions will be made. If, as I expect, you want predictions for all
+rows in the new.data object, then the default value (subset=TRUE) will
 provide that. There is no need to screen out rows with undefined input
 variables since this routine already takes that into account.}
 }
 \value{
-Returns a data frame with some identifier columns and the 
+Returns a data frame with some identifier columns and the
 predictions from the model for each row. If any row is screened out by the
-subset parameter, then it will be returned with an NA in the prediction 
+subset parameter, then it will be returned with an NA in the prediction
 column.
 }
 \description{
 Predicts expected values based on fitted models and new data.
 }
 \details{
-This function produces tract-level estimates of the modeled information 
-based on models run and output in the "output" object, and using the data 
+This function produces tract-level estimates of the modeled information
+based on models run and output in the "output" object, and using the data
 in "new.data".
 }
