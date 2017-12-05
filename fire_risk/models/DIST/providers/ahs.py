@@ -436,6 +436,7 @@ def ahs_building_areas(fdid, state):
     data = AHSHousingData(data, index=['value'])
     return data
 
-if __name__ == '__main__':
+
+if __name__ == '__main__':  # pragma: no cover
     import doctest
     doctest.testmod()
