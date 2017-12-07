@@ -231,9 +231,11 @@ full_analysis <- function(conn=NULL,
 # is at the census tract level, I need to roll up the hr data to the census tract level.
       if(i == 'hr'){
         temp.98765 <- risk.results[["hr"]]
-        risk.results[["hr"]] <- aggregate(temp.98765[, paste(i, dta.cols, sep=".")],
-                                          with(temp.98765, list(year=year, tr10_fid=tr10_fid, fd_id=fd_id)),
-                                          function(x) sum(x, na.rm=TRUE))
+        risk.results[["hr"]] <- rollUp2Dept(temp.98765,
+                                            "hr.fires",
+                                            "hr.sz2",
+                                            "hr.sz3",
+                                            c("year", "tr10_fid", "fd_id"))
       }
 #
 # Cleanup
@@ -265,7 +267,7 @@ full_analysis <- function(conn=NULL,
     fire.col <- grep("fire", names(predictions), value=TRUE)
     sz2.col  <- grep("sz2",  names(predictions), value=TRUE)
     sz3.col  <- grep("sz3",  names(predictions), value=TRUE)
-    predictions <- rollUp2Dept(predictions, fire.col, sz2.col, sz3.col)
+    predictions <- rollUp2Dept(predictions, fire.col, sz2.col, sz3.col, c("year", "fd_id"))
   }
 # Return the results
   out <- list(models.run=models.run,

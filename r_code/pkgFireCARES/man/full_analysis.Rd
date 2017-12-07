@@ -12,72 +12,72 @@ full_analysis(conn = NULL, models.run = NULL, bypass.models = FALSE,
 the data and model definitions. If none is entered, default connection
 information is obtained from the operating system environment.}
 
-\item{models.run}{Either a list or a data frame. This determines what models 
-are run. Its format is given as an example below. If it is 
+\item{models.run}{Either a list or a data frame. This determines what models
+are run. Its format is given as an example below. If it is
 undefined, then a default set of models are run (see below).
-Note that multiple model objects per risk level does not present 
+Note that multiple model objects per risk level does not present
 a problem.}
 
 \item{object.list}{List of data frames. The list must contain an entry for every risk
-level that is run. The entry for each risk level must contain data frame 
-with the output from \code{\link{fcMacro}} for that risk level. If 
-\code{bypass.models} is TRUE and this parameter is undefined, the 
-function will error out. If \code{bypass.models} is FALSE, then 
+level that is run. The entry for each risk level must contain data frame
+with the output from \code{\link{fcMacro}} for that risk level. If
+\code{bypass.models} is TRUE and this parameter is undefined, the
+function will error out. If \code{bypass.models} is FALSE, then
 this parameter is ignored.}
 
-\item{bypass.models=FALSE}{Logical. If it is TRUE, then no models are estimated. If not, 
-then the models listed in 'models.run' above are estimated first. 
-Note that if 'bypass.models' is TRUE, then the 'objects' 
+\item{bypass.models=FALSE}{Logical. If it is TRUE, then no models are estimated. If not,
+then the models listed in 'models.run' above are estimated first.
+Note that if 'bypass.models' is TRUE, then the 'objects'
 data frame (output of the fcMacro function) must be supplied.}
 
-\item{do.predictions=TRUE}{Logical. If it is TRUE, then predictions are generated from 
-the models run. If not, then no predictions are generated 
+\item{do.predictions=TRUE}{Logical. If it is TRUE, then predictions are generated from
+the models run. If not, then no predictions are generated
 from the estimated models.}
 
 \item{roll.up.2.dept=TRUE}{Logical. If it is TRUE, then the predictions are rolled
-up to the department level. If it is FALSE, then the 
+up to the department level. If it is FALSE, then the
 predictions are left at the census tract level.}
 }
 \value{
 returns a list with the following entries:
 
 \describe{
-  \item{models.run}{The \code{models.run} input listing the models run by 
-                    risk level} 
+  \item{models.run}{The \code{models.run} input listing the models run by
+                    risk level}
   \item{bypass.models}{The input \code{bypass.models} value}
   \item{do.predictions}{The input \code{do.predictions} value}
   \item{roll.up.2.dept}{The input \code{roll.up.2.dept} value}
-  \item{object.list}{The \code{object.list} object described above. If the 
+  \item{object.list}{The \code{object.list} object described above. If the
                      \code{bypass.models} flag is set, then this is the object
                      supplied to the function. Otherwise it is returned by the
                      calls to \code{\link{fcMacro}}.}
-  \item{prediction}{Data frame containing predictions for all variables requested 
-                    in the models.run object. The predictions are either by census 
+  \item{prediction}{Data frame containing predictions for all variables requested
+                    in the models.run object. The predictions are either by census
                     tract or by department depending on the value of the \code{roll.up.2.dept}
                     flag.}
-  \item{risk.results}{This is a list, with an entry for each risk level. Each entry 
-                      contains a data frame with the raw estimates for that risk level. 
-                      For low and medium risk fires this contains the predictions at the 
-                      census tract level (which are redundant with the results in 
-                      \code{predictions} if \code{roll.up.2.dept} is FALSE). For high risk 
+  \item{risk.results}{This is a list, with an entry for each risk level. Each entry
+                      contains a data frame with the raw estimates for that risk level.
+                      For low and medium risk fires this contains the predictions at the
+                      census tract level (which are redundant with the results in
+                      \code{predictions} if \code{roll.up.2.dept} is FALSE). For high risk
                       fires, this contains predictions at the parcel level.}
 }
 }
 \description{
-This function runs through the entire process of estimating models and 
+This function runs through the entire process of estimating models and
 developing predictions at either the census tract level or at the department
-level. This function can be run with NO inputs. That is, it can be called 
+level. This function can be run with NO inputs. That is, it can be called
 as \code{full_analysis()} and it will work. Default values exist in some
 form for all the parameters. Supply the parameters if you want different
 results.
 }
 \details{
-The \code{models.run} parameter can have one of two formats, a list format or a data 
-frame format. The list format is preferred. The data frame format has two columns: 
-\code{risk} and \code{lst}. Both columns have character format. Each row represents 
+The \code{models.run} parameter can have one of two formats, a list format or a data
+frame format. The list format is preferred. The data frame format has two columns:
+\code{risk} and \code{lst}. Both columns have character format. Each row represents
 a model set to be run. The \code{risk} column specfies the risk level associated with
 that model set (and can only be one of 'lr', 'mr', or 'hr'). The \code{lst} column
-is the \code{lst} value from the \code{controls} database for the model set to be 
+is the \code{lst} value from the \code{controls} database for the model set to be
 run. The default value of \code{models.run} (in data.frame format) is listed below.
 
 \tabular{cc}{
@@ -88,15 +88,15 @@ mr            \tab mr.final    \cr
 hr            \tab hr.final
 }
 
-The list format contains a named entry for each risk level to be run. The 
-entry contains a character vector listing the \code{lst} values from the 
+The list format contains a named entry for each risk level to be run. The
+entry contains a character vector listing the \code{lst} values from the
 \code{controls} database for the model sets to be run for that risk level.
 The default value of \code{models.run} (in list format) is listed below.
 
-\code{models.run <- list(lr=c("npt.final", "npt.final.L"), mr=c("mr.final"), hr=c("hr.final"))}  
+\code{models.run <- list(lr=c("npt.final", "npt.final.L"), mr=c("mr.final"), hr=c("hr.final"))}
 
 The \code{object.list} list object has an entry for each risk level run. That
-entry is a data frame with information output from \code{\link{fcMacro}}. The 
+entry is a data frame with information output from \code{\link{fcMacro}}. The
 structure of that data frame is given by the following example:
 
 \tabular{ccccc}{
@@ -105,7 +105,7 @@ structure of that data frame is given by the following example:
   npt.final.L     \tab npt.final.L.res   \tab npt.final.L.tst   \tab messages.01.txt   \tab npt.final.L.RData
 }
 
-Note that if you are supplying the \code{object.list} structure while using the 
-\code{bypass.models} option, you can safely leave out the \code{tst.name} and 
+Note that if you are supplying the \code{object.list} structure while using the
+\code{bypass.models} option, you can safely leave out the \code{tst.name} and
 \code{msg.name} columns.
 }

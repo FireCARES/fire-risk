@@ -84,8 +84,8 @@ fcEstimate <- function(input, output, new.data, subset=TRUE)
                         if("offset" %in% names(nput$models[[k]]$inputs)) {
                             off <- eval(nput$models[[k]]$inputs$offset, new.data[fltr,])
 #                           off <- model.offset(n.dta)
-                            results[[new.vars[1]]][fltr] <- predict(oput[[k]][[i]]$model, newx=new.x, type="response", s="lambda.min", newoffset=off)
-                            results[[new.vars[2]]][fltr] <- predict(oput[[k]][[i]]$model, newx=new.x, type="response", s="lambda.1se", newoffset=off)
+                            results[[new.vars[1]]][fltr] <- predict(oput[[k]][[i]]$model, newx=new.x, type="response", s="lambda.min", newoffset=off, offset=off)
+                            results[[new.vars[2]]][fltr] <- predict(oput[[k]][[i]]$model, newx=new.x, type="response", s="lambda.1se", newoffset=off, offset=off)
                         } else {
                             results[[new.vars[1]]][fltr] <- predict(oput[[k]][[i]]$model, newx=new.x, type="response", s="lambda.min")
                             results[[new.vars[2]]][fltr] <- predict(oput[[k]][[i]]$model, newx=new.x, type="response", s="lambda.1se")
