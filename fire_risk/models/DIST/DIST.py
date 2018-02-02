@@ -4,7 +4,6 @@ import random
 import numpy as np
 import os
 from fire_risk.utils import UniformDraw
-import pdb
 from math import log
 from math import ceil
 
