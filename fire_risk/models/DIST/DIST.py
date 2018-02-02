@@ -27,7 +27,6 @@ class DIST(object):
     turnout_time_draw = UniformDraw(60, 100)
     arrival_time_draw = UniformDraw(300, 420)
     suppression_time_draw = UniformDraw(60, 180)
-
     floor_area_draw = None
     floor_extent = True
     minimum_number_of_records = 75
@@ -410,7 +409,6 @@ class DISTMediumHazard(DIST):
     dividing it by the total number of floors (predicts average units per floor), and
     then multiplying by the average square footage of a unit (about 850 square feet).
     """
-
 
     def __init__(self, object_of_origin, room_of_origin, floor_of_origin, building_of_origin, beyond,
                  **kwargs):
