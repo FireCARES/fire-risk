@@ -4,6 +4,7 @@ import random
 import numpy as np
 import os
 from fire_risk.utils import UniformDraw
+import pdb
 from math import log
 from math import ceil
 
@@ -26,9 +27,7 @@ class DIST(object):
     dispatch_time_draw = UniformDraw(40, 80)
     turnout_time_draw = UniformDraw(60, 100)
     arrival_time_draw = UniformDraw(300, 420)
-
-    #Based on staffing data for low hazard structures
-    suppression_time_draw = np.random.normal(336,54)
+    suppression_time_draw = UniformDraw(60, 180)
 
     floor_area_draw = None
     floor_extent = True
@@ -413,8 +412,6 @@ class DISTMediumHazard(DIST):
     then multiplying by the average square footage of a unit (about 850 square feet).
     """
 
-    #Based on high rise suppression time data provided by Craig
-    suppression_time_draw = np.random.normal(420,122)
 
     def __init__(self, object_of_origin, room_of_origin, floor_of_origin, building_of_origin, beyond,
                  **kwargs):

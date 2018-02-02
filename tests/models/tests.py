@@ -200,9 +200,9 @@ class TestDISTModel(unittest.TestCase):
         mock_cur.fetchall.return_value = res
 
         expected = {'High': None,
-                    'Medium': 38,
-                    'Low': 55,
-                    'N/A': 57}
+                    'Medium': 42,
+                    'Low': 62,
+                    'N/A': 61}
 
         with backends.PostgresBackend(dict(service='nfirs')) as backend:
             results = backend.get_hazard_level_firespread_counts(query_params=fd)
