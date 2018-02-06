@@ -7,6 +7,7 @@ from fire_risk.utils import UniformDraw
 from math import log
 from math import ceil
 
+
 class LowerBoundGreaterThanUpperBoundException(Exception):
     pass
 
