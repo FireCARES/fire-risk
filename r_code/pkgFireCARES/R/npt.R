@@ -1,12 +1,12 @@
 ##  npt.R
 #' Mass Building of Control Objects
 #'
-#' This uses a pattern to collect a set of control files, and then calls 'npt' 
+#' This uses a pattern to collect a set of control files, and then calls 'npt'
 #' for each of those control files.
 #'
-#' @param conn DBI connection. Connects to the database containing the 
+#' @param conn DBI connection. Connects to the database containing the
 #' 'controls' sets.
-#' @param pattern character. Used to pattern-match the 'lst' values in the control 
+#' @param pattern character. Used to pattern-match the 'lst' values in the control
 #' list.
 #' @param list character. List of control objects to build.
 #' @param relocate environment. This is an [optional] environment into which
@@ -16,7 +16,7 @@
 #'
 #' @details
 #' Creates:
-#'   A set of control objects in the global environment, as specified in the 
+#'   A set of control objects in the global environment, as specified in the
 #'  'pattern' input.
 #'
 #' This is usually followed up with a call to \code{\link{fcMacro}}
@@ -24,10 +24,10 @@
 #' @export
 #' @examples
 #' \dontrun{
-#'   conn <- dbConnect("PostgreSQL", 
-#'                     host="hostname.com", 
-#'                     dbname="nfirs", 
-#'                     user="username", 
+#'   conn <- dbConnect("PostgreSQL",
+#'                     host="hostname.com",
+#'                     dbname="nfirs",
+#'                     user="username",
 #'                     password="***")
 #'   mass.npt(conn, "npt.f")
 #'   res <- new.env()
@@ -37,7 +37,7 @@
 mass.npt <- function(conn, pattern=NULL, list=NULL, relocate=NULL)
 {
 #   This section finds any 'test.' objects and moves them into a user-specified
-#   backup environment. This makes room for the new objects that will shortly be 
+#   backup environment. This makes room for the new objects that will shortly be
 #   created.
 	if(is.environment(relocate)){
         a <- setdiff(ls(pattern="test.", envir=globalenv()), "test.00")
@@ -48,17 +48,17 @@ mass.npt <- function(conn, pattern=NULL, list=NULL, relocate=NULL)
     }
 #   Find the 'lst' values, and then create the input files for each of the control lists.
     if(! is.null(pattern)){
-        a <- dbGetQuery(conn, paste("select lst, replace(runs, '0', 'S') as runs, count(*) as n ", 
-	                                "from controls.models where lst like '%", pattern, "%' ", 
-                                    "group by lst, replace(runs, '0', 'S') order by lst", sep=""))
+        a <- dbGetQuery(conn, paste("select lst, runs, count(*) as n ",
+	                                "from controls.models where lst like '%", pattern, "%' ",
+                                    "group by lst, runs order by lst", sep=""))
     } else {
         if(is.null(list)) stop( "At least one of 'pattern' or 'list' must be specified!")
-        a <- dbGetQuery(conn, paste("select lst, replace(runs, '0', 'S') as runs, count(*) as n ", 
+        a <- dbGetQuery(conn, paste("select lst, runs, count(*) as n ",
 	                                "from controls.models where lst in ('", paste(list, collapse="','"),
-                                    "') group by lst, replace(runs, '0', 'S') order by lst", sep=""))
+                                    "') group by lst, runs order by lst", sep=""))
     }
     for(i in 1:nrow(a)) {
-        assign(a$lst[i], npt(conn, a$lst[i], run=ifelse(a$runs[i] == "L", "long", "short")), envir=globalenv())
+        assign(a$lst[i], npt(conn, a$lst[i], run=a$runs[i]), envir=globalenv())
     }
 	a$lst
 }
@@ -71,24 +71,25 @@ mass.npt <- function(conn, pattern=NULL, list=NULL, relocate=NULL)
 #' This function creates the specified control objects from the templates
 #' maintained in the database.
 #'
-#' @param conn  DBI Connection. Connects to the database containing the 
+#' @param conn  DBI Connection. Connects to the database containing the
 #' controls tables.
-#' @param group character The entry in the 'lst' column. This determines which 
+#' @param group character The entry in the 'lst' column. This determines which
 #' models get used.
-#' @param risk character. This along with 'y' and 'mdls' (and 'run') represent an 
-#' alternative way of specifying which models get used. If 'group' is 
-#' specified, this is ignored. This is risk category, and is one of 'l' 
-#' (for low risk properties), 'm' (for medium risk properties), or 'h' (for 
+#' @param risk character. This along with 'y' and 'mdls' (and 'run') represent an
+#' alternative way of specifying which models get used. If 'group' is
+#' specified, this is ignored. This is risk category, and is one of 'l'
+#' (for low risk properties), 'm' (for medium risk properties), or 'h' (for
 #  high risk properties).
-#' @param y character. This is the target variable, and is one of 'f' 
-#' (for fires), 'j' (for injuries), 'd' (for deaths), 'sz2' (for "size 2" 
-#' fires), or 'sz3' (for "size 3" fires).
-#' @param mdls character This is a character vector of the models to be 
+#' @param y character. This is the target variable, and is one of 'f'
+#' (for fires), 'j' (for injuries), 'd' (for deaths), 'sz2' (for "size 2"
+#' fires), 'sz3' (for "size 3" fires), and 'ems'.
+#' @param mdls character This is a character vector of the models to be
 #' included for that target variable.
-#' @param run character This takes one of two values: 'short' and 'long'. This 
-#' determines whether a single model is run for all department sizes and 
-#' regions (typically with dummies for each), or whether separate models are 
-#' run for each combination of department size and region.
+#' @param run character This currently takes one of four values: '0', 'S', 'L',
+#' and 'C'. The values '0' and 'S' both run a single model for all department
+#' sizes and regions (typically with dummies for each). The value 'L'runs separate
+#' models for each combination of department size and region. The value 'C' runs
+#' separate models for each cluster.
 #'
 #' @return control object
 #'
@@ -103,6 +104,11 @@ mass.npt <- function(conn, pattern=NULL, list=NULL, relocate=NULL)
 #'  control object that will produce an output file so large it will choke
 #'  the computer.
 #'
+#' Note that this function does not check for the validity of the input to
+#' the \code{run} parameter. That allows me to add additionaltypes of runs if needed
+#' without rewriting the function. On the other hand, that means invalid
+#' inputs are caught only if the queries fail.
+#'
 #' @examples
 #' \dontrun{
 #'   npt(conn, "npt.base")
@@ -111,7 +117,7 @@ mass.npt <- function(conn, pattern=NULL, list=NULL, relocate=NULL)
 #'   npt(conn, y="d", mdls=c("", ""), run="long")
 #' }
 #'
-npt <- function(conn, group=NULL, risk=NULL, y=NULL, mdls=NULL, run="short") 
+npt <- function(conn, group=NULL, risk=NULL, y=NULL, mdls=NULL, run="short")
 {
 # Initially, we check to make sure the inputs make sense.
     if(is.null(group)){
@@ -127,7 +133,7 @@ npt <- function(conn, group=NULL, risk=NULL, y=NULL, mdls=NULL, run="short")
             simpleWarning("y has more than one value. Only the first will be used")
             y <- y[1]
         }
-		if(! y %in% c('f', 'j', 'd', 'sz2', 'sz3')) stop("y must be one of 'f', 'j', 'd', 'sz2' or 'sz3'")
+		if(! y %in% c('f', 'j', 'd', 'sz2', 'sz3', 'ems')) stop("y must be one of 'f', 'j', 'd', 'sz2', 'sz3' or 'ems'")
 	}
     else{
         if(! class(group) == "character") stop("If you use 'group' it must be a character vector")
@@ -140,11 +146,10 @@ npt <- function(conn, group=NULL, risk=NULL, y=NULL, mdls=NULL, run="short")
         simpleWarning("run has more than one value. Only the first will be used")
         run <- run[1]
     }
-	if(! run %in% c("short", "long")) stop("run must be one of 'short' or 'long'")
 # Now we build the 'runs' portion of the object
 # Note that this has changed, and the format of the output file has changed with it.
 # As a result, some earlier control objects will no longer be compatible.
-    r0 <- dbGetQuery(conn, paste("select * from controls.runs where grp = '", run, "' order by tier1, tier2", sep=""))
+    r0 <- dbGetQuery(conn, paste0("select * from controls.runs where grp = '", run, "' order by tier1, tier2"))
     r <- list()
     r0$tier.names <- with(r0, ifelse(is.na(tier2), tier1, paste(tier1, tier2, sep=".")))
     for(i in 1:nrow(r0)) {
@@ -170,7 +175,7 @@ npt <- function(conn, group=NULL, risk=NULL, y=NULL, mdls=NULL, run="short")
 # For reasons I don't yet understand, when I run a lasso or random forest model, all subsequent glm models fail to run.
 # This section ensures that any random forest models are run last.
     if(nrow(mdl[mdl$library %in% c('glmnet', 'ranger'),]) > 0) {
-        mdl <- rbind(rbind(mdl[! mdl$library %in% c('glmnet', 'ranger'),], mdl[mdl$library == 'glmnet',]), 
+        mdl <- rbind(rbind(mdl[! mdl$library %in% c('glmnet', 'ranger'),], mdl[mdl$library == 'glmnet',]),
                       mdl[mdl$library == 'ranger',])
     }
 # This section takes the data.frames returned from the 'controls' database and translates them into named control structures.
@@ -183,7 +188,7 @@ npt <- function(conn, group=NULL, risk=NULL, y=NULL, mdls=NULL, run="short")
 # This translates most inputs into R names rather than actual data. That makes the built call readable.
         npt0 <- subset(npts, lst==mdl$lst[i] & model==mdl$model[i])
         for(j in 1:nrow(npt0)) {
-            if(npt0$class[j] == "call") 
+            if(npt0$class[j] == "call")
                 models[[i]]$inputs[[npt0$input[j]]] <- parse(text=npt0$value[j])[[1]]
             else if(npt0$class[j] == "formula")
                 models[[i]]$inputs[[npt0$input[j]]] <- as.formula(npt0$value[j], env=.GlobalEnv)

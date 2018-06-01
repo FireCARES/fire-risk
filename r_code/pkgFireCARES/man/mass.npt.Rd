@@ -7,10 +7,10 @@
 mass.npt(conn, pattern = NULL, list = NULL, relocate = NULL)
 }
 \arguments{
-\item{conn}{DBI connection. Connects to the database containing the 
+\item{conn}{DBI connection. Connects to the database containing the
 'controls' sets.}
 
-\item{pattern}{character. Used to pattern-match the 'lst' values in the control 
+\item{pattern}{character. Used to pattern-match the 'lst' values in the control
 list.}
 
 \item{list}{character. List of control objects to build.}
@@ -22,22 +22,22 @@ to move any existing test objects.}
 Vector listing the control objects created.
 }
 \description{
-This uses a pattern to collect a set of control files, and then calls 'npt' 
+This uses a pattern to collect a set of control files, and then calls 'npt'
 for each of those control files.
 }
 \details{
 Creates:
-  A set of control objects in the global environment, as specified in the 
+  A set of control objects in the global environment, as specified in the
  'pattern' input.
 
 This is usually followed up with a call to \code{\link{fcMacro}}
 }
 \examples{
 \dontrun{
-  conn <- dbConnect("PostgreSQL", 
-                    host="hostname.com", 
-                    dbname="nfirs", 
-                    user="username", 
+  conn <- dbConnect("PostgreSQL",
+                    host="hostname.com",
+                    dbname="nfirs",
+                    user="username",
                     password="***")
   mass.npt(conn, "npt.f")
   res <- new.env()

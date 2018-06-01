@@ -8,28 +8,29 @@ npt(conn, group = NULL, risk = NULL, y = NULL, mdls = NULL,
   run = "short")
 }
 \arguments{
-\item{conn}{DBI Connection. Connects to the database containing the 
+\item{conn}{DBI Connection. Connects to the database containing the
 controls tables.}
 
-\item{group}{character The entry in the 'lst' column. This determines which 
+\item{group}{character The entry in the 'lst' column. This determines which
 models get used.}
 
-\item{risk}{character. This along with 'y' and 'mdls' (and 'run') represent an 
-alternative way of specifying which models get used. If 'group' is 
-specified, this is ignored. This is risk category, and is one of 'l' 
+\item{risk}{character. This along with 'y' and 'mdls' (and 'run') represent an
+alternative way of specifying which models get used. If 'group' is
+specified, this is ignored. This is risk category, and is one of 'l'
 (for low risk properties), 'm' (for medium risk properties), or 'h' (for}
 
-\item{y}{character. This is the target variable, and is one of 'f' 
-(for fires), 'j' (for injuries), 'd' (for deaths), 'sz2' (for "size 2" 
-fires), or 'sz3' (for "size 3" fires).}
+\item{y}{character. This is the target variable, and is one of 'f'
+(for fires), 'j' (for injuries), 'd' (for deaths), 'sz2' (for "size 2"
+fires), 'sz3' (for "size 3" fires), and 'ems'.}
 
-\item{mdls}{character This is a character vector of the models to be 
+\item{mdls}{character This is a character vector of the models to be
 included for that target variable.}
 
-\item{run}{character This takes one of two values: 'short' and 'long'. This 
-determines whether a single model is run for all department sizes and 
-regions (typically with dummies for each), or whether separate models are 
-run for each combination of department size and region.}
+\item{run}{character This currently takes one of four values: '0', 'S', 'L',
+and 'C'. The values '0' and 'S' both run a single model for all department
+sizes and regions (typically with dummies for each). The value 'L'runs separate
+models for each combination of department size and region. The value 'C' runs
+separate models for each cluster.}
 }
 \value{
 control object
@@ -48,6 +49,11 @@ As written, this creates a single control object regardless of whether
  added to a single control object, so be careful. It is easy to build a
  control object that will produce an output file so large it will choke
  the computer.
+
+Note that this function does not check for the validity of the input to
+the \code{run} parameter. That allows me to add additionaltypes of runs if needed
+without rewriting the function. On the other hand, that means invalid
+inputs are caught only if the queries fail.
 }
 \examples{
 \dontrun{

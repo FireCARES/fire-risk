@@ -11,6 +11,10 @@
 #'             the data and model definitions. If none is entered, default connection
 #'             information is obtained from the operating system environment.
 #'
+#' @param refresh.data=FALSE Logical. If this is TRUE, then the views on which the
+#'                   data for this analysis are based are refreshed and the data.frames
+#'                   used in this analysis are requeried.
+#'
 #' @param models.run Either a list or a data frame. This determines what models
 #'                   are run. Its format is given as an example below. If it is
 #'                   undefined, then a default set of models are run (see below).
@@ -103,6 +107,7 @@
 #' }
 #'
 full_analysis <- function(conn=NULL,
+                          refresh.data=FALSE,
                           models.run=NULL,
                           bypass.models=FALSE,
                           do.predictions=TRUE,
@@ -158,6 +163,7 @@ full_analysis <- function(conn=NULL,
     models.run <- models.run0
     rm(models.run0)
   }
+  if(refresh.data) refresh_views(conn)
 #
 # Here we begin the actual analysis
 #
@@ -175,7 +181,7 @@ full_analysis <- function(conn=NULL,
 	  }
     } else {
 # Download the data needed for the model estimation
-      if(! exists(src.name)){
+      if(! exists(src.name) | refresh.data){
         assign(src.name, dbGetQuery(conn, src.tabls[i]), pos=globalenv())
         assign(src.name, fcSetup(get(src.name)), pos=globalenv())
       }
@@ -188,7 +194,7 @@ full_analysis <- function(conn=NULL,
 #
     if(do.predictions){
       est.name <- est.names[i]
-      if(! exists(est.name)){
+      if(! exists(est.name) | refresh.data){
         assign(est.name, dbGetQuery(conn, est.tabls[i]))
         assign(est.name, fcSetup(get(est.name)))
       }

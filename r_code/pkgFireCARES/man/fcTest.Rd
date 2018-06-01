@@ -7,12 +7,12 @@
 fcTest(input, output, subset = NULL)
 }
 \arguments{
-\item{input}{Control object. The input control object used by \code{\link{fcRun}} to 
+\item{input}{Control object. The input control object used by \code{\link{fcRun}} to
 generate the output.}
 
 \item{output}{Model Output. The model output produced by \code{\link{fcRun}}.}
 
-\item{subset}{The subset of the data over which to estimate RMS Errors. 
+\item{subset}{The subset of the data over which to estimate RMS Errors.
 I include this because in some cases the test subset has been different from
 the training subset in non-random ways.}
 }
@@ -21,8 +21,8 @@ This returns a list with the following members:
 
 \describe{
   \item{lhs}{Name of the left-hand side variable.}
-  \item{subset}{The subset to which the results are applied.} 
-  \item{se}{A named vector with the root-mean-square errors on the 
+  \item{subset}{The subset to which the results are applied.}
+  \item{se}{A named vector with the root-mean-square errors on the
             out-of-sample data for each model in the control object.}
   \item{results}{A data frame with the row-by-row results.}
 }

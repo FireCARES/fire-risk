@@ -12,7 +12,7 @@ c_test(t1, ...)
 \item{...}{Additional test objects}
 }
 \value{
-Returns a test object that contains all the information in the  
+Returns a test object that contains all the information in the
 separate test objects supplied.
 }
 \description{

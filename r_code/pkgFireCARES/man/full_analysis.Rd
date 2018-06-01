@@ -4,8 +4,9 @@
 \alias{full_analysis}
 \title{Runs the full analysis of a set of models.}
 \usage{
-full_analysis(conn = NULL, models.run = NULL, bypass.models = FALSE,
-  do.predictions = TRUE, roll.up.2.dept = TRUE, object.list = NULL)
+full_analysis(conn = NULL, refresh.data = FALSE, models.run = NULL,
+  bypass.models = FALSE, do.predictions = TRUE, roll.up.2.dept = TRUE,
+  object.list = NULL)
 }
 \arguments{
 \item{conn}{A DBI Connection. This is a connection to the database containing
@@ -24,6 +25,10 @@ with the output from \code{\link{fcMacro}} for that risk level. If
 \code{bypass.models} is TRUE and this parameter is undefined, the
 function will error out. If \code{bypass.models} is FALSE, then
 this parameter is ignored.}
+
+\item{refresh.data=FALSE}{Logical. If this is TRUE, then the views on which the
+data for this analysis are based are refreshed and the data.frames
+used in this analysis are requeried.}
 
 \item{bypass.models=FALSE}{Logical. If it is TRUE, then no models are estimated. If not,
 then the models listed in 'models.run' above are estimated first.

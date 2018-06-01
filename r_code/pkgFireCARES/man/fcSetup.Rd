@@ -9,7 +9,7 @@ fcSetup(dta, seed = 953016876)
 \arguments{
 \item{dta}{data.frame. The data set that needs to be condition for use.}
 
-\item{seed}{Intger. A random seed used to ensure consistent results 
+\item{seed}{Intger. A random seed used to ensure consistent results
 for the partitioning of the data set into training and test sets.}
 }
 \value{
@@ -20,10 +20,10 @@ Condition a data set for use in model estimation
 }
 \details{
 This takes the 'low.risk.fires', 'med.risk.fires' and 'high.risk.fires'
-data.frames as pulled from the database and makes the modification needed 
+data.frames as pulled from the database and makes the modification needed
 to use them for analysis.
 
-It also does much of the pre-processing on the 'lr_mr_pred' and 'hr_pred' 
+It also does much of the pre-processing on the 'lr_mr_pred' and 'hr_pred'
 data frames as well.
 
 This function carries out the following tasks:

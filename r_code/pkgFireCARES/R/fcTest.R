@@ -3,10 +3,10 @@
 #'
 #' Compute out-of-sample RMS Errors for model output
 #'
-#' @param input  Control object. The input control object used by \code{\link{fcRun}} to 
+#' @param input  Control object. The input control object used by \code{\link{fcRun}} to
 #'               generate the output.
 #' @param output Model Output. The model output produced by \code{\link{fcRun}}.
-#' @param subset The subset of the data over which to estimate RMS Errors. 
+#' @param subset The subset of the data over which to estimate RMS Errors.
 #'               I include this because in some cases the test subset has been different from
 #'               the training subset in non-random ways.
 #'
@@ -15,22 +15,22 @@
 #' This function takes output from the \code{\link{fcRun}} function and calculates the
 #' out-of-sample Root-Mean-Square Error values for each model in the output
 #' object.
-#' 
+#'
 #' @return
 #' This returns a list with the following members:
 #'
 #' \describe{
 #'   \item{lhs}{Name of the left-hand side variable.}
-#'   \item{subset}{The subset to which the results are applied.} 
-#'   \item{se}{A named vector with the root-mean-square errors on the 
+#'   \item{subset}{The subset to which the results are applied.}
+#'   \item{se}{A named vector with the root-mean-square errors on the
 #'             out-of-sample data for each model in the control object.}
 #'   \item{results}{A data frame with the row-by-row results.}
 #' }
 #'
-fcTest <- function(input, output, subset=NULL) 
+fcTest <- function(input, output, subset=NULL)
 {
 #   Test for errors:
-#   Test to see if the 'data' and dependent variables are all identical. 
+#   Test to see if the 'data' and dependent variables are all identical.
     x <- sapply(input$models, function(x) as.character(x$inputs$data))
     dta <- x[1]
     if(! all(dta == x)) stop("data are not all identical. Try breaking up the input and output files.")
@@ -45,8 +45,8 @@ fcTest <- function(input, output, subset=NULL)
         x <- sapply(input$models, function(x) as.character(x$inputs$subset))
         if(! all(x[1] == x)) simpleWarning("The subsets are not all identical. Using the first. Try specifying the subset you want.")
         rm(x)
-        subset <- input$models[[1]]$inputs$subset     
-    } 
+        subset <- input$models[[1]]$inputs$subset
+    }
 
 #   this allows me to extend a pre-existing test output object. I never use this option.
     if(is.list(subset))
@@ -61,7 +61,7 @@ fcTest <- function(input, output, subset=NULL)
     new.data <- do.call("subset", list(x=get(dta), subset=substitute(a & set == "test", list(a=subset))))
 
     if(! exists("old.res")) {
-        results <- new.data[, intersect(c("year", "geoid", "state", "region", "fd_id", "fd_size", "parcel_id"), names(new.data))]
+        results <- new.data[, intersect(c("year", "geoid", "state", "region", "fd_id", "fc_dept_id", "fd_size", "parcel_id"), names(new.data))]
         results$dept.new <- as.character(NA)
 # y contains the target variable. This will be a problem when dealing with the
 # fire size models, because there we work with probabilities, and the names
@@ -75,7 +75,7 @@ fcTest <- function(input, output, subset=NULL)
                 if(     ncol(yy) == 1) yy <- as.vector(yy)
 				else if(ncol(yy) == 2) yy <- yy[, 1] / (yy[, 1] + yy[, 2])
 				else stop("The specified y variable returns 3 or more columns and I don't know what to do with that.")
-			} 
+			}
             results[[y]] <- yy
         }
     }
@@ -107,7 +107,7 @@ fcTest <- function(input, output, subset=NULL)
         for(i in names(input$runs)){
 #   x is a logical vector showing the subset of new.data that this run applies to.
             x <- eval(input$runs[[i]], envir=new.data)
-#   In some cases that subset is empty. Plus sometimes 'run' produces 
+#   In some cases that subset is empty. Plus sometimes 'run' produces
 #   a NULL model--typically when the run errors out.
 #   Skip those cases.
             if(any(x) & ! is.null(output[[k]][[i]]$model)){
@@ -122,20 +122,20 @@ fcTest <- function(input, output, subset=NULL)
                     results$dept.new[x & ! x1] <- paste(results$dept.new[x & ! x1], k, sep=";")
                 } else if(input$models[[k]]$fn["library"] == "glmnet") {
 #   LASSO / RIDGE
-#     The input format for glmnet is different, so I have to account for that. 
+#     The input format for glmnet is different, so I have to account for that.
 #     There are two different solutions to glmnet. This is designed to return both.
                     new.x <- model.matrix(input$models[[k]]$inputs$formula, new.data[x,], na.action=na.pass)
                     if("offset" %in% names(input$models[[k]]$inputs)) {
                         off <- eval(input$models[[k]]$inputs$offset, new.data[x,])
-                        results[[new.vars[1]]][x] <- predict(output[[k]][[i]]$model, newx=new.x, type="response", s="lambda.min", offset=off)
-                        results[[new.vars[2]]][x] <- predict(output[[k]][[i]]$model, newx=new.x, type="response", s="lambda.1se", offset=off)
+                        results[[new.vars[1]]][x] <- predict(output[[k]][[i]]$model, newx=new.x, type="response", s="lambda.min", newoffset=off, offset=off)
+                        results[[new.vars[2]]][x] <- predict(output[[k]][[i]]$model, newx=new.x, type="response", s="lambda.1se", newoffset=off, offset=off)
                     } else {
                         results[[new.vars[1]]][x] <- predict(output[[k]][[i]]$model, newx=new.x, type="response", s="lambda.min")
                         results[[new.vars[2]]][x] <- predict(output[[k]][[i]]$model, newx=new.x, type="response", s="lambda.1se")
                     }
                 } else if(input$models[[k]]$fn["library"] == "ranger"){
 #   Ranger (Random Forest implementation)
-#     Right now, the only special item here is verbose=FALSE, and the name of the newdata set. 
+#     Right now, the only special item here is verbose=FALSE, and the name of the newdata set.
 #     It also returns a structure, and I just want the prediction
                     results[[new.vars]][x] <- predict(output[[k]][[i]]$model,    data=new.data[x,], verbose=FALSE)$predictions
                 } else {
@@ -162,16 +162,16 @@ fcTest <- function(input, output, subset=NULL)
 
 
 
-#' Merge multiple \code{\link{fcTest}} objects 
+#' Merge multiple \code{\link{fcTest}} objects
 #'
 #' Merges multiple \code{\link{fcTest}} objects
 #'
 #' @param t1 test object.
 #' @param ... Additional test objects
 #'
-#' @return Returns a test object that contains all the information in the  
+#' @return Returns a test object that contains all the information in the
 #' separate test objects supplied.
-#' 
+#'
 #' @export
 #' @examples
 #' \dontrun{
@@ -200,7 +200,7 @@ c_test <- function(t1, ...)
 # This section does the actual merging of the objects.
     for(i in 2:length(x))
     {
-        if(! identical(out$results[,c(1:6,8)], x[[i]]$results[,c(1:6,8)])) 
+        if(! identical(out$results[,c(1:6,8)], x[[i]]$results[,c(1:6,8)]))
             stop(paste("The results frame for test object", i, "is not identical in relevant to the first test object"))
         out$results <- cbind(out$results, x[[i]]$results[, 9:ncol(x[[i]]$results)])
         out$se <- c(out$se, x[[i]]$se)
@@ -227,10 +227,10 @@ c_test <- function(t1, ...)
 #' @details
 #' This takes an output object from the \code{\link{fcTest}} function and computes
 #' the Naive predictor. The Naive predictor says that the best prediction
-#' for a tract-year is the number of outcomes (fires, injuries, etc.) 
-#' that occurred for that tract the previous year. It is undefined 
+#' for a tract-year is the number of outcomes (fires, injuries, etc.)
+#' that occurred for that tract the previous year. It is undefined
 #' for the first year in the data set.
-#' 
+#'
 naive <- function(test)
 {
 # First make check to see if test is actually an output of the test function.

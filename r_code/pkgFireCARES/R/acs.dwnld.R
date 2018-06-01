@@ -5,9 +5,9 @@
 #'
 #' @param conn   DBI Connection. The connection to the database where the data 
 #' will be uploaded.
+#' @param year   Integer. The year for which to download ACS data
 #' @param cols   Character vector. Vector of column names (from the ACS) 
 #' reflecting what ACS columns to download. [optional]
-#' @param year   Integer. The year for which to download ACS data
 #' @param states Character vector. This allows me to specify a subset of states. 
 #' If it is not specified, all nationwide data is downloaded. [optional]
 #' 
@@ -51,6 +51,8 @@ acs.dwnld <- function(conn, year, cols=NULL, states=NULL)
               "B02001_008", "B02001_009", "B02001_010", 
 
               "B03003_001", "B03003_002", "B03003_003", 
+			  
+			  "B11005_002",
 
               "B12001_001", "B12001_002", "B12001_003", "B12001_004", "B12001_005", "B12001_006", "B12001_007", 
               "B12001_008", "B12001_009", "B12001_010", "B12001_011", "B12001_012", "B12001_013", "B12001_014", 
