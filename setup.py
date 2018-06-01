@@ -66,7 +66,7 @@ setup(
         'matplotlib==1.4.3',
         'numpy==1.10.4',
         'pandas==0.16.0',
-        'psycopg2==2.6',
+        'psycopg2==2.7',
         'click==4.0',
         'pytest==2.7.0',
         'pytest-cov==2.5.1',
