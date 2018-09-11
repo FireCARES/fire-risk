@@ -42,7 +42,7 @@
 #'                    function will error out. If \code{bypass.models} is FALSE, then
 #'                    this parameter is ignored.
 #'
-#' @param risk.results=FALSE Logical. If TRUE, the \code{risk.results} section of the
+#' @param incl.detail=FALSE Logical. If TRUE, the \code{risk.results} section of the
 #'                    output (described below) is included. If FALSE then the \code{risk.results}
 #'                    section is not returned.
 #'
@@ -117,7 +117,8 @@ full_analysis <- function(conn=NULL,
                           bypass.models=FALSE,
                           do.predictions=TRUE,
                           roll.up.2.dept=TRUE,
-                          object.list=NULL){
+                          object.list=NULL,
+                          incl.detail=FALSE){
 #
   gc()
   library(RPostgreSQL)
@@ -179,7 +180,7 @@ full_analysis <- function(conn=NULL,
     src.name <- src.names[i]
     if(bypass.models){
 # If bypass.models is defined, then we need to get the relevant 'objects' data frame
-# If it does not exist in the object.list list then skip to the next risk level.
+# If it does not exist in object.list then skip to the next risk level.
       if(i %in% names(object.list)){
         objects <- object.list[[i]]
       } else {
@@ -289,7 +290,7 @@ full_analysis <- function(conn=NULL,
               object.list=object.list)
   if(do.predictions){
     out[["prediction"]] <- predictions
-    out[["risk.results"]] <- risk.results
+    if(incl.detail) out[["risk.results"]] <- risk.results
   }
   out
 }
