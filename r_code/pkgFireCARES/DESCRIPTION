@@ -9,7 +9,8 @@ Imports: acs,
          glmnet,
          ranger,
          RPostgreSQL,
-         utils
+         utils,
+         magrittr
 Suggests: doParallel
 License: unlimited
 Encoding: UTF-8

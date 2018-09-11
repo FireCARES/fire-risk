@@ -42,6 +42,10 @@
 #'                    function will error out. If \code{bypass.models} is FALSE, then
 #'                    this parameter is ignored.
 #'
+#' @param risk.results=FALSE Logical. If TRUE, the \code{risk.results} section of the
+#'                    output (described below) is included. If FALSE then the \code{risk.results}
+#'                    section is not returned.
+#'
 #' @details
 #' The \code{models.run} parameter can have one of two formats, a list format or a data
 #' frame format. The list format is preferred. The data frame format has two columns:

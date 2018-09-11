@@ -28,12 +28,11 @@ that uses them.
 The main purpose of this routine is to update the \code{nist.county_clusters} table
 in the FireCARES database. It does the following tasks.
 
-* Load needed data from the FireCARES database.
-
-* Filter out the offshore territories and any columns with
+\itemize{
+  \item Load needed data from the FireCARES database.
+  \item Filter out the offshore territories and any columns with
   too few records to be effectively usable.
-
-* Cluster the data using the cluster package
-
-* Upload the county clustering results back to FireCARES.
+  \item Cluster the data using the cluster package
+  \item Upload the county clustering results back to FireCARES.
+}
 }

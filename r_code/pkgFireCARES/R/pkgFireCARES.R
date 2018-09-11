@@ -140,8 +140,13 @@
 #' already on the server. Those tables will need to be appended to the existing
 #' ACS tables already on the server.
 #'
+#' @section DEPENDS:
+#' magrittr
+#'
+#' @importFrom magrittr %>% %$%
+#'
 #' @section IMPORTS:
-#' acs,boot,glmnet,ranger,RPostgreSQL,utils,magrittr,cluster
+#' acs,boot,glmnet,ranger,RPostgreSQL,utils,cluster
 #'
 #' @section SUGGESTS:
 #' doParallel
