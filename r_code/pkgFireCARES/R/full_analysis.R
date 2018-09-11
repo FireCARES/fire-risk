@@ -11,8 +11,9 @@
 #'             the data and model definitions. If none is entered, default connection
 #'             information is obtained from the operating system environment.
 #'
-#' @param refresh.data=FALSE Logical. If this is TRUE, then the views on which the
-#'                   data for this analysis are based are refreshed and the data.frames
+#' @param refresh.data=FALSE Logical. [This feature has not been implemented yet]
+#'                   If this is TRUE, then the views on which the data for this
+#'                   analysis are based are refreshed and the data.frames
 #'                   used in this analysis are requeried.
 #'
 #' @param models.run Either a list or a data frame. This determines what models
@@ -163,7 +164,8 @@ full_analysis <- function(conn=NULL,
     models.run <- models.run0
     rm(models.run0)
   }
-  if(refresh.data) refresh_views(conn)
+  if(refresh.data) warning("The 'refresh.data' feature has not been implemented yet.")
+# if(refresh.data) refresh_views(conn)
 #
 # Here we begin the actual analysis
 #

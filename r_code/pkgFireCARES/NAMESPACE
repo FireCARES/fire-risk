@@ -2,6 +2,7 @@
 
 export(acs.dwnld)
 export(c_test)
+export(fcCluster)
 export(fcEstimate)
 export(fcMacro)
 export(fcRun)

@@ -10,10 +10,14 @@
 #'  \code{\link{full_analysis}}: Runs through complete analysis (depending
 #'  on the parameters set).
 #'
-#'  \code{\link{refresh_views}}: Since the underlying data used to create
-#'  the data sets for this analysis change, and the materialized views this
-#'  analysis uses do not refresh automatically, this makes sure those views
-#'  are current before continuing with the analysis.
+#'  \code{\link{refresh_views}}: [This feature has not been implemented yet]
+#'  Since the underlying data used to create the data sets for this analysis
+#'  change, and the materialized views this analysis uses do not refresh
+#'  automatically, this makes sure those views are current before continuing
+#'  with the analysis.
+#'
+#'  \code{\link{fcCluster}}: Builds the cluster assignments for US Counties.
+#'  So far, this is used exclusively for EMS analysis.
 #'
 #'  \code{\link{fcSetup}}: Takes data file (either for model estimation or
 #' prediction) and prepare it for use.
@@ -83,8 +87,13 @@
 #' be followed in using this package. The function \code{\link{full_analysis}}
 #' automates this process.
 #'
+#' \emph{Build county clusters} This is typically done with a call
+#' to \code{\link{fcCluster}} and (so far) is only relevant to EMS risk.
+#' Since the underlying data used to build county clusters only changes rarely,
+#' it should only have to be done once every year or two.
+#'
 #' \emph{Refresh the views in the database.} This is typically done with a call
-#' to \code{\link{refresh_views}}.
+#' to \code{\link{refresh_views}} [which is not functional yet!!!!].
 #'
 #' \emph{Build the definitions of the models to be estimated.} That will
 #' typically be done by a call to \code{\link{mass.npt}}, although it could be
@@ -132,7 +141,7 @@
 #' ACS tables already on the server.
 #'
 #' @section IMPORTS:
-#' acs,boot,glmnet,ranger,RPostgreSQL,utils
+#' acs,boot,glmnet,ranger,RPostgreSQL,utils,magrittr,cluster
 #'
 #' @section SUGGESTS:
 #' doParallel
@@ -250,6 +259,9 @@
 ##
 ## Consider at some point using the package glmnetUtils for glmnet. That may
 ##   considerably simplify the use of glmnet routines.
+##
+## Consider replacing some of the loops (and in particular the boot routines)
+##   with foreach loops.
 ##
 ## Can I use the functionality in fcEstimate to replace the same functionality
 ## in fcTest??? I can't replace the entire function, but I may be able to replace

@@ -26,8 +26,9 @@ with the output from \code{\link{fcMacro}} for that risk level. If
 function will error out. If \code{bypass.models} is FALSE, then
 this parameter is ignored.}
 
-\item{refresh.data=FALSE}{Logical. If this is TRUE, then the views on which the
-data for this analysis are based are refreshed and the data.frames
+\item{refresh.data=FALSE}{Logical. [This feature has not been implemented yet]
+If this is TRUE, then the views on which the data for this
+analysis are based are refreshed and the data.frames
 used in this analysis are requeried.}
 
 \item{bypass.models=FALSE}{Logical. If it is TRUE, then no models are estimated. If not,
