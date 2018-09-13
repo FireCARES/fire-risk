@@ -10,6 +10,7 @@ Imports: acs,
          ranger,
          RPostgreSQL,
          utils,
+         cluster,
          magrittr
 Suggests: doParallel
 License: unlimited

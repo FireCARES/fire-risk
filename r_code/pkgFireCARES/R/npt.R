@@ -105,7 +105,7 @@ mass.npt <- function(conn, pattern=NULL, list=NULL, relocate=NULL)
 #'  the computer.
 #'
 #' Note that this function does not check for the validity of the input to
-#' the \code{run} parameter. That allows me to add additionaltypes of runs if needed
+#' the \code{run} parameter. That allows me to add additional types of runs if needed
 #' without rewriting the function. On the other hand, that means invalid
 #' inputs are caught only if the queries fail.
 #'
@@ -117,7 +117,7 @@ mass.npt <- function(conn, pattern=NULL, list=NULL, relocate=NULL)
 #'   npt(conn, y="d", mdls=c("", ""), run="long")
 #' }
 #'
-npt <- function(conn, group=NULL, risk=NULL, y=NULL, mdls=NULL, run="short")
+npt <- function(conn, group=NULL, risk=NULL, y=NULL, mdls=NULL, run="S")
 {
 # Initially, we check to make sure the inputs make sense.
     if(is.null(group)){
@@ -150,6 +150,7 @@ npt <- function(conn, group=NULL, risk=NULL, y=NULL, mdls=NULL, run="short")
 # Note that this has changed, and the format of the output file has changed with it.
 # As a result, some earlier control objects will no longer be compatible.
     r0 <- dbGetQuery(conn, paste0("select * from controls.runs where grp = '", run, "' order by tier1, tier2"))
+    if(nrow(r0) == 0) stop(paste0("Input parametr run='", run, "' to the 'npt' function is invalid!"))
     r <- list()
     r0$tier.names <- with(r0, ifelse(is.na(tier2), tier1, paste(tier1, tier2, sep=".")))
     for(i in 1:nrow(r0)) {

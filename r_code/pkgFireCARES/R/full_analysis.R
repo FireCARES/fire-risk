@@ -22,7 +22,7 @@
 #'                   Note that multiple model objects per risk level does not present
 #'                   a problem.
 #'
-#' @param merge     Either a vector or a list 
+#' @param merge     Either a vector or a list
 #'
 #' @param bypass.models=FALSE Logical. If it is TRUE, then no models are estimated. If not,
 #'                      then the models listed in 'models.run' above are estimated first.
@@ -65,28 +65,28 @@
 #' hr            \tab hr.final
 #' }
 #'
-#' The list format contains a named entry for each risk level to be run. Each 
+#' The list format contains a named entry for each risk level to be run. Each
 #' entry contains a character vector listing the \code{lst} values from the
 #' \code{controls} database for the model sets to be run for that risk level.
 #' The default value of \code{models.run} (in list format) is listed below.
 #'
 #' \code{models.run <- list(lr=c("npt.final", "npt.final.L"), mr=c("mr.final"), hr=c("hr.final"))}
 #'
-#' The \code{merge} entry is if you want to merge multiple models into a 
-#' single model. It can either be a vector or a list of vectors. If it is a 
-#' vector it is as long (i.e., has the same number of census tracts) as the 
-#' \code{pred} data set it applies to. Each entry 
+#' The \code{merge} entry is if you want to merge multiple models into a
+#' single model. It can either be a vector or a list of vectors. If it is a
+#' vector it is as long (i.e., has the same number of census tracts) as the
+#' \code{pred} data set it applies to. Each entry
 #' in the vector should refer to a specific prediction column in the preliminary
-#' output. See \code{\link{fcMerge}} for more details on format. If the 
-#' \code{merge} entry is a list, then each entry in the list is treated as 
+#' output. See \code{\link{fcMerge}} for more details on format. If the
+#' \code{merge} entry is a list, then each entry in the list is treated as
 #' as separate merger and must have the appropriate format.
-#' 
-#' Each list entry can be (read 'should be') named. If it is named, then the 
+#'
+#' Each list entry can be (read 'should be') named. If it is named, then the
 #' new column in the predictions output will have the name given the list entry.
-#' For that reason, the list format is preferred, even if only one merger is 
+#' For that reason, the list format is preferred, even if only one merger is
 #' done.
-#' 
-#' The \code{merge}  entry is only processed if \code{do.predictions} is 
+#'
+#' The \code{merge}  entry is only processed if \code{do.predictions} is
 #' \code{TRUE}.
 #'
 #' The \code{object.list} list object has an entry for each risk level run. That
@@ -144,8 +144,8 @@ full_analysis <- function(conn=NULL,
   src.names <- c( lr="low.risk.fires",
                   mr="med.risk.fires",
                   hr="high.risk.fires",
-                  ems500="",
-                  emscty="")
+                  ems500="ems.500",
+                  emscty="ems.cnty")
   src.tabls <- c( lr="select * from nist.low_risk_fires",
                   mr="select * from nist.med_risk_fires",
                   hr="select * from nist.high_risk_fires",
@@ -154,13 +154,15 @@ full_analysis <- function(conn=NULL,
   est.names <- c( lr="lr.mr.pred",
                   mr="lr.mr.pred",
                   hr="hr.pred",
-                  ems500="",
-                  emscty="")
+                  ems500="ems.pred.5",
+                  emscty="ems.pred.c")
   est.tabls <- c( lr="select * from nist.lr_mr_pred",
                   mr="select * from nist.lr_mr_pred",
                   hr="select * from nist.hr_pred",
-                  ems500="",
-                  emscty="")
+                  ems500="select * from nist.ems_table_500
+                          where year = (select max(year) from nist.ems_table_500)",
+                  emscty="select * from nist.ems_table_cnty
+                          where year = (select max(year) from nist.ems_table_cnty)")
   old.ls <- c(ls(pos=globalenv()), "rmse.sum")
 # Handle default values of inputs and check for validity
   if(is.null(conn)){
@@ -311,11 +313,11 @@ full_analysis <- function(conn=NULL,
   }
 
 # Now deal with the "merge" option.
-# We wait till all the predictions are complete before running 
-# the merger operation(s) for a couple of reasons. First, this 
+# We wait till all the predictions are complete before running
+# the merger operation(s) for a couple of reasons. First, this
 # ensures that the intermediate results will be returned (if requested).
 # Second, this allows us to merge across merge groups, and in particular
-# across the ems500 and emscty groups, which is the entire purpose of 
+# across the ems500 and emscty groups, which is the entire purpose of
 # this option
 if(do.predictions & exists("merge")){
   if(! is.list(merge)){

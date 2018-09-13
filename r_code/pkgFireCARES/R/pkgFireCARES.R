@@ -272,33 +272,6 @@
 ## in fcTest??? I can't replace the entire function, but I may be able to replace
 ## the complicated part: the estimation of the out-of-sample values.
 ##
-##  Functions included are:
-##    fcSetup:   Takes data file (either for model estimation or prediction)
-##               and prepare it for use.
-##    npt:       Builds a control object from the specified templates
-##               in the database.
-##    mass.npt:  Builds a collection of control objects. This function
-##               calls npt to do most of the work.
-##    fcRun:     Uses the control object to run a set of models.
-##    fcTest:    Calculates the out-of-sample Root-Mean-Square error
-##               on the results for the models in the supplied test object.
-##               This function works on output from 'run'
-##    fcMacro:   For a supplied set of control objects, sequentially 'runs'
-##               them, runs 'test' on them, summarized the 'test' results
-##               in a single data.frame, and saves the results to disk.
-##    naive:     Takes a 'test' output and computes the naive estimator
-##               and the RMS Error for the naive estimator for that
-##               test object.
-##    fcEstimate:Takes output from the 'run' routine and new data and
-##               computes predictions by tract or (for high-risk fires)
-##               Assessors Parcel.
-##    lasso:     Helper function for LASSO and ridge regression models.
-##    ranger:    Helper function for Random Forest models (using the
-##               ranger package).
-##    c_test:    Combines two test objects.
-##    acs.dwnld: Downloads new ACS data from Census for import to the
-##               database. This should considerably simplify the process
-##               of keeping census data up to date. Note that it requires
-##               a census API key installed (see the acs package documentation).
-##
+## Check dependencies and imports and get them properly arranged.
+
 "_PACKAGE"
