@@ -22,6 +22,8 @@
 #'                   Note that multiple model objects per risk level does not present
 #'                   a problem.
 #'
+#' @param merge     Either a vector or a list 
+#'
 #' @param bypass.models=FALSE Logical. If it is TRUE, then no models are estimated. If not,
 #'                      then the models listed in 'models.run' above are estimated first.
 #'                      Note that if 'bypass.models' is TRUE, then the 'objects'
@@ -51,7 +53,7 @@
 #' frame format. The list format is preferred. The data frame format has two columns:
 #' \code{risk} and \code{lst}. Both columns have character format. Each row represents
 #' a model set to be run. The \code{risk} column specfies the risk level associated with
-#' that model set (and can only be one of 'lr', 'mr', or 'hr'). The \code{lst} column
+#' that model set (and can only be one of 'lr', 'mr', 'hr', 'ems500', and 'emscty'). The \code{lst} column
 #' is the \code{lst} value from the \code{controls} database for the model set to be
 #' run. The default value of \code{models.run} (in data.frame format) is listed below.
 #'
@@ -63,12 +65,29 @@
 #' hr            \tab hr.final
 #' }
 #'
-#' The list format contains a named entry for each risk level to be run. The
+#' The list format contains a named entry for each risk level to be run. Each 
 #' entry contains a character vector listing the \code{lst} values from the
 #' \code{controls} database for the model sets to be run for that risk level.
 #' The default value of \code{models.run} (in list format) is listed below.
 #'
 #' \code{models.run <- list(lr=c("npt.final", "npt.final.L"), mr=c("mr.final"), hr=c("hr.final"))}
+#'
+#' The \code{merge} entry is if you want to merge multiple models into a 
+#' single model. It can either be a vector or a list of vectors. If it is a 
+#' vector it is as long (i.e., has the same number of census tracts) as the 
+#' \code{pred} data set it applies to. Each entry 
+#' in the vector should refer to a specific prediction column in the preliminary
+#' output. See \code{\link{fcMerge}} for more details on format. If the 
+#' \code{merge} entry is a list, then each entry in the list is treated as 
+#' as separate merger and must have the appropriate format.
+#' 
+#' Each list entry can be (read 'should be') named. If it is named, then the 
+#' new column in the predictions output will have the name given the list entry.
+#' For that reason, the list format is preferred, even if only one merger is 
+#' done.
+#' 
+#' The \code{merge}  entry is only processed if \code{do.predictions} is 
+#' \code{TRUE}.
 #'
 #' The \code{object.list} list object has an entry for each risk level run. That
 #' entry is a data frame with information output from \code{\link{fcMacro}}. The
@@ -114,6 +133,7 @@
 full_analysis <- function(conn=NULL,
                           refresh.data=FALSE,
                           models.run=NULL,
+                          merge=NULL,
                           bypass.models=FALSE,
                           do.predictions=TRUE,
                           roll.up.2.dept=TRUE,
@@ -121,23 +141,30 @@ full_analysis <- function(conn=NULL,
                           incl.detail=FALSE){
 #
   gc()
-  library(RPostgreSQL)
   src.names <- c( lr="low.risk.fires",
                   mr="med.risk.fires",
-                  hr="high.risk.fires")
+                  hr="high.risk.fires",
+                  ems500="",
+                  emscty="")
   src.tabls <- c( lr="select * from nist.low_risk_fires",
                   mr="select * from nist.med_risk_fires",
-                  hr="select * from nist.high_risk_fires")
+                  hr="select * from nist.high_risk_fires",
+                  ems500="select * from nist.ems_table_500",
+                  emscty="select * from nist.ems_table_cnty")
   est.names <- c( lr="lr.mr.pred",
                   mr="lr.mr.pred",
-                  hr="hr.pred")
+                  hr="hr.pred",
+                  ems500="",
+                  emscty="")
   est.tabls <- c( lr="select * from nist.lr_mr_pred",
                   mr="select * from nist.lr_mr_pred",
-                  hr="select * from nist.hr_pred")
+                  hr="select * from nist.hr_pred",
+                  ems500="",
+                  emscty="")
   old.ls <- c(ls(pos=globalenv()), "rmse.sum")
 # Handle default values of inputs and check for validity
   if(is.null(conn)){
-    conn <- dbConnect( "PostgreSQL",
+    conn <- RPostgreSQL::dbConnect( "PostgreSQL",
                        host    =Sys.getenv("NFIRS_DATABASE_HOST"),
                        port    =Sys.getenv("NFIRS_DATABASE_PORT"),
                        dbname  =Sys.getenv("NFIRS_DATABASE_NAME"),
@@ -150,10 +177,17 @@ full_analysis <- function(conn=NULL,
   if(is.null(models.run)){
     models.run <- list(lr=c("npt.final", "npt.final.L"),
                        mr=c("mr.final"),
-                       hr=c("hr.final"))
+                       hr=c("hr.final"),
+                       ems500=c("unknown"),
+                       emscty=c("unknown"))
+# If models.run is NULL, then assume the user wants the default
+# values for 'merge' as well.
+    merge <- list(
+      ems=RPostgreSQL(conn, "select * from nist.guessing")$guessing
+    )
   }
-  if(length(setdiff(unique(models.run$risk), c("lr", "mr", "hr"))) > 0){
-    stop( "The only risk classes allowed in models.run are 'lr', 'mr', and 'hr'!")
+  if(length(setdiff(unique(models.run$risk), c("lr", "mr", "hr", "ems500", "emscty"))) > 0){
+    stop( "The only classes allowed in 'models.run' are 'lr', 'mr', 'hr', 'ems500', and 'emscty'!")
   }
   roll.up.2.dept <- roll.up.2.dept && do.predictions
   if(bypass.models & is.null(object.list)){
@@ -189,7 +223,7 @@ full_analysis <- function(conn=NULL,
     } else {
 # Download the data needed for the model estimation
       if(! exists(src.name) | refresh.data){
-        assign(src.name, dbGetQuery(conn, src.tabls[i]), pos=globalenv())
+        assign(src.name, RPostgreSQL::dbGetQuery(conn, src.tabls[i]), pos=globalenv())
         assign(src.name, fcSetup(get(src.name)), pos=globalenv())
       }
 # Create the control objects for the models...
@@ -202,7 +236,7 @@ full_analysis <- function(conn=NULL,
     if(do.predictions){
       est.name <- est.names[i]
       if(! exists(est.name) | refresh.data){
-        assign(est.name, dbGetQuery(conn, est.tabls[i]))
+        assign(est.name, RPostgreSQL::dbGetQuery(conn, est.tabls[i]))
         assign(est.name, fcSetup(get(est.name)))
       }
 # Basically what I am going to do here is call fcEstimate. Note that
@@ -275,8 +309,32 @@ full_analysis <- function(conn=NULL,
       }
     }
   }
+
+# Now deal with the "merge" option.
+# We wait till all the predictions are complete before running 
+# the merger operation(s) for a couple of reasons. First, this 
+# ensures that the intermediate results will be returned (if requested).
+# Second, this allows us to merge across merge groups, and in particular
+# across the ems500 and emscty groups, which is the entire purpose of 
+# this option
+if(do.predictions & exists("merge")){
+  if(! is.list(merge)){
+    merge <- list(merge)
+  }
+  cols <- NULL
+  new.preds <- list()
+  for(i in 1:length(merge)){
+    tmp <- fcMerge(predictions, merge[[i]])
+    cols <- union(cols, tmp$cols)
+    new.preds[[names(merge)[[i]]]] <- tmp$result
+  }
+  predictions <- predictions[,-cols]
+  predictions <- cbind(predictions, as.data.frame(new.preds))
+  rm(tmp, new.preds, cols)
+}
+
 # If requested, roll the data up to the department level.
-  if(roll.up.2.dept){
+if(roll.up.2.dept){
     fire.col <- grep("fire", names(predictions), value=TRUE)
     sz2.col  <- grep("sz2",  names(predictions), value=TRUE)
     sz3.col  <- grep("sz3",  names(predictions), value=TRUE)
