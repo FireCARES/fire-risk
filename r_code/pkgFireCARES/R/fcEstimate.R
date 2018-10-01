@@ -33,7 +33,7 @@ fcEstimate <- function(input, output, new.data, subset=TRUE)
     nulls <- !((1:nrow(new.data)) %in% nulls)
 
 #   Initialize the results table.
-    results <- grep("geoid|tr10_fid|fd_id|parcel_id|year", names(new.data))
+    results <- grep("geoid|tr10_fid|fd_id|fc_dept_id|parcel_id|year$", names(new.data))
     results <- new.data[,results]
 
     if(length(input) != length(output)) stop("The 'input' vector must be the same length as the 'output' vector.")

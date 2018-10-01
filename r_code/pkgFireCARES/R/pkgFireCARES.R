@@ -47,6 +47,9 @@
 #'  and new data and computes predictions by tract or (for high-risk fires)
 #'  Assessors Parcel.
 #'
+#'  \code{\link{fcMerge}}: Takes two or more separate predictions (from \code{\link{fcEstimate}})
+#'  and combines them according to a rule specified. Primarily used with EMS.
+#'
 #'  \code{\link{rollUp2Dept}}: Takes output from the \code{\link{fcEstimate}} routine
 #'  sums over census tracts to the department level.
 #'
@@ -126,6 +129,10 @@
 #' compute the predictions based on the selected models. That occurs through
 #' a call to \code{\link{fcEstimate}}.
 #'
+#' \emph{Optionally combine separate predictions into one.} In some cases
+#' separate predictions apply to different portions of the prediction set.
+#' A call to \code{\link{fcMerge}} will combine them.
+#'
 #' \emph{Optionally, roll the census tract predictions up to the department level.}
 #' A call to \code{\link{rollUp2Dept}} completes this task.
 #'
@@ -140,13 +147,10 @@
 #' already on the server. Those tables will need to be appended to the existing
 #' ACS tables already on the server.
 #'
-#' @section DEPENDS:
-#' magrittr
-#'
 #' @importFrom magrittr %>% %$%
 #'
 #' @section IMPORTS:
-#' acs,boot,glmnet,ranger,RPostgreSQL,utils,cluster
+#' acs,boot,glmnet,ranger,RPostgreSQL,utils,cluster, magrittr
 #'
 #' @section SUGGESTS:
 #' doParallel
@@ -273,5 +277,15 @@
 ## the complicated part: the estimation of the out-of-sample values.
 ##
 ## Check dependencies and imports and get them properly arranged.
-
+##
+## Add an error/message file and error-catching code for messages outside of fcMacro.
+##   Build a set of messaging routines that do several things for the entire package.
+##   1) First it would create a message file.
+##   2) Then a function would send it a message and a message type.
+##      a) If the type is 'console', it would post it to the console IF the mode is
+##         interactive. Otherwise it would be dropped.
+##      b) All other types would post to the message file.
+##      c) Are there any messages I would want posted both places???
+##   3) This messaging system MIGHT be usable outside of this package.
+##
 "_PACKAGE"

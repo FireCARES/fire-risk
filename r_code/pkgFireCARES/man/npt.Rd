@@ -4,8 +4,7 @@
 \alias{npt}
 \title{Create control objects}
 \usage{
-npt(conn, group = NULL, risk = NULL, y = NULL, mdls = NULL,
-  run = "short")
+npt(conn, group = NULL, risk = NULL, y = NULL, mdls = NULL, run = "S")
 }
 \arguments{
 \item{conn}{DBI Connection. Connects to the database containing the
@@ -30,7 +29,7 @@ included for that target variable.}
 and 'C'. The values '0' and 'S' both run a single model for all department
 sizes and regions (typically with dummies for each). The value 'L'runs separate
 models for each combination of department size and region. The value 'C' runs
-separate models for each cluster.}
+separate models for each cluster. Note that '0' as an option is deprecated.}
 }
 \value{
 control object
@@ -51,16 +50,16 @@ As written, this creates a single control object regardless of whether
  the computer.
 
 Note that this function does not check for the validity of the input to
-the \code{run} parameter. That allows me to add additionaltypes of runs if needed
+the \code{run} parameter. That allows me to add additional types of runs if needed
 without rewriting the function. On the other hand, that means invalid
 inputs are caught only if the queries fail.
 }
 \examples{
 \dontrun{
   npt(conn, "npt.base")
-  npt(conn, "npt.base", run="long")
+  npt(conn, "npt.base", run="L")
   npt(conn, y="f", mdls=c("", ""))
-  npt(conn, y="d", mdls=c("", ""), run="long")
+  npt(conn, y="d", mdls=c("", ""), run="L")
 }
 
 }

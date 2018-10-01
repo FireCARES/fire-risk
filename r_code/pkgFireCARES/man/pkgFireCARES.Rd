@@ -55,6 +55,9 @@ prediction) and prepare it for use.
  and new data and computes predictions by tract or (for high-risk fires)
  Assessors Parcel.
 
+ \code{\link{fcMerge}}: Takes two or more separate predictions (from \code{\link{fcEstimate}})
+ and combines them according to a rule specified. Primarily used with EMS.
+
  \code{\link{rollUp2Dept}}: Takes output from the \code{\link{fcEstimate}} routine
  sums over census tracts to the department level.
 
@@ -138,6 +141,10 @@ analysis. That occurs through a call to \code{\link{fcSetup}}. Finally,
 compute the predictions based on the selected models. That occurs through
 a call to \code{\link{fcEstimate}}.
 
+\emph{Optionally combine separate predictions into one.} In some cases
+separate predictions apply to different portions of the prediction set.
+A call to \code{\link{fcMerge}} will combine them.
+
 \emph{Optionally, roll the census tract predictions up to the department level.}
 A call to \code{\link{rollUp2Dept}} completes this task.
 }
@@ -155,14 +162,9 @@ already on the server. Those tables will need to be appended to the existing
 ACS tables already on the server.
 }
 
-\section{DEPENDS}{
-
-magrittr
-}
-
 \section{IMPORTS}{
 
-acs,boot,glmnet,ranger,RPostgreSQL,utils,cluster
+acs,boot,glmnet,ranger,RPostgreSQL,utils,cluster, magrittr
 }
 
 \section{SUGGESTS}{

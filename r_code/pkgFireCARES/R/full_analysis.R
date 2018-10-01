@@ -22,7 +22,8 @@
 #'                   Note that multiple model objects per risk level does not present
 #'                   a problem.
 #'
-#' @param merge     Either a vector or a list
+#' @param merg      Either a vector or a list. A value of '0' guarantees that the merg
+#'                  option will not be used.
 #'
 #' @param bypass.models=FALSE Logical. If it is TRUE, then no models are estimated. If not,
 #'                      then the models listed in 'models.run' above are estimated first.
@@ -32,6 +33,9 @@
 #' @param do.predictions=TRUE Logical. If it is TRUE, then predictions are generated from
 #'                            the models run. If not, then no predictions are generated
 #'                            from the estimated models.
+#'
+#' @param do.rmse=FALSE Logical. If TRUE, then the RMS Errors of all the models will be
+#'                      computed.
 #'
 #' @param roll.up.2.dept=TRUE  Logical. If it is TRUE, then the predictions are rolled
 #'                             up to the department level. If it is FALSE, then the
@@ -53,16 +57,18 @@
 #' frame format. The list format is preferred. The data frame format has two columns:
 #' \code{risk} and \code{lst}. Both columns have character format. Each row represents
 #' a model set to be run. The \code{risk} column specfies the risk level associated with
-#' that model set (and can only be one of 'lr', 'mr', 'hr', 'ems500', and 'emscty'). The \code{lst} column
-#' is the \code{lst} value from the \code{controls} database for the model set to be
-#' run. The default value of \code{models.run} (in data.frame format) is listed below.
+#' that model set (and can only be one of 'lr', 'mr', 'hr', 'ems500', and 'emscty').
+#' The \code{lst} column is the \code{lst} value from the \code{controls} database for the
+#' model set to be run. The default value of \code{models.run} (in data.frame format) is
+#' listed below.
 #'
 #' \tabular{cc}{
 #' \strong{risk} \tab \strong{lst}\cr
 #' lr            \tab npt.final   \cr
-#' lr            \tab npt.final.L \cr
 #' mr            \tab mr.final    \cr
-#' hr            \tab hr.final
+#' hr            \tab hr.final    \cr
+#' ems500        \tab ems.5.final \cr
+#' emscty        \tab ems.C.final
 #' }
 #'
 #' The list format contains a named entry for each risk level to be run. Each
@@ -70,23 +76,36 @@
 #' \code{controls} database for the model sets to be run for that risk level.
 #' The default value of \code{models.run} (in list format) is listed below.
 #'
-#' \code{models.run <- list(lr=c("npt.final", "npt.final.L"), mr=c("mr.final"), hr=c("hr.final"))}
+#' \code{models.run <- list(lr=c("npt.final"),
+#'                          mr=c("mr.final"),
+#'                          hr=c("hr.final"),
+#'                          ems500=c("ems.5.final"),
+#'                          emscty=c("ems.C.final"))}
 #'
-#' The \code{merge} entry is if you want to merge multiple models into a
-#' single model. It can either be a vector or a list of vectors. If it is a
-#' vector it is as long (i.e., has the same number of census tracts) as the
-#' \code{pred} data set it applies to. Each entry
-#' in the vector should refer to a specific prediction column in the preliminary
+#' The \code{merg} entry is if you want to merge multiple models into a
+#' single model. It can either be a data frame or a list of data frames. The
+#' data frame contains two columns. The first column, labeled either 'geoid' or
+#' 'tr10_fid', contains the tract/spatial identifiers used for prediction. The
+#' 'group' column should refer to a specific prediction column in the preliminary
 #' output. See \code{\link{fcMerge}} for more details on format. If the
-#' \code{merge} entry is a list, then each entry in the list is treated as
+#' \code{merg} entry is a list, then each entry in the list is treated as
 #' as separate merger and must have the appropriate format.
 #'
 #' Each list entry can be (read 'should be') named. If it is named, then the
 #' new column in the predictions output will have the name given the list entry.
+#' If only a data frame is supplied, then the default name of "merge" will be used.
 #' For that reason, the list format is preferred, even if only one merger is
 #' done.
 #'
-#' The \code{merge}  entry is only processed if \code{do.predictions} is
+#' As currently written, this will only merge numeric columns. If you want to merge
+#' non-numeric columns, the merger will have to be performed outside of this function.
+#'
+#' This returns the output data frame with the new merged column and with the old
+#' constituent columns removed. However, since the removal of the old columns is
+#' performed last, it is possible to use the same source column for multiple final
+#' merged columns.
+#'
+#' The \code{merg} entry is only processed if \code{do.predictions} is
 #' \code{TRUE}.
 #'
 #' The \code{object.list} list object has an entry for each risk level run. That
@@ -133,9 +152,10 @@
 full_analysis <- function(conn=NULL,
                           refresh.data=FALSE,
                           models.run=NULL,
-                          merge=NULL,
+                          merg=NULL,
                           bypass.models=FALSE,
                           do.predictions=TRUE,
+                          do.rmse=FALSE,
                           roll.up.2.dept=TRUE,
                           object.list=NULL,
                           incl.detail=FALSE){
@@ -159,10 +179,8 @@ full_analysis <- function(conn=NULL,
   est.tabls <- c( lr="select * from nist.lr_mr_pred",
                   mr="select * from nist.lr_mr_pred",
                   hr="select * from nist.hr_pred",
-                  ems500="select * from nist.ems_table_500
-                          where year = (select max(year) from nist.ems_table_500)",
-                  emscty="select * from nist.ems_table_cnty
-                          where year = (select max(year) from nist.ems_table_cnty)")
+                  ems500="select * from nist.ems_500_pred",
+                  emscty="select * from nist.ems_cty_pred")
   old.ls <- c(ls(pos=globalenv()), "rmse.sum")
 # Handle default values of inputs and check for validity
   if(is.null(conn)){
@@ -177,25 +195,40 @@ full_analysis <- function(conn=NULL,
 # to run and some key information this script needs to run them.
 # Check to see if it already exists. If not, create it.
   if(is.null(models.run)){
-    models.run <- list(lr=c("npt.final", "npt.final.L"),
+    models.run <- list(lr=c("npt.final"),
                        mr=c("mr.final"),
                        hr=c("hr.final"),
-                       ems500=c("unknown"),
-                       emscty=c("unknown"))
-# If models.run is NULL, then assume the user wants the default
-# values for 'merge' as well.
-    merge <- list(
-      ems=RPostgreSQL(conn, "select * from nist.guessing")$guessing
-    )
+                       ems500=c("ems.5.final"),
+                       emscty=c("ems.C.final")
+                       )
+# If models.run is NULL AND merg is NULL, then assume the user wants
+# the default values for 'merg' as well.
+    if(is.null(merg)){
+      merg <- list(
+        ems=RPostgreSQL::dbGetQuery(conn, "select * from nist.ems_groups")
+      )
+    }
   }
+  if(identical(merg, 0)) merg <- NULL
   if(length(setdiff(unique(models.run$risk), c("lr", "mr", "hr", "ems500", "emscty"))) > 0){
     stop( "The only classes allowed in 'models.run' are 'lr', 'mr', 'hr', 'ems500', and 'emscty'!")
   }
-  roll.up.2.dept <- roll.up.2.dept && do.predictions
+    roll.up.2.dept <- roll.up.2.dept && do.predictions
   if(bypass.models & is.null(object.list)){
     stop("If bypass.models is TRUE then objects.list must be defined!")
   }
-  if(! bypass.models) object.list <- list()
+
+#  msg <- as.integer(sapply(strsplit(list.files(pattern="messages[.][0-9][0-9]+[.]txt"), "[.]"), function(x) x[2]))
+#  msg <- ifelse(length(n0) == 0, 0, max(n0))
+#  msg <- paste("messages", formatC(i + n0, width=2, flag="0"), "txt", sep=".")
+#  file.create(msg)
+
+  if(! bypass.models){
+    if(! is.null(object.list)) cat("'bypass.models' is FALSE and 'object list' is defined. 'object.list' will be overwritten.\n")
+#                                   file=msg,
+#                                   append=TRUE)
+    object.list <- list()
+  }
 # if necessary, convert a models.run data.frame to a more congenial list.
   if(is.data.frame(models.run)){
     models.run0 <- list()
@@ -205,7 +238,9 @@ full_analysis <- function(conn=NULL,
     models.run <- models.run0
     rm(models.run0)
   }
-  if(refresh.data) warning("The 'refresh.data' feature has not been implemented yet.")
+  if(refresh.data) cat("The 'refresh.data' feature has not been implemented yet.\n")
+#                       file=msg,
+#                       append=TRUE)
 # if(refresh.data) refresh_views(conn)
 #
 # Here we begin the actual analysis
@@ -220,6 +255,10 @@ full_analysis <- function(conn=NULL,
       if(i %in% names(object.list)){
         objects <- object.list[[i]]
       } else {
+        cat("bypass.models=TRUE and no entry exists for model group '", i,
+            "' in the 'object.list' object. It will by skipped.\n" ,
+#            file=msg, append=TRUE,
+            sep="")
         next
 	  }
     } else {
@@ -231,8 +270,8 @@ full_analysis <- function(conn=NULL,
 # Create the control objects for the models...
       models  <- mass.npt(conn, list=models.run[[i]])
 # And estimate the models.
-      objects <- fcMacro(models)
-	  object.list[[i]] <- objects
+      objects <- fcMacro(models, do.rmse=do.rmse)
+	    object.list[[i]] <- objects
     }
 #
     if(do.predictions){
@@ -254,7 +293,7 @@ full_analysis <- function(conn=NULL,
         temp.98765 <- fcEstimate(objects$npt.name[j],
                                  objects$res.name[j],
                                  get(est.name),
-                                 subset=quote(fd_size %in% paste("size_", 3:9, sep="")))
+                                 subset=quote(fd_size %in% paste0("size_", 3:9)))
 # As written it is possible for some results to have the census tract column called
 # 'geoid' in some cases and 'tr10_fid' in others. That would cause problems merging
 # data sets.  The team wants that column called 'tr10_fid' to be consistent with
@@ -262,8 +301,13 @@ full_analysis <- function(conn=NULL,
         if( "geoid" %in% names(temp.98765)){
           names(temp.98765)[match("geoid", names(temp.98765))] <- "tr10_fid"
         }
-# Here I get a list of the names of the prediction columns.
-        dta.cols <- setdiff(names(temp.98765), c("geoid", "tr10_fid", "fd_id", "parcel_id", "year", "geoid_source"))
+# Similarly, some versions list department as 'fd_id' while other use 'fc_dept_id'.
+# This makes them consistent.
+        if( "fd_id" %in% names(temp.98765)){
+          names(temp.98765)[match("fd_id", names(temp.98765))] <- "fc_dept_id"
+        }
+        # Here I get a list of the names of the prediction columns.
+        dta.cols <- setdiff(names(temp.98765), c("geoid", "tr10_fid", "fd_id", "fc_dept_id", "parcel_id", "year", "geoid_source"))
 # Since it is highly likely that there will be multiple columns across different
 # risk classes with the same names, take steps to make the names different.
         names(temp.98765)[match(dta.cols, names(temp.98765))] <- paste(i, dta.cols, sep=".")
@@ -284,7 +328,7 @@ full_analysis <- function(conn=NULL,
                                             "hr.fires",
                                             "hr.sz2",
                                             "hr.sz3",
-                                            c("year", "tr10_fid", "fd_id"))
+                                            c("year", "tr10_fid", "fc_dept_id"))
       }
 #
 # Cleanup
@@ -298,11 +342,13 @@ full_analysis <- function(conn=NULL,
 #
 # Merge all the predictions into a single prediction data frame.
       if(exists("predictions", inherits=FALSE)){
-        predictions <- merge(predictions, risk.results[[i]], all=TRUE)
+        predictions <- merge(predictions,
+                             risk.results[[i]][,-match("year", names(risk.results[[i]]))],
+                             all=TRUE)
       } else {
-        predictions <- risk.results[[i]]
+        predictions <- risk.results[[i]][,-match("year", names(risk.results[[i]]))]
       }
-# Clean up. I want to leave the intermediate results, mainly for the high-risk data
+# I want to leave the intermediate results, mainly for the high-risk and ems data,
 # so they can be inspected. So we return risk.results[['hr']] to its former self,
 # and delete the intermediate table.
       if(i == 'hr'){
@@ -312,35 +358,43 @@ full_analysis <- function(conn=NULL,
     }
   }
 
-# Now deal with the "merge" option.
+# Now deal with the "merg" option.
 # We wait till all the predictions are complete before running
 # the merger operation(s) for a couple of reasons. First, this
 # ensures that the intermediate results will be returned (if requested).
 # Second, this allows us to merge across merge groups, and in particular
 # across the ems500 and emscty groups, which is the entire purpose of
 # this option
-if(do.predictions & exists("merge")){
-  if(! is.list(merge)){
-    merge <- list(merge)
+  if(do.predictions & ! is.null(merg)){
+    if(! is.list(merg)){
+      merg <- list(merg)
+      names(merg) <- "merge"
+    }
+    cols <- NULL
+    new.preds <- list()
+    for(i in 1:length(merg)){
+      gd <- grep("tr10_fid|geoid", names(merg[[i]]))[1]
+      if(is.na(gd)){
+        warning(paste0("Merger ", names(merg)[i], " does not have a geoid column. It will be skipped"))
+      } else {
+        tmp <- fcMerge(predictions,
+                       merg[[i]]$group[match(predictions$tr10_fid, merg[[i]][[gd]])])
+        cols <- union(cols, tmp$cols)
+        new.preds[[names(merg)[i]]] <- as.numeric(tmp$result)
+      }
+    }
+    if(! is.null(cols)){
+      predictions <- predictions[,-cols]
+      predictions <- cbind(predictions, as.data.frame(new.preds))
+    }
+    rm(tmp, new.preds, cols, gd)
   }
-  cols <- NULL
-  new.preds <- list()
-  for(i in 1:length(merge)){
-    tmp <- fcMerge(predictions, merge[[i]])
-    cols <- union(cols, tmp$cols)
-    new.preds[[names(merge)[[i]]]] <- tmp$result
-  }
-  predictions <- predictions[,-cols]
-  predictions <- cbind(predictions, as.data.frame(new.preds))
-  rm(tmp, new.preds, cols)
-}
-
 # If requested, roll the data up to the department level.
 if(roll.up.2.dept){
     fire.col <- grep("fire", names(predictions), value=TRUE)
     sz2.col  <- grep("sz2",  names(predictions), value=TRUE)
     sz3.col  <- grep("sz3",  names(predictions), value=TRUE)
-    predictions <- rollUp2Dept(predictions, fire.col, sz2.col, sz3.col, c("year", "fd_id"))
+    predictions <- rollUp2Dept(predictions, fire.col, sz2.col, sz3.col, "fc_dept_id")
   }
 # Return the results
   out <- list(models.run=models.run,
@@ -348,6 +402,7 @@ if(roll.up.2.dept){
               do.predictions=do.predictions,
               roll.up.2.dept=roll.up.2.dept,
               object.list=object.list)
+  if(! is.null(merg)) out$merg <- merg
   if(do.predictions){
     out[["prediction"]] <- predictions
     if(incl.detail) out[["risk.results"]] <- risk.results

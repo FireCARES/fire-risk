@@ -1,7 +1,7 @@
 #' Roll up census-tract predictions to the department level
 #'
-#' This function takes output from the fcEstimate function and rolls up the census-tract
-#' level predicitons that that function produces and rolls them up to the department level.
+#' This function takes output from the fcEstimate function, which is typically at the census-tract
+#' level, and rolls them up to the department level.
 #'
 #' @param predictions data frame containing predictions as output by the fcEstimate function. See details below.
 #' @param fire.col character vector containing names of the columns with fire predictions.
@@ -18,8 +18,8 @@
 #' entry in fire.col goes with the first entry in sz2.col and sz3.col. The second entry in in fire.col
 #' goes with the second entry in sz2.col and sz3.col. And so on. See the example below.
 #'
-#' This function takes output from the fcEstimate function and rolls up the census-tract
-#' level predicitons that that function produces and rolls them up to the department level.
+#' This function takes output from the fcEstimate function, which is typically at the census-tract
+#' level, and rolls them up to the department level.
 #' What makes this more complicated than a simple call to aggregate is that the sz2 and sz3
 #' columns are percentages rather than estimated counts. So, summing those columns produces
 #' nonsensical results.
@@ -69,7 +69,7 @@ rollUp2Dept <- function(predictions, fire.col, sz2.col, sz3.col, indx.cols){
     predictions[[sz3.fires[i]]] <- predictions[[sz2.fires[i]]] * predictions[[sz3.col[i]]]
   }
 # Here the data variables are summed over census tracts.
-  dta.cols <- setdiff(names(predictions), c("geoid", "tr10_fid", "fd_id", "parcel_id", "year", "geoid_source"))
+  dta.cols <- setdiff(names(predictions), c("geoid", "tr10_fid", "fd_id", "parcel_id", "year", "geoid_source", "fc_dept_id"))
   indx.lst <- list()
   for(j in indx.cols){ indx.lst[[j]] <- predictions[[j]] }
   predictions <- aggregate( predictions[, dta.cols],

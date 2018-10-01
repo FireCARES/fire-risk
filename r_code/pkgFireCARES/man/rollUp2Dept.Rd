@@ -24,8 +24,8 @@ to be rolled up.}
 A data frame with the department-level predictions.
 }
 \description{
-This function takes output from the fcEstimate function and rolls up the census-tract
-level predicitons that that function produces and rolls them up to the department level.
+This function takes output from the fcEstimate function, which is typically at the census-tract
+level, and rolls them up to the department level.
 }
 \details{
 This routine is intended to work with a data frame containing multiple estimates (think low- medium-
@@ -33,8 +33,8 @@ and high-risk estimates all contained in the same data frame). When that is the 
 entry in fire.col goes with the first entry in sz2.col and sz3.col. The second entry in in fire.col
 goes with the second entry in sz2.col and sz3.col. And so on. See the example below.
 
-This function takes output from the fcEstimate function and rolls up the census-tract
-level predicitons that that function produces and rolls them up to the department level.
+This function takes output from the fcEstimate function, which is typically at the census-tract
+level, and rolls them up to the department level.
 What makes this more complicated than a simple call to aggregate is that the sz2 and sz3
 columns are percentages rather than estimated counts. So, summing those columns produces
 nonsensical results.

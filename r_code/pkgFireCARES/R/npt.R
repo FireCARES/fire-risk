@@ -48,19 +48,19 @@ mass.npt <- function(conn, pattern=NULL, list=NULL, relocate=NULL)
     }
 #   Find the 'lst' values, and then create the input files for each of the control lists.
     if(! is.null(pattern)){
-        a <- dbGetQuery(conn, paste("select lst, runs, count(*) as n ",
+        a <- dbGetQuery(conn, paste0("select lst, runs, count(*) as n ",
 	                                "from controls.models where lst like '%", pattern, "%' ",
-                                    "group by lst, runs order by lst", sep=""))
+                                    "group by lst, runs order by lst"))
     } else {
         if(is.null(list)) stop( "At least one of 'pattern' or 'list' must be specified!")
-        a <- dbGetQuery(conn, paste("select lst, runs, count(*) as n ",
+        a <- dbGetQuery(conn, paste0("select lst, runs, count(*) as n ",
 	                                "from controls.models where lst in ('", paste(list, collapse="','"),
-                                    "') group by lst, runs order by lst", sep=""))
+                                    "') group by lst, runs order by lst"))
     }
     for(i in 1:nrow(a)) {
-        assign(a$lst[i], npt(conn, a$lst[i], run=a$runs[i]), envir=globalenv())
+        assign(paste0(a$lst[i], '.', a$runs[i]), npt(conn, group=a$lst[i], run=a$runs[i]), envir=globalenv())
     }
-	a$lst
+  paste0(a$lst, ".", a$runs)
 }
 
 
@@ -89,7 +89,7 @@ mass.npt <- function(conn, pattern=NULL, list=NULL, relocate=NULL)
 #' and 'C'. The values '0' and 'S' both run a single model for all department
 #' sizes and regions (typically with dummies for each). The value 'L'runs separate
 #' models for each combination of department size and region. The value 'C' runs
-#' separate models for each cluster.
+#' separate models for each cluster. Note that '0' as an option is deprecated.
 #'
 #' @return control object
 #'
@@ -112,9 +112,9 @@ mass.npt <- function(conn, pattern=NULL, list=NULL, relocate=NULL)
 #' @examples
 #' \dontrun{
 #'   npt(conn, "npt.base")
-#'   npt(conn, "npt.base", run="long")
+#'   npt(conn, "npt.base", run="L")
 #'   npt(conn, y="f", mdls=c("", ""))
-#'   npt(conn, y="d", mdls=c("", ""), run="long")
+#'   npt(conn, y="d", mdls=c("", ""), run="L")
 #' }
 #'
 npt <- function(conn, group=NULL, risk=NULL, y=NULL, mdls=NULL, run="S")
@@ -159,19 +159,21 @@ npt <- function(conn, group=NULL, risk=NULL, y=NULL, mdls=NULL, run="S")
 
 # Now select the input information used for the models to be built as part of this control object
     if(! is.null(group)) {
-        mdl  <- dbGetQuery(conn, paste("select * from controls.models where lst in ('", paste(group, collapse="', '"), "')", sep=""))
-        npts <- dbGetQuery(conn, paste("select * from controls.inputs where lst in ('", paste(group, collapse="', '"), "')", sep=""))
+        mdl  <- dbGetQuery(conn, paste0("select * from controls.models where lst = '", group,
+                                        "' AND runs = '", run, "'"))
+        npts <- dbGetQuery(conn, paste0("select * from controls.inputs where lst = '", group,
+                                        "' AND model in ('", paste(mdl$model, collapse="', '"), "')"))
     } else {
 	    lst.check <- 'npt'
 		if(risk != 'l') lst.check <- paste(risk, "r", sep="")
-        mdl  <- dbGetQuery(conn, paste("select * from controls.models where target='", y, "' AND ",
+        mdl  <- dbGetQuery(conn, paste0("select * from controls.models where target='", y, "' AND ",
                                          "split_part(lst, '.', 1) = '", lst.check, "' AND ",
                                          "model in ('", paste(mdls, collapse="', '"), "') AND ",
-                                         "runs in (", ifelse(run=="long", "'L'", "'S', '0'"), ")", sep=""))
+                                         "runs = '", run, "'"))
         npts <- dbGetQuery(conn, paste("select * from controls.models JOIN controls.inputs USING (lst, model) ",
-		                                 "where target='", y, "' AND split_part(lst, '.', 1) = '", lst.check, "' AND ",
-                                          "model in ('", paste(mdls, collapse="', '"), "') ",
-										 "AND runs in (", ifelse(run=="long", "'L'", "'S', '0'"), ")", sep=""))
+    		                               "where target='", y, "' AND split_part(lst, '.', 1) = '", lst.check, "' AND ",
+		                                   "model in ('", paste(mdls, collapse="', '"), "') ",
+		                                   "AND runs = '", run, "'", sep=""))
     }
 # For reasons I don't yet understand, when I run a lasso or random forest model, all subsequent glm models fail to run.
 # This section ensures that any random forest models are run last.

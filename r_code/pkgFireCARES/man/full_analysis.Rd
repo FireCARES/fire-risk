@@ -5,8 +5,9 @@
 \title{Runs the full analysis of a set of models.}
 \usage{
 full_analysis(conn = NULL, refresh.data = FALSE, models.run = NULL,
-  bypass.models = FALSE, do.predictions = TRUE, roll.up.2.dept = TRUE,
-  object.list = NULL)
+  merg = NULL, bypass.models = FALSE, do.predictions = TRUE,
+  do.rmse = FALSE, roll.up.2.dept = TRUE, object.list = NULL,
+  incl.detail = FALSE)
 }
 \arguments{
 \item{conn}{A DBI Connection. This is a connection to the database containing
@@ -18,6 +19,9 @@ are run. Its format is given as an example below. If it is
 undefined, then a default set of models are run (see below).
 Note that multiple model objects per risk level does not present
 a problem.}
+
+\item{merg}{Either a vector or a list. A value of '0' guarantees that the merg
+option will not be used.}
 
 \item{object.list}{List of data frames. The list must contain an entry for every risk
 level that is run. The entry for each risk level must contain data frame
@@ -40,9 +44,16 @@ data frame (output of the fcMacro function) must be supplied.}
 the models run. If not, then no predictions are generated
 from the estimated models.}
 
+\item{do.rmse=FALSE}{Logical. If TRUE, then the RMS Errors of all the models will be
+computed.}
+
 \item{roll.up.2.dept=TRUE}{Logical. If it is TRUE, then the predictions are rolled
 up to the department level. If it is FALSE, then the
 predictions are left at the census tract level.}
+
+\item{incl.detail=FALSE}{Logical. If TRUE, the \code{risk.results} section of the
+output (described below) is included. If FALSE then the \code{risk.results}
+section is not returned.}
 }
 \value{
 returns a list with the following entries:
@@ -82,24 +93,56 @@ The \code{models.run} parameter can have one of two formats, a list format or a 
 frame format. The list format is preferred. The data frame format has two columns:
 \code{risk} and \code{lst}. Both columns have character format. Each row represents
 a model set to be run. The \code{risk} column specfies the risk level associated with
-that model set (and can only be one of 'lr', 'mr', or 'hr'). The \code{lst} column
-is the \code{lst} value from the \code{controls} database for the model set to be
-run. The default value of \code{models.run} (in data.frame format) is listed below.
+that model set (and can only be one of 'lr', 'mr', 'hr', 'ems500', and 'emscty').
+The \code{lst} column is the \code{lst} value from the \code{controls} database for the
+model set to be run. The default value of \code{models.run} (in data.frame format) is
+listed below.
 
 \tabular{cc}{
 \strong{risk} \tab \strong{lst}\cr
 lr            \tab npt.final   \cr
-lr            \tab npt.final.L \cr
 mr            \tab mr.final    \cr
-hr            \tab hr.final
+hr            \tab hr.final    \cr
+ems500        \tab ems.5.final \cr
+emscty        \tab ems.C.final
 }
 
-The list format contains a named entry for each risk level to be run. The
+The list format contains a named entry for each risk level to be run. Each
 entry contains a character vector listing the \code{lst} values from the
 \code{controls} database for the model sets to be run for that risk level.
 The default value of \code{models.run} (in list format) is listed below.
 
-\code{models.run <- list(lr=c("npt.final", "npt.final.L"), mr=c("mr.final"), hr=c("hr.final"))}
+\code{models.run <- list(lr=c("npt.final"),
+                         mr=c("mr.final"),
+                         hr=c("hr.final"),
+                         ems500=c("ems.5.final"),
+                         emscty=c("ems.C.final"))}
+
+The \code{merg} entry is if you want to merge multiple models into a
+single model. It can either be a data frame or a list of data frames. The
+data frame contains two columns. The first column, labeled either 'geoid' or
+'tr10_fid', contains the tract/spatial identifiers used for prediction. The
+'group' column should refer to a specific prediction column in the preliminary
+output. See \code{\link{fcMerge}} for more details on format. If the
+\code{merg} entry is a list, then each entry in the list is treated as
+as separate merger and must have the appropriate format.
+
+Each list entry can be (read 'should be') named. If it is named, then the
+new column in the predictions output will have the name given the list entry.
+If only a data frame is supplied, then the default name of "merge" will be used.
+For that reason, the list format is preferred, even if only one merger is
+done.
+
+As currently written, this will only merge numeric columns. If you want to merge
+non-numeric columns, the merger will have to be performed outside of this function.
+
+This returns the output data frame with the new merged column and with the old
+constituent columns removed. However, since the removal of the old columns is
+performed last, it is possible to use the same source column for multiple final
+merged columns.
+
+The \code{merg} entry is only processed if \code{do.predictions} is
+\code{TRUE}.
 
 The \code{object.list} list object has an entry for each risk level run. That
 entry is a data frame with information output from \code{\link{fcMacro}}. The

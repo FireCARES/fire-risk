@@ -4,14 +4,17 @@
 \alias{fcMacro}
 \title{Run a set of control objects}
 \usage{
-fcMacro(npt, conn = NULL, save.tests = NULL)
+fcMacro(npt, conn = NULL, do.rmse = TRUE, save.tests = NULL)
 }
 \arguments{
 \item{npt}{character vector. Lists names of the control objects to be run.}
 
-\item{conn}{DBI connection. Connection to the database containing the 
+\item{conn}{DBI connection. Connection to the database containing the
 'controls' sets. Only needed if the control objects in npt above are not
 on the command line. [optional]}
+
+\item{do.rmse}{logical. If TRUE (the default) it will calculate the out-of-sample
+RMS errors.}
 
 \item{save.tests}{environment. Where to save the test results. [optional]}
 }
@@ -22,9 +25,9 @@ The data.frame has the following structure:
 
 \describe{
   \item{npt.name}{Name of the control object.}
-  \item{res.name}{Name of the results output by \code{\link{fcRun}}.} 
+  \item{res.name}{Name of the results output by \code{\link{fcRun}}.}
   \item{tst.name}{Name of the test results output by \code{\link{fcTest}}.}
-  \item{msg.name}{Text file in which errors and messages associated with 
+  \item{msg.name}{Text file in which errors and messages associated with
                   this object are output.}
   \item{save.name}{Name of the file to which all objects are saved.}
 }
@@ -33,55 +36,56 @@ Note that if an object is not created (typically due to an error) then an NA
 will appear in the appropriate cell.
 }
 \description{
-This function takes a list of control objects and goes through the steps 
+This function takes a list of control objects and goes through the steps
 needed to run the tests for those control objects, and save the outputs.
 }
 \details{
-The object listed in \code{npt} need not exist in the R environment. If it 
-does not, then this function calls the \code{\link{npt}} function to get 
-the definition of the control object out of the database. That is what the 
-\code{conn} variable is used for. If the objects already exist in the R 
+The object listed in \code{npt} need not exist in the R environment. If it
+does not, then this function calls the \code{\link{npt}} function to get
+the definition of the control object out of the database. That is what the
+\code{conn} variable is used for. If the objects already exist in the R
 environment, then there is no need to supply the \code{conn} variable.
 
-This routine sequentially runs \code{\link{fcRun}} and \code{\link{fcTest}} 
+This routine sequentially runs \code{\link{fcRun}} and \code{\link{fcTest}}
 for all the test objects supplied. It then collects summary information from
-the \code{\link{fcTest}} output for all the control objects listed and 
+the \code{\link{fcTest}} output for all the control objects listed and
 returns it in the list \code{rmse.sum} which is created in the global environment.
 
-The function saves the control, output, and test objects to disk and 
+The function saves the control, output, and test objects to disk and
 deletes them from the R environment. This step is necessary because some of
 output objects are quite large.
 
-The function creates a message text file on disk for each control object so 
-as to contain any errors or or messages generated while running the models. 
-The name of the message file is 'message.nn.txt' where nn is a two-digit 
-number. This function finds the message file with the largest such number 
-already on the disk and names the new file with the next-largest number. 
-Note that if a large number of such files already exist on the disk or if 
+The function creates a message text file on disk for each control object so
+as to contain any errors or or messages generated while running the models.
+The name of the message file is 'message.nn.txt' where nn is a two-digit
+number. This function finds the message file with the largest such number
+already on the disk and names the new file with the next-largest number.
+Note that if a large number of such files already exist on the disk or if
 fcMacro is called with a long list of control objects, it is possible for
 the 'nn' in the name above to extend into triple digits.
 
-If the save.tests environment is supplied, then the \code{\link{fcTest}} 
-results (and only the \code{\link{fcTest}} results) will be retained in the  
+If the save.tests environment is supplied, then the \code{\link{fcTest}}
+results (and only the \code{\link{fcTest}} results) will be retained in the
 environment specified. The \code{\link{fcTest}} objects are small enough that
-they can be retained without much harm. Note again that they are saved (if 
+they can be retained without much harm. Note again that they are saved (if
 they are saved) in a separate environment which keeps the global environment
 less cluttered.
 
 Side Effects:
 
-\itemize{ 
-   \item Creates \code{rmse.sum} in the global environment.
-   \item For each control object, creates a .RData file on the disk 
+\itemize{
+   \item Creates \code{rmse.sum} in the global environment if \code{do.rmse}
+         is \code{TRUE}.
+   \item For each control object, creates a .RData file on the disk
          containing the objects created.
-   \item For each control object, creates a message text file on disk 
+   \item For each control object, creates a message text file on disk
          containing any errors or messages generated in the process.
    \item Optionally saves the outputs of the \code{\link{fcTest}} function
          in a specified environment.
 }
 
 \code{rmse.sum} is a named list. Each control object that produces a fcTest
-object (many will not) has an entry in the list. The name of the entry is the 
+object (many will not) has an entry in the list. The name of the entry is the
 name of the control object. The entry is the .$se entry in the fcTest object.
 }
 \examples{
