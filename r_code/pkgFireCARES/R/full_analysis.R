@@ -120,7 +120,8 @@
 #'
 #' Note that if you are supplying the \code{object.list} structure while using the
 #' \code{bypass.models} option, you can safely leave out the \code{tst.name} and
-#' \code{msg.name} columns.
+#' \code{msg.name} columns. Also, the \code{msg.name} column is now deprecated, so
+#' do not rely on it.
 #'
 #' @export
 #'
@@ -128,8 +129,7 @@
 #' returns a list with the following entries:
 #'
 #' \describe{
-#'   \item{models.run}{The \code{models.run} input listing the models run by
-#'                     risk level}
+#'   \item{models.run}{The \code{models.run} input listing the models run by risk level}
 #'   \item{bypass.models}{The input \code{bypass.models} value}
 #'   \item{do.predictions}{The input \code{do.predictions} value}
 #'   \item{roll.up.2.dept}{The input \code{roll.up.2.dept} value}
@@ -137,6 +137,7 @@
 #'                      \code{bypass.models} flag is set, then this is the object
 #'                      supplied to the function. Otherwise it is returned by the
 #'                      calls to \code{\link{fcMacro}}.}
+#'   \item{msg.name}{Name of the message file to which messages are sent.}
 #'   \item{prediction}{Data frame containing predictions for all variables requested
 #'                     in the models.run object. The predictions are either by census
 #'                     tract or by department depending on the value of the \code{roll.up.2.dept}
@@ -212,21 +213,16 @@ full_analysis <- function(conn=NULL,
   if(identical(merg, 0)) merg <- NULL
   if(length(setdiff(unique(models.run$risk), c("lr", "mr", "hr", "ems500", "emscty"))) > 0){
     stop( "The only classes allowed in 'models.run' are 'lr', 'mr', 'hr', 'ems500', and 'emscty'!")
+#   Do I want to stop the analysis or simply skip any wrong ones with an warning?)
   }
     roll.up.2.dept <- roll.up.2.dept && do.predictions
   if(bypass.models & is.null(object.list)){
     stop("If bypass.models is TRUE then objects.list must be defined!")
   }
-
-#  msg <- as.integer(sapply(strsplit(list.files(pattern="messages[.][0-9][0-9]+[.]txt"), "[.]"), function(x) x[2]))
-#  msg <- ifelse(length(n0) == 0, 0, max(n0))
-#  msg <- paste("messages", formatC(i + n0, width=2, flag="0"), "txt", sep=".")
-#  file.create(msg)
-
+  openLog()
   if(! bypass.models){
-    if(! is.null(object.list)) cat("'bypass.models' is FALSE and 'object list' is defined. 'object.list' will be overwritten.\n")
-#                                   file=msg,
-#                                   append=TRUE)
+    if(! is.null(object.list)) msgOut("'bypass.models' is FALSE and 'object list' is defined. 'object.list' will be overwritten.",
+                                      type="warning")
     object.list <- list()
   }
 # if necessary, convert a models.run data.frame to a more congenial list.
@@ -238,15 +234,16 @@ full_analysis <- function(conn=NULL,
     models.run <- models.run0
     rm(models.run0)
   }
-  if(refresh.data) cat("The 'refresh.data' feature has not been implemented yet.\n")
-#                       file=msg,
-#                       append=TRUE)
+  if(refresh.data) msgOut("The 'refresh.data' feature has not been implemented yet.",
+                          type="warning")
 # if(refresh.data) refresh_views(conn)
 #
 # Here we begin the actual analysis
 #
   risk.results <- list()
   for(i in names(models.run)){
+    setContext(paste0("Risk Group ", i))
+    msgOut("Running Risk Group", type="status")
     gc()
     src.name <- src.names[i]
     if(bypass.models){
@@ -255,18 +252,27 @@ full_analysis <- function(conn=NULL,
       if(i %in% names(object.list)){
         objects <- object.list[[i]]
       } else {
-        cat("bypass.models=TRUE and no entry exists for model group '", i,
-            "' in the 'object.list' object. It will by skipped.\n" ,
-#            file=msg, append=TRUE,
-            sep="")
+        msgOut(paste0("bypass.models=TRUE and no entry exists for model group '", i,
+                      "' in the 'object.list' object. It will by skipped."),
+               type="warning")
         next
-	  }
+	    }
     } else {
 # Download the data needed for the model estimation
+      msgOut("Getting Data", type="start")
       if(! exists(src.name) | refresh.data){
-        assign(src.name, RPostgreSQL::dbGetQuery(conn, src.tabls[i]), pos=globalenv())
-        assign(src.name, fcSetup(get(src.name)), pos=globalenv())
+        tryCatch(
+          {
+            assign(src.name, RPostgreSQL::dbGetQuery(conn, src.tabls[i]), pos=globalenv())
+            assign(src.name, fcSetup(get(src.name)), pos=globalenv())
+          },
+          error=function(x){
+            msgOut(paste0("Cannot Download Data. Skipping risk group: ", x$message),
+                   type="error")
+            next
+          })
       }
+      msgOut("Elapsed Time: ", type="stop")
 # Create the control objects for the models...
       models  <- mass.npt(conn, list=models.run[[i]])
 # And estimate the models.
@@ -277,47 +283,56 @@ full_analysis <- function(conn=NULL,
     if(do.predictions){
       est.name <- est.names[i]
       if(! exists(est.name) | refresh.data){
+        msgOut("Getting Prediction Data", type="start")
         assign(est.name, RPostgreSQL::dbGetQuery(conn, est.tabls[i]))
         assign(est.name, fcSetup(get(est.name)))
+        msgOut("Elapsed Time: ", type="stop")
       }
 # Basically what I am going to do here is call fcEstimate. Note that
 # fcEstimate can take lists of control and output objects and work on
 # them as a unit. However, since the output objects can be quite large,
 # I am doing them one at a time so as not to blow up the machine.
       for(j in 1:nrow(objects)){
-        e <- new.env()
-        load(objects$save.name[j], e)
-        with(objects, assign(npt.name[j], get(npt.name[j], e), pos=globalenv()))
-        with(objects, assign(res.name[j], get(res.name[j], e), pos=globalenv()))
-        rm(e)
-        temp.98765 <- fcEstimate(objects$npt.name[j],
-                                 objects$res.name[j],
-                                 get(est.name),
-                                 subset=quote(fd_size %in% paste0("size_", 3:9)))
+        setContext(paste0(getContext(), "; ", objects$npt.name[j]))
+        msgOut("Predicting", type="start")
+        tryCatch(
+          {
+            e <- new.env()
+            load(objects$save.name[j], e)
+            with(objects, assign(npt.name[j], get(npt.name[j], e), pos=globalenv()))
+            with(objects, assign(res.name[j], get(res.name[j], e), pos=globalenv()))
+            rm(e)
+            temp.98765 <- fcEstimate(objects$npt.name[j],
+                                     objects$res.name[j],
+                                     get(est.name),
+                                     subset=quote(fd_size %in% paste0("size_", 3:9)))
 # As written it is possible for some results to have the census tract column called
 # 'geoid' in some cases and 'tr10_fid' in others. That would cause problems merging
 # data sets.  The team wants that column called 'tr10_fid' to be consistent with
 # their work. This takes care of that.
-        if( "geoid" %in% names(temp.98765)){
-          names(temp.98765)[match("geoid", names(temp.98765))] <- "tr10_fid"
-        }
+            if( "geoid" %in% names(temp.98765)){
+              names(temp.98765)[match("geoid", names(temp.98765))] <- "tr10_fid"
+            }
 # Similarly, some versions list department as 'fd_id' while other use 'fc_dept_id'.
 # This makes them consistent.
-        if( "fd_id" %in% names(temp.98765)){
-          names(temp.98765)[match("fd_id", names(temp.98765))] <- "fc_dept_id"
-        }
-        # Here I get a list of the names of the prediction columns.
-        dta.cols <- setdiff(names(temp.98765), c("geoid", "tr10_fid", "fd_id", "fc_dept_id", "parcel_id", "year", "geoid_source"))
+            if( "fd_id" %in% names(temp.98765)){
+              names(temp.98765)[match("fd_id", names(temp.98765))] <- "fc_dept_id"
+            }
+# Here I get a list of the names of the prediction columns.
+            dta.cols <- setdiff(names(temp.98765), c("geoid", "tr10_fid", "fd_id", "fc_dept_id", "parcel_id", "year", "geoid_source"))
 # Since it is highly likely that there will be multiple columns across different
 # risk classes with the same names, take steps to make the names different.
-        names(temp.98765)[match(dta.cols, names(temp.98765))] <- paste(i, dta.cols, sep=".")
+            names(temp.98765)[match(dta.cols, names(temp.98765))] <- paste(i, dta.cols, sep=".")
 # Combine the various predictions into a single data frame.
-        if(i %in% names(risk.results)){
-          risk.results[[i]] <- merge(risk.results[[i]], temp.98765, all=TRUE)
-        } else {
-          risk.results[[i]] <- temp.98765
-        }
-        rm(temp.98765)
+            if(i %in% names(risk.results)){
+              risk.results[[i]] <- merge(risk.results[[i]], temp.98765, all=TRUE)
+            } else {
+              risk.results[[i]] <- temp.98765
+            }
+            rm(temp.98765)
+          },
+          error=function(x) msgOut(x$message, type="error"))
+        msgOut("Elapsed Time: ", type="stop")
       }
 #
 # Since the high-risk results are at the parcel level, and all the rest of the data
@@ -366,6 +381,7 @@ full_analysis <- function(conn=NULL,
 # across the ems500 and emscty groups, which is the entire purpose of
 # this option
   if(do.predictions & ! is.null(merg)){
+    setContext("Mergers")
     if(! is.list(merg)){
       merg <- list(merg)
       names(merg) <- "merge"
@@ -375,12 +391,17 @@ full_analysis <- function(conn=NULL,
     for(i in 1:length(merg)){
       gd <- grep("tr10_fid|geoid", names(merg[[i]]))[1]
       if(is.na(gd)){
-        warning(paste0("Merger ", names(merg)[i], " does not have a geoid column. It will be skipped"))
+        msgOut(paste0("Merger ", names(merg)[i], " does not have a geoid column. It will be skipped"),
+               type="warning")
       } else {
-        tmp <- fcMerge(predictions,
-                       merg[[i]]$group[match(predictions$tr10_fid, merg[[i]][[gd]])])
-        cols <- union(cols, tmp$cols)
-        new.preds[[names(merg)[i]]] <- as.numeric(tmp$result)
+        tryCatch(
+          {
+            tmp <- fcMerge(predictions,
+                           merg[[i]]$group[match(predictions$tr10_fid, merg[[i]][[gd]])])
+            cols <- union(cols, tmp$cols)
+            new.preds[[names(merg)[i]]] <- as.numeric(tmp$result)
+          },
+          error=function(x) msgOut(x$message, type="error"))
       }
     }
     if(! is.null(cols)){

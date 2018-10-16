@@ -59,8 +59,7 @@ section is not returned.}
 returns a list with the following entries:
 
 \describe{
-  \item{models.run}{The \code{models.run} input listing the models run by
-                    risk level}
+  \item{models.run}{The \code{models.run} input listing the models run by risk level}
   \item{bypass.models}{The input \code{bypass.models} value}
   \item{do.predictions}{The input \code{do.predictions} value}
   \item{roll.up.2.dept}{The input \code{roll.up.2.dept} value}
@@ -68,6 +67,7 @@ returns a list with the following entries:
                      \code{bypass.models} flag is set, then this is the object
                      supplied to the function. Otherwise it is returned by the
                      calls to \code{\link{fcMacro}}.}
+  \item{msg.name}{Name of the message file to which messages are sent.}
   \item{prediction}{Data frame containing predictions for all variables requested
                     in the models.run object. The predictions are either by census
                     tract or by department depending on the value of the \code{roll.up.2.dept}
@@ -156,5 +156,6 @@ structure of that data frame is given by the following example:
 
 Note that if you are supplying the \code{object.list} structure while using the
 \code{bypass.models} option, you can safely leave out the \code{tst.name} and
-\code{msg.name} columns.
+\code{msg.name} columns. Also, the \code{msg.name} column is now deprecated, so
+do not rely on it.
 }

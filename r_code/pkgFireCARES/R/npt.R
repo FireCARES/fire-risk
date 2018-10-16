@@ -40,26 +40,31 @@ mass.npt <- function(conn, pattern=NULL, list=NULL, relocate=NULL)
 #   backup environment. This makes room for the new objects that will shortly be
 #   created.
 	if(is.environment(relocate)){
-        a <- setdiff(ls(pattern="test.", envir=globalenv()), "test.00")
-        for(i in a) {
-            assign(i, get(i), envir=relocate)
-            rm(list=i, envir=globalenv())
-        }
+    a <- setdiff(ls(pattern="test.", envir=globalenv()), "test.00")
+    for(i in a) {
+      assign(i, get(i), envir=relocate)
+      rm(list=i, envir=globalenv())
     }
+  }
 #   Find the 'lst' values, and then create the input files for each of the control lists.
-    if(! is.null(pattern)){
-        a <- dbGetQuery(conn, paste0("select lst, runs, count(*) as n ",
-	                                "from controls.models where lst like '%", pattern, "%' ",
-                                    "group by lst, runs order by lst"))
-    } else {
-        if(is.null(list)) stop( "At least one of 'pattern' or 'list' must be specified!")
-        a <- dbGetQuery(conn, paste0("select lst, runs, count(*) as n ",
-	                                "from controls.models where lst in ('", paste(list, collapse="','"),
-                                    "') group by lst, runs order by lst"))
-    }
-    for(i in 1:nrow(a)) {
-        assign(paste0(a$lst[i], '.', a$runs[i]), npt(conn, group=a$lst[i], run=a$runs[i]), envir=globalenv())
-    }
+  if(! is.null(pattern)){
+    a <- RPostgreSQL::dbGetQuery(conn, paste0("select lst, runs, count(*) as n ",
+	                               "from controls.models where lst like '%", pattern, "%' ",
+                                 "group by lst, runs order by lst"))
+  } else {
+    if(is.null(list)) stop( "At least one of 'pattern' or 'list' must be specified!")
+        a <- RPostgreSQL::dbGetQuery(conn, paste0("select lst, runs, count(*) as n ",
+	                                   "from controls.models where lst in ('",
+                                     paste(list, collapse="','"),
+                                     "') group by lst, runs order by lst"))
+  }
+  openLog()
+  for(i in 1:nrow(a)) {
+    setContext(paste0("npt('", a$lst[i], '.', a$runs[i], "')"))
+    tryCatch(assign(paste0(a$lst[i], '.', a$runs[i]),
+                    npt(conn, group=a$lst[i], run=a$runs[i]), envir=globalenv()),
+             error=function(x) msgOut(e$message, type="error"))
+  }
   paste0(a$lst, ".", a$runs)
 }
 
@@ -149,7 +154,7 @@ npt <- function(conn, group=NULL, risk=NULL, y=NULL, mdls=NULL, run="S")
 # Now we build the 'runs' portion of the object
 # Note that this has changed, and the format of the output file has changed with it.
 # As a result, some earlier control objects will no longer be compatible.
-    r0 <- dbGetQuery(conn, paste0("select * from controls.runs where grp = '", run, "' order by tier1, tier2"))
+    r0 <- RPostgreSQL::dbGetQuery(conn, paste0("select * from controls.runs where grp = '", run, "' order by tier1, tier2"))
     if(nrow(r0) == 0) stop(paste0("Input parametr run='", run, "' to the 'npt' function is invalid!"))
     r <- list()
     r0$tier.names <- with(r0, ifelse(is.na(tier2), tier1, paste(tier1, tier2, sep=".")))
@@ -159,18 +164,18 @@ npt <- function(conn, group=NULL, risk=NULL, y=NULL, mdls=NULL, run="S")
 
 # Now select the input information used for the models to be built as part of this control object
     if(! is.null(group)) {
-        mdl  <- dbGetQuery(conn, paste0("select * from controls.models where lst = '", group,
+        mdl  <- RPostgreSQL::dbGetQuery(conn, paste0("select * from controls.models where lst = '", group,
                                         "' AND runs = '", run, "'"))
-        npts <- dbGetQuery(conn, paste0("select * from controls.inputs where lst = '", group,
+        npts <- RPostgreSQL::dbGetQuery(conn, paste0("select * from controls.inputs where lst = '", group,
                                         "' AND model in ('", paste(mdl$model, collapse="', '"), "')"))
     } else {
 	    lst.check <- 'npt'
 		if(risk != 'l') lst.check <- paste(risk, "r", sep="")
-        mdl  <- dbGetQuery(conn, paste0("select * from controls.models where target='", y, "' AND ",
+        mdl  <- RPostgreSQL::dbGetQuery(conn, paste0("select * from controls.models where target='", y, "' AND ",
                                          "split_part(lst, '.', 1) = '", lst.check, "' AND ",
                                          "model in ('", paste(mdls, collapse="', '"), "') AND ",
                                          "runs = '", run, "'"))
-        npts <- dbGetQuery(conn, paste("select * from controls.models JOIN controls.inputs USING (lst, model) ",
+        npts <- RPostgreSQL::dbGetQuery(conn, paste("select * from controls.models JOIN controls.inputs USING (lst, model) ",
     		                               "where target='", y, "' AND split_part(lst, '.', 1) = '", lst.check, "' AND ",
 		                                   "model in ('", paste(mdls, collapse="', '"), "') ",
 		                                   "AND runs = '", run, "'", sep=""))

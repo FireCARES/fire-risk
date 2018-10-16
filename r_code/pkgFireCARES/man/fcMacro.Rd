@@ -28,7 +28,8 @@ The data.frame has the following structure:
   \item{res.name}{Name of the results output by \code{\link{fcRun}}.}
   \item{tst.name}{Name of the test results output by \code{\link{fcTest}}.}
   \item{msg.name}{Text file in which errors and messages associated with
-                  this object are output.}
+                  this object are output. This is obsolete, and will soon
+                  be deleted.}
   \item{save.name}{Name of the file to which all objects are saved.}
 }
 

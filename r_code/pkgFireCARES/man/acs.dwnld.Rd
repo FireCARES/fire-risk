@@ -7,28 +7,19 @@
 acs.dwnld(conn, year, cols = NULL, states = NULL)
 }
 \arguments{
-\item{conn}{DBI Connection. The connection to the database where the data 
+\item{conn}{DBI Connection. The connection to the database where the data
 will be uploaded.}
 
 \item{year}{Integer. The year for which to download ACS data}
 
-\item{cols}{Character vector. Vector of column names (from the ACS) 
+\item{cols}{Character vector. Vector of column names (from the ACS)
 reflecting what ACS columns to download. [optional]}
 
-\item{states}{Character vector. This allows me to specify a subset of states. 
+\item{states}{Character vector. This allows me to specify a subset of states.
 If it is not specified, all nationwide data is downloaded. [optional]}
 }
 \value{
 returns a list with the following entries:
-
-\describe{
-  \item{table.name.est}{Name of the table on the database in which the new estimates
-                  are stored.} 
-  \item{table.name.err}{Name of the table on the database in which the new error values
-                  are stored.}
-  \item{rows}{Number of rows added to the data set.}
-  \item{elapsed.time}{Time it took to complete the download}
-}
 }
 \description{
 Downloads the ACS data needed for use in model estimation.

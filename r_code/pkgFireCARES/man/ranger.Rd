@@ -11,13 +11,13 @@ ranger(formula, data, subset = NULL, ...)
 
 \item{data}{Data Frame. The data used for the model.}
 
-\item{subset}{Name. This defines the subset of the data the model is 
+\item{subset}{Name. This defines the subset of the data the model is
 evaluated over.}
 
 \item{...}{Additional parameters to the \code{\link[ranger]{ranger}} function.}
 }
 \value{
-Returns the ranger object with the call slot altered to 
+Returns the ranger object with the call slot altered to
 reflect the call to this function rather than the ranger function.
 }
 \description{

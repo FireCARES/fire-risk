@@ -11,13 +11,13 @@ lasso(formula, data, subset = NULL, ...)
 
 \item{data}{Data Frame. The data used for the model.}
 
-\item{subset}{Name. This defines the subset of the data the model is 
+\item{subset}{Name. This defines the subset of the data the model is
 evaluated over.}
 
 \item{...}{Additional parameters to the \code{\link[glmnet]{cv.glmnet}} function.}
 }
 \value{
-Returns the glmnet.lasso object with the call slot altered to 
+Returns the glmnet.lasso object with the call slot altered to
 reflect the call to this function rather than the glmnet function.
 }
 \description{

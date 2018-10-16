@@ -71,7 +71,8 @@
 #'   \item{res.name}{Name of the results output by \code{\link{fcRun}}.}
 #'   \item{tst.name}{Name of the test results output by \code{\link{fcTest}}.}
 #'   \item{msg.name}{Text file in which errors and messages associated with
-#'                   this object are output.}
+#'                   this object are output. This is obsolete, and will soon
+#'                   be deleted.}
 #'   \item{save.name}{Name of the file to which all objects are saved.}
 #' }
 #'
@@ -88,8 +89,8 @@
 #' }
 fcMacro <- function(npt, conn=NULL, do.rmse=TRUE, save.tests=NULL)
 {
-  n0 <- as.integer(sapply(strsplit(list.files(pattern="messages[.][0-9][0-9]+[.]txt"), "[.]"), function(x) x[2]))
-	n0 <- ifelse(length(n0) == 0, 0, max(n0))
+  openLog()
+  ctxt <- getContext()
   for(i in 1:length(npt))
   {
 # First this creates names for output objects and files. This is based on the name of the
@@ -99,54 +100,51 @@ fcMacro <- function(npt, conn=NULL, do.rmse=TRUE, save.tests=NULL)
     npt.name <- npt[i]
     res.name <- paste( npt.name, "res", sep=".")
     tst.name <- paste( npt.name, "tst", sep=".")
-    msg.name <- paste("messages", formatC(i + n0, width=2, flag="0"), "txt", sep=".")
+    msg.name <- paste(getDests(), collapse=", ")
     save.name <- paste(npt.name, "RData", sep=".")
+
+    setContext(c(ctxt, npt.name))
 
     if(exists("test.00") && "subset" %in% names(test.00)){
       sbset <- test.00$subset
     } else {
       sbset <- quote(include & fd_size %in% paste("size_", 3:9, sep=""))
     }
-    if(interactive()) cat("\nRunning '", npt.name, "'; Output to '", save.name, "':\n", sep="")
+    msgOut(paste0("Output to '", save.name, "'"), type="status")
 # Check to see if the control object exists in the R environment. If it does not, then
 # create it from the database with a call to the 'npt' function.
     if(! exists(npt.name, where=globalenv())){
       if(! is.null(conn)){
-        if(grepl("L", npt.name)){
-          assign(npt.name, npt(conn, npt.name, run="long"), envir=globalenv())
-        } else {
-          assign(npt.name, npt(conn, npt.name), envir=globalenv())
-        }
+        tryCatch({
+          if(grepl("L", npt.name)){
+            assign(npt.name, npt(conn, npt.name, run="L"), envir=globalenv())
+          } else {
+            assign(npt.name, npt(conn, npt.name), envir=globalenv())
+          }
+        },
+        error=function(e) msgOut(paste0("Cannot load input object (fcMacro):", e$message),
+                                 type="error"))
       } else {
-        if(interactive()) cat("\tNo such object exists!\n")
+        msgOut("The input object cannot be found (fcMacro)!", type="error")
         next
       }
     }
 # Run the model
-    fcRun(get(npt.name), sink=msg.name)
+    fcRun(get(npt.name))
     if(exists("offset", where=globalenv(), inherits=FALSE)) rm(offset, pos=globalenv())
 # Calculate out-of-sample RMSE
     if(do.rmse){
-      if(interactive()) cat("Calculating out-of-sample RMSE: ", sep="")
-      tm <- tryCatch(system.time(assign(tst.name, fcTest(get(npt.name), out, subset=sbset), pos=globalenv())),
-                     error  =function(e){
-                       if(is.null(msg.name)){
-                         cat("ERROR   Testing Object: ", res.name, ". Message: ", e$message, "\n", sep="")
-                       } else {
-                         cat("ERROR   Testing Object: ", res.name, ". Message: ", e$message, "\n", sep="",
-                             file=msg.name, append=TRUE)
-                       }
-                       return(rep(0, 5))
-                     }
-      )
-      if(interactive()) cat("Elapsed time: ", tm[3], " secs\n", sep="")
+      msgOut("Calculating out-of-sample RMSE", type="start")
+      tryCatch(assign(tst.name, fcTest(get(npt.name), out, subset=sbset), pos=globalenv()),
+               error  =function(e) msgOut(e$message, type="error"))
+      msgOut("Elapsed time: ", type="stop")
     }
     assign(res.name, out, pos=globalenv())
     rm(out, pos=globalenv())
 # Save the output...In some cases this can take upwards of an hour.
-    if(interactive()) cat("Saving to file ", save.name, ": ", sep="")
-    tm <- system.time(save(list=intersect(ls(pos=globalenv()), c(npt.name, res.name, tst.name)), file=save.name))
-    if(interactive()) cat("Elapsed time: ", tm[3], " secs\n", sep="")
+    msgOut(paste0("Saving to file '", save.name, "'"), type="start")
+    save(list=intersect(ls(pos=globalenv()), c(npt.name, res.name, tst.name)), file=save.name)
+    msgOut("Elapsed time: ", type="stop")
 # This collects the actual RMSE values and saves them to a summary list.
 # As usual, I create and modify this in the global environment so that if
 # something goes wrong (or it just takes too long and gets interrupted)

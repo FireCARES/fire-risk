@@ -150,7 +150,7 @@
 #' @importFrom magrittr %>% %$%
 #'
 #' @section IMPORTS:
-#' acs,boot,glmnet,ranger,RPostgreSQL,utils,cluster, magrittr
+#' acs,boot,glmnet,ranger,RPostgreSQL,utils,cluster,magrittr
 #'
 #' @section SUGGESTS:
 #' doParallel
@@ -277,15 +277,5 @@
 ## the complicated part: the estimation of the out-of-sample values.
 ##
 ## Check dependencies and imports and get them properly arranged.
-##
-## Add an error/message file and error-catching code for messages outside of fcMacro.
-##   Build a set of messaging routines that do several things for the entire package.
-##   1) First it would create a message file.
-##   2) Then a function would send it a message and a message type.
-##      a) If the type is 'console', it would post it to the console IF the mode is
-##         interactive. Otherwise it would be dropped.
-##      b) All other types would post to the message file.
-##      c) Are there any messages I would want posted both places???
-##   3) This messaging system MIGHT be usable outside of this package.
 ##
 "_PACKAGE"

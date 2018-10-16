@@ -164,7 +164,7 @@ ACS tables already on the server.
 
 \section{IMPORTS}{
 
-acs,boot,glmnet,ranger,RPostgreSQL,utils,cluster, magrittr
+acs,boot,glmnet,ranger,RPostgreSQL,utils,cluster,magrittr
 }
 
 \section{SUGGESTS}{
