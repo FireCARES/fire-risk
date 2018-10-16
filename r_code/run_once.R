@@ -6,7 +6,8 @@ install.packages( c( "RPostgreSQL",
                      "roxygen2",
                      "acs",
                      "boot",
-                     "utils"), 
+                     "utils",
+                     "magrittr"), 
                   repos="https://cloud.r-project.org",
                   dependencies=c("Depends","Imports") )
 # Next compile the pkgFireCARES package. I need to know if devtools requires the  
