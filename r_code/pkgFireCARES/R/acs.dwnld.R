@@ -17,6 +17,7 @@
 #' If it is not specified, all nationwide data is downloaded. [optional]
 #'
 #' @export
+#'
 #' @details
 #' This leaves a 'temporary' table on the database. That table will then need
 #' to be manually inserted into the main acs_est table.
@@ -24,16 +25,16 @@
 #' @return
 #' returns a list with the following entries:
 #'
-#' @import acs
-#'
 #' \describe{
-#'   \item{table.name.est}{Name of the table on the database in which the new estimates
-#'                   are stored.}
-#'   \item{table.name.err}{Name of the table on the database in which the new error values
-#'                   are stored.}
-#'   \item{rows}{Number of rows added to the data set.}
-#'   \item{elapsed.time}{Time it took to complete the download}
+#' \item{table.name.est}{Name of the table on the database in which the new estimates
+#'                   are stored}
+#' \item{table.name.err}{Name of the table on the database in which the new error values
+#'                   are stored}
+#' \item{rows}{Number of rows added to the data set}
+#' \item{elapsed.time}{Time it took to complete the download}
 #' }
+#'
+#' @import acs
 #'
 acs.dwnld <- function(conn, year, cols=NULL, states=NULL)
 {

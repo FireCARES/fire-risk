@@ -122,13 +122,14 @@ fcMacro <- function(npt, conn=NULL, do.rmse=TRUE, save.tests=NULL)
             assign(npt.name, npt(conn, npt.name), envir=globalenv())
           }
         },
-        error=function(e) msgOut(paste0("Cannot load input object (fcMacro):", e$message),
-                                 type="error"))
+        error=function(e) {
+                msgOut(paste0("Cannot load input object '",  npt[i], "' (fcMacro)!:", e$message),
+                                 type="error")})
       } else {
-        msgOut("The input object cannot be found (fcMacro)!", type="error")
-        next
+        msgOut(paste0("Input object '", npt[i], "' cannot be found (fcMacro)!", type="error"))
       }
     }
+    if(! exists(npt.name, where=globalenv())) next
 # Run the model
     fcRun(get(npt.name))
     if(exists("offset", where=globalenv(), inherits=FALSE)) rm(offset, pos=globalenv())

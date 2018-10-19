@@ -129,25 +129,30 @@
 #' returns a list with the following entries:
 #'
 #' \describe{
-#'   \item{models.run}{The \code{models.run} input listing the models run by risk level}
-#'   \item{bypass.models}{The input \code{bypass.models} value}
-#'   \item{do.predictions}{The input \code{do.predictions} value}
-#'   \item{roll.up.2.dept}{The input \code{roll.up.2.dept} value}
-#'   \item{object.list}{The \code{object.list} object described above. If the
-#'                      \code{bypass.models} flag is set, then this is the object
-#'                      supplied to the function. Otherwise it is returned by the
-#'                      calls to \code{\link{fcMacro}}.}
-#'   \item{msg.name}{Name of the message file to which messages are sent.}
-#'   \item{prediction}{Data frame containing predictions for all variables requested
-#'                     in the models.run object. The predictions are either by census
-#'                     tract or by department depending on the value of the \code{roll.up.2.dept}
-#'                     flag.}
-#'   \item{risk.results}{This is a list, with an entry for each risk level. Each entry
-#'                       contains a data frame with the raw estimates for that risk level.
-#'                       For low and medium risk fires this contains the predictions at the
-#'                       census tract level (which are redundant with the results in
-#'                       \code{predictions} if \code{roll.up.2.dept} is FALSE). For high risk
-#'                       fires, this contains predictions at the parcel level.}
+#' \item{models.run}{The \code{models.run} input listing the models run by risk level.}
+#'
+#' \item{bypass.models}{The input \code{bypass.models} value.}
+#'
+#' \item{do.predictions}{The input \code{do.predictions} value.}
+#'
+#' \item{roll.up.2.dept}{The input \code{roll.up.2.dept} value.}
+#'
+#' \item{object.list}{The \code{object.list} object described above. If the
+#'    \code{bypass.models} flag is set, then this is the object supplied to the
+#'    function. Otherwise it is returned by the calls to \code{\link{fcMacro}}.}
+#'
+#' \item{msg.name}{Name of the message file to which messages are sent.}
+#'
+#' \item{prediction}{Data frame containing predictions for all variables requested
+#'    in the models.run object. The predictions are either by census tract or by
+#'    department depending on the value of the \code{roll.up.2.dept} flag.}
+#'
+#' \item{risk.results}{This is a list, with an entry for each risk level. Each entry
+#'    contains a data frame with the raw estimates for that risk level.
+#'    For low and medium risk fires this contains the predictions at the
+#'    census tract level (which are redundant with the results in
+#'    \code{predictions} if \code{roll.up.2.dept} is FALSE). For high risk
+#'    fires, this contains predictions at the parcel level.}
 #' }
 #'
 full_analysis <- function(conn=NULL,
@@ -268,11 +273,10 @@ full_analysis <- function(conn=NULL,
           },
           error=function(x){
             msgOut(paste0("Cannot Download Data. Skipping risk group: ", x$message),
-                   type="error")
-            next
-          })
+                   type="error")})
       }
-      msgOut("Elapsed Time: ", type="stop")
+      if(! exists(src.name)) next
+        msgOut("Elapsed Time: ", type="stop")
 # Create the control objects for the models...
       models  <- mass.npt(conn, list=models.run[[i]])
 # And estimate the models.

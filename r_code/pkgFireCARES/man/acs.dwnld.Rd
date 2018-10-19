@@ -20,6 +20,15 @@ If it is not specified, all nationwide data is downloaded. [optional]}
 }
 \value{
 returns a list with the following entries:
+
+\describe{
+\item{table.name.est}{Name of the table on the database in which the new estimates
+                  are stored}
+\item{table.name.err}{Name of the table on the database in which the new error values
+                  are stored}
+\item{rows}{Number of rows added to the data set}
+\item{elapsed.time}{Time it took to complete the download}
+}
 }
 \description{
 Downloads the ACS data needed for use in model estimation.

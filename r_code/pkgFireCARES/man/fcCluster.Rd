@@ -12,8 +12,8 @@ the data and model definitions. If none is entered, default connection
 information is obtained from the operating system environment.}
 
 \item{filter=1000}{Numeric. If the number of missing fields in a column is greater
-than `filter`, that column is excluded from the analysis. If
-`filter` is NULL, then no columns are excluded.}
+than \code{filter}, that column is excluded from the analysis. If
+\code{filter} is NULL, then no columns are excluded.}
 
 \item{clusters=9}{The number of clusters to use.}
 }
@@ -21,7 +21,7 @@ than `filter`, that column is excluded from the analysis. If
 Invisibly returns the revised cluster table used by later queries.
 }
 \description{
-This function generates the county clusters for use by any estimation routine t
+This function generates the county clusters for use by any estimation routine
 that uses them.
 }
 \details{
