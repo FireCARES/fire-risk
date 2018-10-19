@@ -1,6 +1,6 @@
 Package: pkgFireCARES
 Title: Useful Functions for FireCARES
-Version: 0.1.0.0000
+Version: 1.0.0
 Authors@R: person("Stanley", "Gilbert", email = "stanley.gilbert@nist.gov", role = c("aut", "cre"))
 Description: This package provides some useful functions for estimating community risk models and community risk scores in FireCARES.
 Depends: R (>= 3.4.0)
