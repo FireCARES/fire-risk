@@ -269,7 +269,12 @@ full_analysis <- function(conn=NULL,
         tryCatch(
           {
             assign(src.name, RPostgreSQL::dbGetQuery(conn, src.tabls[i]), pos=globalenv())
-            assign(src.name, fcSetup(get(src.name)), pos=globalenv())
+            if(nrow(get(src.name)) > 0){
+              assign(src.name, fcSetup(get(src.name)), pos=globalenv())
+            } else {
+              rm(list=src.name)
+              simpleError("No records downloaded!")
+            }
           },
           error=function(x){
             msgOut(paste0("Cannot Download Data. Skipping risk group: ", x$message),

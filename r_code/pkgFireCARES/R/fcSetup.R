@@ -167,6 +167,9 @@ fcSetup <- function(dta, seed=953016876)
         tr10_fid$set <- c("training", "validation", "test")[tr10_fid$v]
         tr10_fid$set <- factor(tr10_fid$set)
         dta$set <- tr10_fid$set[match(dta[[tr.id]], tr10_fid$tr10_fid)]
+    } else {
+# There are a couple of fields that cause issues with prediction tables:
+      dta$svi[dta$svi < 0] <- NA
     }
     dta
 }
