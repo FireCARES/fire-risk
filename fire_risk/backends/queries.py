@@ -1,5 +1,5 @@
 # To create the buildingfires table from the NFIRS database use this script:
-# https://github.com/FireCARES/data/blob/master/sources/nfirs/scripts/building_fires.sql
+# https://github.com/FireCARES/data/blob/master/sources/nfirs/scripts/materialized_views/public.buildingfires.sql
 
 ALL_BUILDING_FIRES = 'SELECT fire_sprd, COUNT(*) FROM joint_buildingfires WHERE fire_sprd IN (\'1\',\'2\',\'3\',' \
                      '\'4\',\'5\') GROUP BY fire_sprd ORDER BY fire_sprd DESC;'
