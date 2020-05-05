@@ -69,7 +69,7 @@ setup(
         'click==4.0',
         'pytest==2.7.0',
         'pytest-cov==2.5.1',
-        'flake8==2.2.5',
+        'flake8<3.0.0',
         'scipy==0.17.0',
         'mock==2.0.0'
     ],
