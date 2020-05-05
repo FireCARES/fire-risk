@@ -64,7 +64,7 @@ setup(
     test_suite='tests',
     install_requires=[
         'matplotlib==1.4.3',
-        'pandas==0.24.2',
+        'pandas<1.0.0',
         'psycopg2==2.7',
         'click==4.0',
         'pytest==2.7.0',
