@@ -161,6 +161,15 @@ structure of that data frame is given by the following example:
 
 Note that if you are supplying the \code{object.list} structure while using the
 \code{bypass.models} option, you can safely leave out the \code{tst.name} and
-\code{msg.name} columns. Also, the \code{msg.name} column is now deprecated, so
-do not rely on it.
+\code{msg.name} columns.
 }
+\section{Side Effects}{
+
+
+The function leaves several new files on the hard drive. The exact
+files are listed in the \code{object.list} section of the output. The
+files fall into two groups. First, output of the estimation algorithms
+are saved in a set if objects listed in the \code{object.list} object.
+Second, error and log files are saved to disk.
+}
+

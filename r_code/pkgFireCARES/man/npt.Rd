@@ -4,7 +4,8 @@
 \alias{npt}
 \title{Create control objects}
 \usage{
-npt(conn, group = NULL, risk = NULL, y = NULL, mdls = NULL, run = "S")
+npt(conn, group = NULL, risk = NULL, y = NULL, mdls = NULL,
+  run = "S")
 }
 \arguments{
 \item{conn}{DBI Connection. Connects to the database containing the

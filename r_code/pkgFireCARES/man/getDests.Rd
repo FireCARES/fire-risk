@@ -4,7 +4,11 @@
 \alias{getDests}
 \title{Returns the files to which messages are sent.}
 \usage{
-getDests()
+getDests(err.Log = NULL)
+}
+\arguments{
+\item{err.Log}{the err.Log structure. If this is NULL, then the function returns
+NULL}
 }
 \value{
 This function returns a character vector containing the files to

@@ -4,14 +4,17 @@
 \alias{setContext}
 \title{Sets message context.}
 \usage{
-setContext(context)
+setContext(err.Log = NULL, context)
 }
 \arguments{
+\item{err.Log}{The err.log structure. If this is NULL, then the function
+does nothing.}
+
 \item{context}{Character Vector. A character vector representing the context
 information to be printed with the messages.}
 }
 \value{
-This function invisibly returns the old message context.
+This function returns the updated err.Log structure.
 }
 \description{
 This function sets the message context.

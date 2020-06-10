@@ -9,8 +9,10 @@
 #' @param n    Integer. Number of bootstrap replications to run in order to
 #' estimate the confidence intervals on parameters. n=0 (the default) will not
 #' run any bootstrap replicates.
-#' @param sink  Character. Specifies the name of the text file to send error
-#' messages to. This is ignored! [deprecated]
+#' @param err.Log  Either character or an err.Log structure. If this is a character
+#' vector, then it creates an err.Log structure based on that vector. If it is
+#' an err.Log structure, it uses the passed structure. If it is NULL, then no error
+#' logging is done.
 #'
 #' @return NULL
 #'
@@ -29,16 +31,21 @@
 #'   fcRun(mr.f.S0b, n=1000, sink="messages.08.txt")
 #'   fcRun(mr.j.L0a)
 #' }
-fcRun <- function(sets, n=0, sink=NULL)
+fcRun <- function(sets, n=0, err.Log=NULL)
 {
+  if(class(err.Log) == "character") err.Log <- openLog(err.Log)
+  if(! is.null(err.Log)){
+    ctxt <- getContext(err.Log)
+  } else {
+    ctxt <- NULL
+  }
+
 # In each model, 'library' specfies the R library that will be needed to run the model.
 # Here I extract a list of all those libraries and load them.
 	for(i in unique(sapply(sets$models,  function(x) x$fn['library']))) library(i, character.only=TRUE)  # loadNamespace(i)
 
     out <<- list()
-# This sets up my 'error' sink file, if 'sink' is correctly specified.
-    openLog()
-    ctxt <- getContext()
+
 # Now we iterate through the models.
     for(k in names(sets$models))
     {
@@ -83,10 +90,11 @@ fcRun <- function(sets, n=0, sink=NULL)
 # by the current version of npt should work.
         for(i in names(sets$runs))
         {
-            setContext(c(ctxt,
-                         paste0("Model: ", format(k, width=16)),
-                         paste0(  "Run: ", format(i, width=16))))
-            msgOut(type="start")
+            err.Log <- setContext(err.Log,
+                                  c(ctxt,
+                                    paste0("Model: ", format(k, width=16)),
+                                    paste0(  "Run: ", format(i, width=16))))
+            msgOut(err.Log, type="start")
 # Create the space where the model results will go, and build the subset name
 # for this specific (sub-)model.
             out[[k]][[i]] <<- list()
@@ -105,8 +113,8 @@ fcRun <- function(sets, n=0, sink=NULL)
                         out[[k]][[i]]$model <<- do.call(fn, aa)
                     }
                 },
-                error  =function(e) msgOut(e$message, type="error"),
-                message=function(e) msgOut(e$message, type="message"))
+                error  =function(e) msgOut(err.Log, e$message, type="error"),
+                message=function(e) msgOut(err.Log, e$message, type="message"))
 # If I have asked for bootstrapping of the results, then run the bootstrap.
 # This starts by subsetting the data according to the subset defined above,
 # then it runs the bootstrap.
@@ -118,9 +126,10 @@ fcRun <- function(sets, n=0, sink=NULL)
                 if(interactive()) close(pb)
             }
 
-            msgOut("Elapsed time: ", type="stop")
+            msgOut(err.Log, "Elapsed time: ", type="stop")
         }
     }
+    err.Log <- setContext(err.Log, ctxt)
 }
 
 

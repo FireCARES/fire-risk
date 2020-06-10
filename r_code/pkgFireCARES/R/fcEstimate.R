@@ -37,12 +37,13 @@ fcEstimate <- function(input, output, new.data, subset=TRUE)
     results <- new.data[,results]
 
     if(length(input) != length(output)) stop("The 'input' vector must be the same length as the 'output' vector.")
+    base.data <- new.data
 # We iterate through all the control objects
     for(a in 1:length(input)){
 	    nput <- get(input[a])
 		  oput <- get(output[a])
 # for each control object, iterate through the models in it.
-        for(k in names(nput$models)) {
+		  for(k in names(nput$models)) {
 #   OK, when will I ever have a NULL library??? What circumstance is this
 #   preparing for???
             if(tolower(nput$models[[k]]$fn["library"]) == "null" |
@@ -60,9 +61,29 @@ fcEstimate <- function(input, output, new.data, subset=TRUE)
             }
 #   This set generates the predictions. Each "run" is a separate prediction
             for(i in names(nput$runs)) {
+
+# This excludes any records with new levels that do not appear
+# in the training data set.
+              new.data <- base.data
+              drop.lvl <- rep(TRUE, nrow(new.data))
+
+              if(nput$models[[k]]$fn["library"] %in% c("lme4", "stats")){
+                tmp <- model.frame(oput[[k]][[i]]$model)
+                nms <- intersect(names(tmp)[sapply(tmp, class) == "factor"], names(new.data))
+                if(nput$models[[k]]$fn["library"] == "lme4")
+                  nms <- setdiff(nms, names(ranef(oput[[k]][[i]]$model)))
+
+                for(w in nms){
+                  abc <- setdiff(levels(new.data[[w]]), levels(tmp[[w]]))
+                  drop.lvl <- drop.lvl & ! (new.data[[w]] %in% abc)
+                  new.data[[w]][new.data[[w]] %in% abc] <- NA
+                  new.data[[w]] <- droplevels(new.data[[w]])
+                }
+              }
+
 #   fltr is a logical vector showing the subset of new.data that this run
 #   applies to.
-                fltr <- eval(substitute(nulls & a & b, list(a=subset, b=nput$runs[[i]])), envir=new.data)
+                fltr <- eval(substitute(nulls & drop.lvl & a & b, list(a=subset, b=nput$runs[[i]])), envir=new.data)
 #   And in some cases that subset is empty, or there was no model output for
 #   that group, so skip those cases.
                 if(any(fltr) & ! is.null(oput[[k]][[i]]$model)) {
@@ -71,9 +92,10 @@ fcEstimate <- function(input, output, new.data, subset=TRUE)
 #   need special handling and give it to them.
                     if(nput$models[[k]]$fn["library"] == "lme4") {
 #   GLMER
+#
 #   Here, I need to add the 'allow.new.levels' flag. Without it the predict
 #   function will probably fail.
-                        results[[k]][fltr] <- predict(oput[[k]][[i]]$model, newdata=new.data[fltr, ], type="response", allow.new.levels=TRUE)
+                      results[[k]][fltr] <- predict(oput[[k]][[i]]$model, newdata=new.data[fltr, ], type="response", allow.new.levels=TRUE)
                     } else if(nput$models[[k]]$fn["library"] == "glmnet") {
 #   LASSO / RIDGE
 #   The input format for glmnet is different, so I have to account for that.

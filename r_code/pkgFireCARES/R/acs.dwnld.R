@@ -33,6 +33,15 @@
 #' \item{rows}{Number of rows added to the data set}
 #' \item{elapsed.time}{Time it took to complete the download}
 #' }
+## 
+## Alter this so it returns a suggested INSERT query for inserting the 'temporary'
+## table into the permanent table. This is only a suggested query because there are 
+## enough different cases that I don't trust automating the process.
+## The point of the suggested query is that it saves a lot of work constructing the 
+## INSERT query.
+##
+## Strictly speaking, I need two queries: one for the data and one for the error table.
+##
 #'
 #' @import acs
 #'
@@ -60,11 +69,13 @@ acs.dwnld <- function(conn, year, cols=NULL, states=NULL)
 
               "B03003_001", "B03003_002", "B03003_003",
 
-			  "B11005_002",
+      			  "B11005_002",
 
               "B12001_001", "B12001_002", "B12001_003", "B12001_004", "B12001_005", "B12001_006", "B12001_007",
               "B12001_008", "B12001_009", "B12001_010", "B12001_011", "B12001_012", "B12001_013", "B12001_014",
               "B12001_015", "B12001_016", "B12001_017", "B12001_018", "B12001_019",
+			  
+			        "B17017_002",
 
               "B19013_001",
 

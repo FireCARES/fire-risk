@@ -11,6 +11,10 @@
 #' @param do.rmse logical. If TRUE (the default) it will calculate the out-of-sample
 #' RMS errors.
 #' @param save.tests environment. Where to save the test results. [optional]
+#' @param err.Log  Either character or an err.Log structure. If this is a character
+#' vector, then it creates an err.Log structure based on that vector. If it is
+#' an err.Log structure, it uses the passed structure. If it is NULL, then no error
+#' logging is done.
 #'
 #' @details
 #' The object listed in \code{npt} need not exist in the R environment. If it
@@ -87,10 +91,14 @@
 #'   res <- new.env()
 #'   fcMacro(c("mr.final", "npt.final", "npt.final.L"), save.tests=res)
 #' }
-fcMacro <- function(npt, conn=NULL, do.rmse=TRUE, save.tests=NULL)
+fcMacro <- function(npt, conn=NULL, do.rmse=TRUE, save.tests=NULL, err.Log=NULL)
 {
-  openLog()
-  ctxt <- getContext()
+  if(class(err.Log) == "character") err.Log <- openLog(err.Log)
+  if(! is.null(err.Log)){
+    ctxt <- getContext(err.Log)
+  } else {
+    ctxt <- NULL
+  }
   for(i in 1:length(npt))
   {
 # First this creates names for output objects and files. This is based on the name of the
@@ -103,14 +111,14 @@ fcMacro <- function(npt, conn=NULL, do.rmse=TRUE, save.tests=NULL)
     msg.name <- paste(getDests(), collapse=", ")
     save.name <- paste(npt.name, "RData", sep=".")
 
-    setContext(c(ctxt, npt.name))
+    err.Log <- setContext(err.Log, c(ctxt, npt.name))
 
     if(exists("test.00") && "subset" %in% names(test.00)){
       sbset <- test.00$subset
     } else {
       sbset <- quote(include & fd_size %in% paste("size_", 3:9, sep=""))
     }
-    msgOut(paste0("Output to '", save.name, "'"), type="status")
+    msgOut(err.Log, paste0("Output to '", save.name, "'"), type="status")
 # Check to see if the control object exists in the R environment. If it does not, then
 # create it from the database with a call to the 'npt' function.
     if(! exists(npt.name, where=globalenv())){
@@ -123,29 +131,29 @@ fcMacro <- function(npt, conn=NULL, do.rmse=TRUE, save.tests=NULL)
           }
         },
         error=function(e) {
-                msgOut(paste0("Cannot load input object '",  npt[i], "' (fcMacro)!:", e$message),
+                msgOut(err.Log, paste0("Cannot load input object '",  npt[i], "' (fcMacro)!:", e$message),
                                  type="error")})
       } else {
-        msgOut(paste0("Input object '", npt[i], "' cannot be found (fcMacro)!", type="error"))
+        msgOut(err.Log, paste0("Input object '", npt[i], "' cannot be found (fcMacro)!", type="error"))
       }
     }
     if(! exists(npt.name, where=globalenv())) next
 # Run the model
-    fcRun(get(npt.name))
+    fcRun(get(npt.name), err.Log=err.Log)
     if(exists("offset", where=globalenv(), inherits=FALSE)) rm(offset, pos=globalenv())
 # Calculate out-of-sample RMSE
     if(do.rmse){
-      msgOut("Calculating out-of-sample RMSE", type="start")
+      msgOut(err.Log, "Calculating out-of-sample RMSE", type="start")
       tryCatch(assign(tst.name, fcTest(get(npt.name), out, subset=sbset), pos=globalenv()),
-               error  =function(e) msgOut(e$message, type="error"))
-      msgOut("Elapsed time: ", type="stop")
+               error  =function(e) msgOut(err.Log, e$message, type="error"))
+      msgOut(err.Log, "Elapsed time: ", type="stop")
     }
     assign(res.name, out, pos=globalenv())
     rm(out, pos=globalenv())
 # Save the output...In some cases this can take upwards of an hour.
-    msgOut(paste0("Saving to file '", save.name, "'"), type="start")
+    msgOut(err.Log, paste0("Saving to file '", save.name, "'"), type="start")
     save(list=intersect(ls(pos=globalenv()), c(npt.name, res.name, tst.name)), file=save.name)
-    msgOut("Elapsed time: ", type="stop")
+    msgOut(err.Log, "Elapsed time: ", type="stop")
 # This collects the actual RMSE values and saves them to a summary list.
 # As usual, I create and modify this in the global environment so that if
 # something goes wrong (or it just takes too long and gets interrupted)
@@ -172,6 +180,7 @@ fcMacro <- function(npt, conn=NULL, do.rmse=TRUE, save.tests=NULL)
     rm(npt.name, res.name, tst.name, msg.name, save.name)
     gc()
   }
+  err.Log <- setContext(err.Log, ctxt)
 	result <- as.data.frame(result, stringsAsFactors=FALSE)
 	row.names(result) <- NULL
   names(result) <- c("npt.name", "res.name", "tst.name", "msg.name", "save.name")

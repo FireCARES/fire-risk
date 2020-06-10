@@ -50,85 +50,60 @@
 #' @importFrom magrittr %>%
 #'
 #' @return
-#' This function invisibly returns the stored error information.
+#' This function returns the error environment
 #'
 openLog <- function(dest=c(NA, "console")){
-  if(exists("err.Log", parent.frame(), inherits=FALSE)){
-    rm(list="err.Log", pos=parent.frame())
-  }
   console <- grep("^console$", dest, ignore.case=TRUE)
   if(length(console > 0)){
     dest <- dest[-console]
     dest <- c(dest, "")
   }
   log.tmp <- new.env()
-  if("err.Log" %in% do.call("c", lapply(sys.frames(), ls))){
-    pf <- rev(sys.parents())
-    for(i in pf){
-      if(exists("err.Log", frame=i)){
-        d2 <- get0("err.Log", i)
-        break
-      }
-    }
-  } else {
-    ff <- length(dest[is.na(dest)])
-    if(ff > 0){
-      n0 <- list.files(pattern="^messages[.][0-9][0-9]+[.]txt$") %>%
-            strsplit("[.]") %>%
-            sapply(function(x) x[2]) %>%
-            as.integer %>%
-            c(0) %>%
-            max
-      dest[is.na(dest)] <- paste0("messages.",
-                                 formatC(n0 + 1:ff, width=2, flag="0"),
-                                 ".txt")
-    }
+  ff <- length(dest[is.na(dest)])
+  if(ff > 0){
+    n0 <- list.files(pattern="^messages[.][0-9][0-9]+[.]txt$") %>%
+          strsplit("[.]") %>%
+          sapply(function(x) x[2]) %>%
+          as.integer %>%
+          c(0) %>%
+          max
+    dest[is.na(dest)] <- paste0("messages.",
+                               formatC(n0 + 1:ff, width=2, flag="0"),
+                               ".txt")
   }
   dest <- unique(dest)
   if(! interactive()){
     dest <- setdiff(dest, "")
   }
-  if(exists("d2")){
-    log.tmp$destination <- union(d2$destination, dest) %>% setdiff(NA)
-    if(exists("context", d2)){
-      log.tmp$context <- d2$context
-    }
-  } else {
-    log.tmp$destination <- dest
-  }
+  log.tmp$destination <- dest
 
   for(i in setdiff(log.tmp$destination, "")){
     if(! file.exists(i)) file.create(i)
   }
 
-  assign("err.Log", log.tmp, parent.frame())
-  invisible(log.tmp)
+  log.tmp
 }
 
-#' Deletes an error log
-#'
-#' This function deletes the error log.
-#'
-#' @details
-#' This checks to see if an error logging environment has been set up,
-#' and if it has, it deletes it.
-#'
-#' @return
-#' This function invisibly returns the deleted error information.
-#'
-closeLog <- function(){
-  if(exists("err.Log", parent.frame(), inherits=FALSE)){
-    tmp.Log <- err.Log
-    rm(list="err.Log", pos=parent.frame())
-  } else {
-    tmp.Log <- NULL
-  }
-  invisible(tmp.Log)
-}
+# Deletes an error log - Currently does nothing.
+#
+# This function deletes the error log.
+#
+# @details
+# This checks to see if an error logging environment has been set up,
+# and if it has, it deletes it.
+#
+# @return
+# This function invisibly returns the deleted error information.
+#
+#closeLog <- function(err.Log){
+#}
 
 #' Send messages to the error log(s).
 #'
 #' This function sends messages to all error logs that have been set up.
+#'
+#' @param err.Log This is the err.Log environment that was set up earlier. If
+#' this is NULL, then the function does nothing.
 #'
 #' @param message character. The text of the message to be sent. [optional]
 #'
@@ -164,11 +139,10 @@ closeLog <- function(){
 #' @return
 #' This function invisibly returns the deleted error information.
 #'
-msgOut <- function(message=NULL, type="error"){
-  if(! exists("err.Log", parent.frame(), inherits=FALSE)){
-    openLog(as.character(NA))
+msgOut <- function(err.Log=NULL, message=NULL, type="error"){
+  if(is.null(err.Log)){
+    return()
   }
-  err.Log <- as.list(parent.frame()$err.Log)
   type <- tolower(type[1])
   if(type == "error"){
     msg <- paste0("\nERROR:   ", paste(c(err.Log$context, message), collapse="; "), "\n")
@@ -202,6 +176,9 @@ msgOut <- function(message=NULL, type="error"){
 #'
 #' This function returns the message context.
 #'
+#' @param err.Log The err.Log structure. If this is NULL, then the function
+#' returns NULL
+#'
 #' @details
 #' Message context is information that is printed with the message. The
 #' intent is that message context will provide information that will help
@@ -211,15 +188,20 @@ msgOut <- function(message=NULL, type="error"){
 #' This function returns the message context in a character vector. If
 #' logging has not been set up, or if no context has been set, NULL is returned.
 #'
-getContext <- function(){
-  tmp <- get0("err.Log", parent.frame())
-  if(is.null(tmp)) NULL
-  else             tmp$context
+getContext <- function(err.Log = NULL){
+# tmp <- get0("err.Log", parent.frame())
+# if(is.null(tmp)) NULL
+# else             tmp$context
+  if(is.null(err.Log)) NULL
+  else err.Log$context
 }
 
 #' Sets message context.
 #'
 #' This function sets the message context.
+#'
+#' @param err.Log The err.log structure. If this is NULL, then the function
+#' does nothing.
 #'
 #' @param context Character Vector. A character vector representing the context
 #' information to be printed with the messages.
@@ -233,20 +215,20 @@ getContext <- function(){
 #' with the type set to generate one message file.
 #'
 #' @return
-#' This function invisibly returns the old message context.
+#' This function returns the updated err.Log structure.
 #'
-setContext <- function(context){
-  if(! exists("err.Log", parent.frame(), inherits=FALSE)){
-    openLog(as.character(NA))
-  }
-  old.context <- get("err.Log", parent.frame())$context
-  assign("context", context, get("err.Log", parent.frame()))
-  invisible(old.context)
+setContext <- function(err.Log=NULL, context){
+  if(is.null(err.Log)) return(NULL)
+  err.Log$context <- context
+  err.Log
 }
 
 #' Returns the files to which messages are sent.
 #'
 #' Returns the files to which messages are sent.
+#'
+#' @param err.Log the err.Log structure. If this is NULL, then the function returns
+#' NULL
 #'
 #' @details
 #' This function returns the list of files to which messages are set.
@@ -258,8 +240,7 @@ setContext <- function(context){
 #' which messages are sent. If an error environment has not been set
 #' up, then it returns NULL.
 #'
-getDests <- function(){
-  tmp <- get0("err.Log", parent.frame())
-  if(is.null(tmp)) NULL
-  else             setdiff(tmp$destination, "")
+getDests <- function(err.Log=NULL){
+  if(is.null(err.Log)) NULL
+  else setdiff(err.Log$destination, "")
 }

@@ -4,7 +4,8 @@
 \alias{fcMacro}
 \title{Run a set of control objects}
 \usage{
-fcMacro(npt, conn = NULL, do.rmse = TRUE, save.tests = NULL)
+fcMacro(npt, conn = NULL, do.rmse = TRUE, save.tests = NULL,
+  err.Log = NULL)
 }
 \arguments{
 \item{npt}{character vector. Lists names of the control objects to be run.}
@@ -17,6 +18,11 @@ on the command line. [optional]}
 RMS errors.}
 
 \item{save.tests}{environment. Where to save the test results. [optional]}
+
+\item{err.Log}{Either character or an err.Log structure. If this is a character
+vector, then it creates an err.Log structure based on that vector. If it is
+an err.Log structure, it uses the passed structure. If it is NULL, then no error
+logging is done.}
 }
 \value{
 Data frame listing the objects and files created for each control object.

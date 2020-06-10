@@ -4,7 +4,11 @@
 \alias{getContext}
 \title{Retrieve message context.}
 \usage{
-getContext()
+getContext(err.Log = NULL)
+}
+\arguments{
+\item{err.Log}{The err.Log structure. If this is NULL, then the function
+returns NULL}
 }
 \value{
 This function returns the message context in a character vector. If

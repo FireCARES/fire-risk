@@ -71,3 +71,4 @@ scripts/figures/
 *.Rproj.user
 *.Rhistory
 /r_code/library/
+.Rproj.user

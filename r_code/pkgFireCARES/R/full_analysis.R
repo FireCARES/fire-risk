@@ -120,10 +120,17 @@
 #'
 #' Note that if you are supplying the \code{object.list} structure while using the
 #' \code{bypass.models} option, you can safely leave out the \code{tst.name} and
-#' \code{msg.name} columns. Also, the \code{msg.name} column is now deprecated, so
-#' do not rely on it.
+#' \code{msg.name} columns.
 #'
 #' @export
+#'
+#' @section Side Effects:
+#'
+#' The function leaves several new files on the hard drive. The exact
+#' files are listed in the \code{object.list} section of the output. The
+#' files fall into two groups. First, output of the estimation algorithms
+#' are saved in a set if objects listed in the \code{object.list} object.
+#' Second, error and log files are saved to disk.
 #'
 #' @return
 #' returns a list with the following entries:
@@ -224,9 +231,9 @@ full_analysis <- function(conn=NULL,
   if(bypass.models & is.null(object.list)){
     stop("If bypass.models is TRUE then objects.list must be defined!")
   }
-  openLog()
+  err.Log <- openLog()
   if(! bypass.models){
-    if(! is.null(object.list)) msgOut("'bypass.models' is FALSE and 'object list' is defined. 'object.list' will be overwritten.",
+    if(! is.null(object.list)) msgOut(err.Log, "'bypass.models' is FALSE and 'object list' is defined. 'object.list' will be overwritten.",
                                       type="warning")
     object.list <- list()
   }
@@ -239,7 +246,7 @@ full_analysis <- function(conn=NULL,
     models.run <- models.run0
     rm(models.run0)
   }
-  if(refresh.data) msgOut("The 'refresh.data' feature has not been implemented yet.",
+  if(refresh.data) msgOut(err.Log, "The 'refresh.data' feature has not been implemented yet.",
                           type="warning")
 # if(refresh.data) refresh_views(conn)
 #
@@ -247,8 +254,8 @@ full_analysis <- function(conn=NULL,
 #
   risk.results <- list()
   for(i in names(models.run)){
-    setContext(paste0("Risk Group ", i))
-    msgOut("Running Risk Group", type="status")
+    err.Log <- setContext(err.Log, paste0("Risk Group ", i))
+    msgOut(err.Log, "Running Risk Group", type="status")
     gc()
     src.name <- src.names[i]
     if(bypass.models){
@@ -257,14 +264,14 @@ full_analysis <- function(conn=NULL,
       if(i %in% names(object.list)){
         objects <- object.list[[i]]
       } else {
-        msgOut(paste0("bypass.models=TRUE and no entry exists for model group '", i,
+        msgOut(err.Log, paste0("bypass.models=TRUE and no entry exists for model group '", i,
                       "' in the 'object.list' object. It will by skipped."),
                type="warning")
         next
 	    }
     } else {
 # Download the data needed for the model estimation
-      msgOut("Getting Data", type="start")
+      msgOut(err.Log, "Getting Data", type="start")
       if(! exists(src.name) | refresh.data){
         tryCatch(
           {
@@ -277,33 +284,34 @@ full_analysis <- function(conn=NULL,
             }
           },
           error=function(x){
-            msgOut(paste0("Cannot Download Data. Skipping risk group: ", x$message),
+            msgOut(err.Log, paste0("Cannot Download Data. Skipping risk group: ", x$message),
                    type="error")})
       }
       if(! exists(src.name)) next
-        msgOut("Elapsed Time: ", type="stop")
+        msgOut(err.Log, "Elapsed Time: ", type="stop")
 # Create the control objects for the models...
-      models  <- mass.npt(conn, list=models.run[[i]])
+      models  <- mass.npt(conn, list=models.run[[i]], err.Log=err.Log)
 # And estimate the models.
-      objects <- fcMacro(models, do.rmse=do.rmse)
+      objects <- fcMacro(models, do.rmse=do.rmse, err.Log=err.Log)
 	    object.list[[i]] <- objects
     }
 #
     if(do.predictions){
       est.name <- est.names[i]
       if(! exists(est.name) | refresh.data){
-        msgOut("Getting Prediction Data", type="start")
+        msgOut(err.Log, "Getting Prediction Data", type="start")
         assign(est.name, RPostgreSQL::dbGetQuery(conn, est.tabls[i]))
         assign(est.name, fcSetup(get(est.name)))
-        msgOut("Elapsed Time: ", type="stop")
+        msgOut(err.Log, "Elapsed Time: ", type="stop")
       }
 # Basically what I am going to do here is call fcEstimate. Note that
 # fcEstimate can take lists of control and output objects and work on
 # them as a unit. However, since the output objects can be quite large,
 # I am doing them one at a time so as not to blow up the machine.
+      ctxt <- getContext(err.Log)
       for(j in 1:nrow(objects)){
-        setContext(paste0(getContext(), "; ", objects$npt.name[j]))
-        msgOut("Predicting", type="start")
+        err.Log <- setContext(err.Log, c(ctxt, objects$npt.name[j]))
+        msgOut(err.Log, "Predicting", type="start")
         tryCatch(
           {
             e <- new.env()
@@ -340,8 +348,8 @@ full_analysis <- function(conn=NULL,
             }
             rm(temp.98765)
           },
-          error=function(x) msgOut(x$message, type="error"))
-        msgOut("Elapsed Time: ", type="stop")
+          error=function(x) msgOut(err.Log, x$message, type="error"))
+        msgOut(err.Log, "Elapsed Time: ", type="stop")
       }
 #
 # Since the high-risk results are at the parcel level, and all the rest of the data
@@ -365,6 +373,7 @@ full_analysis <- function(conn=NULL,
     rm(list=intersect(c("src.name", "objects", "est.name", "dta.cols" ), ls()))
 #
 # Merge all the predictions into a single prediction data frame.
+    if(i %in% names(risk.results)){
       if(exists("predictions", inherits=FALSE)){
         predictions <- merge(predictions,
                              risk.results[[i]][,-match("year", names(risk.results[[i]]))],
@@ -372,6 +381,7 @@ full_analysis <- function(conn=NULL,
       } else {
         predictions <- risk.results[[i]][,-match("year", names(risk.results[[i]]))]
       }
+    }
 # I want to leave the intermediate results, mainly for the high-risk and ems data,
 # so they can be inspected. So we return risk.results[['hr']] to its former self,
 # and delete the intermediate table.
@@ -390,7 +400,7 @@ full_analysis <- function(conn=NULL,
 # across the ems500 and emscty groups, which is the entire purpose of
 # this option
   if(do.predictions & ! is.null(merg)){
-    setContext("Mergers")
+    err.Log <- setContext(err.Log, "Mergers")
     if(! is.list(merg)){
       merg <- list(merg)
       names(merg) <- "merge"
@@ -400,7 +410,7 @@ full_analysis <- function(conn=NULL,
     for(i in 1:length(merg)){
       gd <- grep("tr10_fid|geoid", names(merg[[i]]))[1]
       if(is.na(gd)){
-        msgOut(paste0("Merger ", names(merg)[i], " does not have a geoid column. It will be skipped"),
+        msgOut(err.Log, paste0("Merger ", names(merg)[i], " does not have a geoid column. It will be skipped"),
                type="warning")
       } else {
         tryCatch(
@@ -410,7 +420,7 @@ full_analysis <- function(conn=NULL,
             cols <- union(cols, tmp$cols)
             new.preds[[names(merg)[i]]] <- as.numeric(tmp$result)
           },
-          error=function(x) msgOut(x$message, type="error"))
+          error=function(x) msgOut(err.Log, x$message, type="error"))
       }
     }
     if(! is.null(cols)){

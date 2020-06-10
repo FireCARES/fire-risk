@@ -65,6 +65,21 @@
 #'  census data up to date. Note that it requires census API key installed
 #'  (see the acs package documentation).
 #'
+#'  The following functions are used for error logging.
+#'
+#'  \code{\link{openLog}}: Creates the log structure, and opens log file(s)
+#'  as requested.
+#'
+#'  \code{\link{msgOut}}: Sends log and error messages to the output pre-selected
+#'  output destinations.
+#'
+#'  \code{\link{setContext}}: Sets a context message so that the errors and messages
+#'  in the log file can be identified.
+#'
+#'  \code{\link{getContext}}: Retrieves the context message that was set up.
+#'
+#'  \code{\link{getDests}}: Gets the log and error destinations that were set up.
+#'
 #' @section Database Info:
 #' This package works with data on the \code{nfirs} database on the FireCARES server.
 #' In particular, it works with the information in the \code{nist} and \code{controls}

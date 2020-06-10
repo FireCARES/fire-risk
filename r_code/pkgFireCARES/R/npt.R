@@ -11,6 +11,10 @@
 #' @param list character. List of control objects to build.
 #' @param relocate environment. This is an [optional] environment into which
 #' to move any existing test objects.
+#' @param err.Log  Either character or an err.Log structure. If this is a character
+#' vector, then it creates an err.Log structure based on that vector. If it is
+#' an err.Log structure, it uses the passed structure. If it is NULL, then no error
+#' logging is done.
 #'
 #' @return Vector listing the control objects created.
 #'
@@ -34,8 +38,11 @@
 #'   mass.npt("final", conn, res)
 #' }
 #'
-mass.npt <- function(conn, pattern=NULL, list=NULL, relocate=NULL)
+mass.npt <- function(conn, pattern=NULL, list=NULL, relocate=NULL, err.Log=NULL)
 {
+  if(class(err.Log) == "character") err.Log <- openLog(err.Log)
+  if(! is.null(err.Log)){    ctxt <- getContext(err.Log)  }
+  else                  {    ctxt <- NULL                 }
 #   This section finds any 'test.' objects and moves them into a user-specified
 #   backup environment. This makes room for the new objects that will shortly be
 #   created.
@@ -58,13 +65,13 @@ mass.npt <- function(conn, pattern=NULL, list=NULL, relocate=NULL)
                                      paste(list, collapse="','"),
                                      "') group by lst, runs order by lst"))
   }
-  openLog()
   for(i in 1:nrow(a)) {
-    setContext(paste0("npt('", a$lst[i], '.', a$runs[i], "')"))
+    err.Log <- setContext(err.Log, c(ctxt, "npt", a$lst[i], a$runs[i]))
     tryCatch(assign(paste0(a$lst[i], '.', a$runs[i]),
                     npt(conn, group=a$lst[i], run=a$runs[i]), envir=globalenv()),
-             error=function(x) msgOut(e$message, type="error"))
+             error=function(x) msgOut(err.Log, e$message, type="error"))
   }
+  err.Log <- setContext(err.Log, ctxt)
   paste0(a$lst, ".", a$runs)
 }
 

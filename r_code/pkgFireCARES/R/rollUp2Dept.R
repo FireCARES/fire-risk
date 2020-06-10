@@ -75,7 +75,7 @@ rollUp2Dept <- function(predictions, fire.col, sz2.col, sz3.col, indx.cols){
   predictions <- aggregate( predictions[, dta.cols],
                             indx.lst,
                             function(x) {
-                              if( length(! is.na(x)) == 0) NA
+                              if( length(x[! is.na(x)]) == 0) NA
                               else sum(x, na.rm=TRUE)
                             }
                           )

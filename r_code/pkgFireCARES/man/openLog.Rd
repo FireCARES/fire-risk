@@ -11,7 +11,7 @@ openLog(dest = c(NA, "console"))
 Destinations are usually file names.}
 }
 \value{
-This function invisibly returns the stored error information.
+This function returns the error environment
 }
 \description{
 This function opens the error log.

@@ -4,9 +4,12 @@
 \alias{msgOut}
 \title{Send messages to the error log(s).}
 \usage{
-msgOut(message = NULL, type = "error")
+msgOut(err.Log = NULL, message = NULL, type = "error")
 }
 \arguments{
+\item{err.Log}{This is the err.Log environment that was set up earlier. If
+this is NULL, then the function does nothing.}
+
 \item{message}{character. The text of the message to be sent. [optional]}
 
 \item{type}{character. The type of message. One of 'error', 'warning',

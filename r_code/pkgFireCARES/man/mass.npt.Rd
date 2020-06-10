@@ -4,7 +4,8 @@
 \alias{mass.npt}
 \title{Mass Building of Control Objects}
 \usage{
-mass.npt(conn, pattern = NULL, list = NULL, relocate = NULL)
+mass.npt(conn, pattern = NULL, list = NULL, relocate = NULL,
+  err.Log = NULL)
 }
 \arguments{
 \item{conn}{DBI connection. Connects to the database containing the
@@ -17,6 +18,11 @@ list.}
 
 \item{relocate}{environment. This is an [optional] environment into which
 to move any existing test objects.}
+
+\item{err.Log}{Either character or an err.Log structure. If this is a character
+vector, then it creates an err.Log structure based on that vector. If it is
+an err.Log structure, it uses the passed structure. If it is NULL, then no error
+logging is done.}
 }
 \value{
 Vector listing the control objects created.
