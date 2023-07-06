@@ -70,7 +70,7 @@ setup(
         'pytest==2.7.0',
         'pytest-cov==2.5.1',
         'flake8<3.0.0',
-        'scipy==0.17.0',
+        'scipy==1.10.0',
         'mock==2.0.0'
     ],
     zip_safe=False
